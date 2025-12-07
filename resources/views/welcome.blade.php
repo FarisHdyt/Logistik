@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>SILOG - Sistem Logistik Polres</title>
     <style>
         /* Reset dan Base Styles */
@@ -85,6 +86,33 @@
             color: var(--primary);
         }
         
+        .auth-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--primary);
+            font-weight: 500;
+        }
+        
+        .user-avatar {
+            width: 30px;
+            height: 30px;
+            background-color: var(--primary-light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
         .cta-button {
             background-color: var(--primary);
             color: white;
@@ -93,10 +121,29 @@
             text-decoration: none;
             font-weight: 600;
             transition: background-color 0.3s;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
         }
         
         .cta-button:hover {
             background-color: var(--primary-light);
+        }
+        
+        .logout-button {
+            background-color: var(--secondary);
+        }
+        
+        .logout-button:hover {
+            background-color: #b91c1c;
+        }
+        
+        .dashboard-button {
+            background-color: #059669;
+        }
+        
+        .dashboard-button:hover {
+            background-color: #047857;
         }
         
         .mobile-menu {
@@ -140,6 +187,7 @@
             text-decoration: none;
             font-weight: 600;
             transition: transform 0.3s;
+            display: inline-block;
         }
         
         .btn-primary:hover {
@@ -155,6 +203,7 @@
             text-decoration: none;
             font-weight: 600;
             transition: all 0.3s;
+            display: inline-block;
         }
         
         .btn-secondary:hover {
@@ -352,6 +401,21 @@
             opacity: 0.9;
         }
         
+        /* Login Status Banner */
+        .login-status {
+            background-color: #d1fae5;
+            color: #065f46;
+            padding: 1rem;
+            text-align: center;
+            margin-bottom: 1rem;
+            border-radius: 5px;
+            display: none;
+        }
+        
+        .login-status.show {
+            display: block;
+        }
+        
         /* Footer */
         footer {
             background-color: var(--dark);
@@ -397,6 +461,17 @@
             font-size: 0.9rem;
         }
         
+        /* Session Debug (Hidden) */
+        .session-debug {
+            display: none;
+            background-color: #f3f4f6;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            color: #6b7280;
+        }
+        
         /* Responsive Design */
         @media (max-width: 768px) {
             .nav-links {
@@ -405,6 +480,16 @@
             
             .mobile-menu {
                 display: block;
+            }
+            
+            .auth-section {
+                flex-direction: column;
+                gap: 0.5rem;
+                align-items: flex-end;
+            }
+            
+            .user-info {
+                font-size: 0.9rem;
             }
             
             .hero h1 {
@@ -432,6 +517,12 @@
     </style>
 </head>
 <body>
+    <!-- Login Status Banner -->
+    <div class="login-status" id="loginStatus">
+        Anda sudah login sebagai <strong id="loggedInUser"></strong>. 
+        <a href="{{ route('dashboard') }}" style="color: #065f46; text-decoration: underline;">Klik di sini untuk ke Dashboard</a>
+    </div>
+    
     <!-- Header -->
     <header>
         <div class="container">
@@ -446,7 +537,30 @@
                     <li><a href="#testimonials">Testimoni</a></li>
                     <li><a href="#contact">Kontak</a></li>
                 </ul>
-                <a href="/login" class="cta-button">Masuk</a>
+                
+                <!-- Auth Section -->
+                <div class="auth-section">
+                    @auth
+                        <div class="user-info">
+                            <div class="user-avatar">
+                                {{ substr(Auth::user()->name, 0, 1) }}
+                            </div>
+                            <span>{{ Auth::user()->name }}</span>
+                        </div>
+                        <a href="{{ route('dashboard') }}" class="cta-button dashboard-button">
+                            Dashboard
+                        </a>
+                        <form method="POST" action="{{ route('logout') }}" id="logoutForm" style="display: inline;">
+                            @csrf
+                            <button type="submit" class="cta-button logout-button">
+                                Logout
+                            </button>
+                        </form>
+                    @else
+                        <a href="{{ route('login') }}" class="cta-button">Masuk</a>
+                    @endauth
+                </div>
+                
                 <div class="mobile-menu">☰</div>
             </nav>
         </div>
@@ -458,8 +572,13 @@
             <h1>Sistem Manajemen Logistik Polres</h1>
             <p>Solusi terintegrasi untuk mengelola inventaris, distribusi, dan pemeliharaan aset logistik Polres secara efisien dan transparan.</p>
             <div class="hero-buttons">
-                <a href="/register" class="btn-primary">Daftar Sekarang</a>
-                <a href="#features" class="btn-secondary">Pelajari Lebih Lanjut</a>
+                @auth
+                    <a href="{{ route('dashboard') }}" class="btn-primary">Go to Dashboard</a>
+                    <a href="#features" class="btn-secondary">Pelajari Fitur</a>
+                @else
+                    <a href="{{ route('register') }}" class="btn-primary">Daftar Sekarang</a>
+                    <a href="{{ route('login') }}" class="btn-secondary">Masuk ke Akun</a>
+                @endauth
             </div>
         </div>
     </section>
@@ -585,7 +704,11 @@
         <div class="container">
             <h2>Siap Mengoptimalkan Manajemen Logistik Polres Anda?</h2>
             <p>Daftar sekarang dan rasakan kemudahan mengelola logistik dengan sistem terintegrasi kami.</p>
-            <a href="/register" class="btn-primary">Mulai Sekarang</a>
+            @auth
+                <a href="{{ route('dashboard') }}" class="btn-primary">Buka Dashboard</a>
+            @else
+                <a href="{{ route('register') }}" class="btn-primary">Mulai Sekarang</a>
+            @endauth
         </div>
     </section>
 
@@ -604,6 +727,17 @@
                         <li><a href="#features">Fitur</a></li>
                         <li><a href="#how-it-works">Cara Kerja</a></li>
                         <li><a href="#testimonials">Testimoni</a></li>
+                        @auth
+                            <li><a href="{{ route('dashboard') }}">Dashboard</a></li>
+                            <li>
+                                <form method="POST" action="{{ route('logout') }}" style="display: inline;">
+                                    @csrf
+                                    <button type="submit" style="background: none; border: none; color: #cbd5e1; cursor: pointer; padding: 0;">
+                                        Logout
+                                    </button>
+                                </form>
+                            </li>
+                        @endauth
                     </ul>
                 </div>
                 <div class="footer-column">
@@ -625,9 +759,23 @@
             </div>
             <div class="copyright">
                 <p>&copy; 2023 SILOG - Sistem Logistik Polres. Semua hak dilindungi.</p>
+                @auth
+                    <p style="font-size: 0.8rem; margin-top: 5px;">
+                        Login sebagai: {{ Auth::user()->name }} ({{ Auth::user()->role }})
+                    </p>
+                @endauth
             </div>
         </div>
     </footer>
+
+    <!-- Session Debug (Hidden) -->
+    <div class="session-debug">
+        <p>Session ID: {{ session()->getId() }}</p>
+        <p>Auth Check: {{ Auth::check() ? 'Yes' : 'No' }}</p>
+        @auth
+            <p>User: {{ Auth::user()->name }} ({{ Auth::user()->email }})</p>
+        @endauth
+    </div>
 
     <script>
         // Mobile menu toggle
@@ -657,6 +805,31 @@
                     }
                 }
             });
+        });
+        
+        // Show login status banner if user is logged in
+        @auth
+            document.addEventListener('DOMContentLoaded', function() {
+                const loginStatus = document.getElementById('loginStatus');
+                const loggedInUser = document.getElementById('loggedInUser');
+                
+                if (loginStatus && loggedInUser) {
+                    loggedInUser.textContent = '{{ Auth::user()->name }}';
+                    loginStatus.classList.add('show');
+                    
+                    // Auto hide after 10 seconds
+                    setTimeout(() => {
+                        loginStatus.classList.remove('show');
+                    }, 10000);
+                }
+            });
+        @endauth
+        
+        // Logout confirmation
+        document.getElementById('logoutForm')?.addEventListener('submit', function(e) {
+            if (!confirm('Apakah Anda yakin ingin logout?')) {
+                e.preventDefault();
+            }
         });
     </script>
 </body>
