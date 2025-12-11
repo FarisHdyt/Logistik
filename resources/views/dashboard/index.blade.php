@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - SILOG Polres</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
         :root {
             --primary: #1e3a8a;
@@ -17,6 +18,7 @@
             min-height: 100vh;
             width: 250px;
             position: fixed;
+            padding: 0;
         }
         
         .main-content {
@@ -44,40 +46,112 @@
             font-size: 2rem;
             margin-bottom: 10px;
         }
+        
+        /* Sidebar Styling - Menyesuaikan dengan admin */
+        .sidebar-brand {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .sidebar-nav {
+            padding: 0.5rem 0;
+        }
+        
+        .nav-item {
+            margin-bottom: 0.25rem;
+        }
+        
+        .nav-link {
+            padding: 0.75rem 1.5rem;
+            color: rgba(255, 255, 255, 0.8);
+            border-radius: 0;
+            border-left: 4px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: white;
+        }
+        
+        .nav-link.active {
+            background-color: rgba(59, 130, 246, 0.15);
+            color: white;
+            border-left-color: var(--primary-light);
+        }
+        
+        .nav-link i {
+            width: 20px;
+            margin-right: 12px;
+            text-align: center;
+        }
+        
+        .sidebar-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                position: relative;
+                min-height: auto;
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .sidebar-footer {
+                position: relative;
+            }
+        }
     </style>
 </head>
 <body>
     <!-- Sidebar -->
     <div class="sidebar">
-        <div class="p-4">
-            <h3 class="mb-4">SILOG POLRES</h3>
-            <ul class="nav flex-column">
-                <li class="nav-item">
-                    <a class="nav-link text-white" href="{{ route('dashboard') }}">
-                        🏠 Dashboard
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-white" href="#">
-                        📦 Manajemen Barang
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-white" href="#">
-                        📋 Permintaan Barang
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-white" href="#">
-                        📊 Laporan
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-white" href="#">
-                        👤 Profil
-                    </a>
-                </li>
-            </ul>
+        <!-- Sidebar Brand -->
+        <div class="sidebar-brand">
+            <h3 class="mb-1 fw-bold">SILOG POLRES</h3>
+            <p class="mb-0 text-white-50" style="font-size: 0.875rem;">User Dashboard</p>
+        </div>
+        
+        <!-- Sidebar Navigation -->
+        <div class="sidebar-nav">
+            <div class="nav-item">
+                <a class="nav-link d-flex align-items-center active" href="">
+                    <i class="bi bi-speedometer2"></i>
+                    <span>Dashboard</span>
+                </a>
+            </div>
+            
+            <div class="nav-item">
+                <a class="nav-link d-flex align-items-center" href="{{ route('user.permintaan') }}">
+                    <i class="bi bi-clipboard-check"></i>
+                    <span>Permintaan Barang</span>
+                </a>
+            </div>
+            
+            <div class="nav-item">
+                <a class="nav-link d-flex align-items-center" href="{{ route('user.laporan') }}">
+                    <i class="bi bi-file-text"></i>
+                    <span>Laporan</span>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Sidebar Footer -->
+        <div class="sidebar-footer">
+            <div class="text-center text-white-50">
+                <small style="opacity: 0.7;">Sistem Logistik Polres</small><br>
+                <small style="opacity: 0.5; font-size: 0.75rem;">v1.0.0</small>
+            </div>
         </div>
     </div>
     
@@ -113,7 +187,9 @@
                 <div class="col-md-3 mb-4">
                     <div class="card dashboard-card text-white bg-primary">
                         <div class="card-body text-center">
-                            <div class="card-icon">📦</div>
+                            <div class="card-icon">
+                                <i class="bi bi-cart-check"></i>
+                            </div>
                             <h5>Permintaan Saya</h5>
                             <h3>{{ $data['my_requests'] ?? 0 }}</h3>
                         </div>
@@ -123,7 +199,9 @@
                 <div class="col-md-3 mb-4">
                     <div class="card dashboard-card text-white bg-success">
                         <div class="card-body text-center">
-                            <div class="card-icon">✅</div>
+                            <div class="card-icon">
+                                <i class="bi bi-check-circle"></i>
+                            </div>
                             <h5>Disetujui</h5>
                             <h3>{{ $data['requests_approved'] ?? 0 }}</h3>
                         </div>
@@ -133,7 +211,9 @@
                 <div class="col-md-3 mb-4">
                     <div class="card dashboard-card text-white bg-warning">
                         <div class="card-body text-center">
-                            <div class="card-icon">⏳</div>
+                            <div class="card-icon">
+                                <i class="bi bi-clock-history"></i>
+                            </div>
                             <h5>Pending</h5>
                             <h3>{{ $data['requests_pending'] ?? 0 }}</h3>
                         </div>
@@ -143,7 +223,9 @@
                 <div class="col-md-3 mb-4">
                     <div class="card dashboard-card text-white bg-danger">
                         <div class="card-body text-center">
-                            <div class="card-icon">❌</div>
+                            <div class="card-icon">
+                                <i class="bi bi-x-circle"></i>
+                            </div>
                             <h5>Ditolak</h5>
                             <h3>{{ $data['requests_rejected'] ?? 0 }}</h3>
                         </div>
@@ -198,11 +280,17 @@
                                     <td>{{ $request->jumlah }}</td>
                                     <td>
                                         @if($request->status == 'pending')
-                                            <span class="badge bg-warning">Pending</span>
+                                            <span class="badge bg-warning">
+                                                <i class="bi bi-clock-history me-1"></i>Pending
+                                            </span>
                                         @elseif($request->status == 'approved')
-                                            <span class="badge bg-success">Disetujui</span>
+                                            <span class="badge bg-success">
+                                                <i class="bi bi-check-circle me-1"></i>Disetujui
+                                            </span>
                                         @else
-                                            <span class="badge bg-danger">Ditolak</span>
+                                            <span class="badge bg-danger">
+                                                <i class="bi bi-x-circle me-1"></i>Ditolak
+                                            </span>
                                         @endif
                                     </td>
                                     <td>{{ $request->created_at->format('d/m/Y') }}</td>

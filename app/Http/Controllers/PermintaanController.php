@@ -66,6 +66,13 @@ class PermintaanController extends Controller
     
     public function store(Request $request)
     {
+        // Validasi input
+        $validated = $request->validate([
+            'barang_id' => 'required|exists:barangs,id',
+            'jumlah' => 'required|integer|min:1',
+            'catatan' => 'nullable|string|max:500',
+        ]);
+
         $validated = $request->validate([
             'barang_id' => 'required|exists:barangs,id',
             'jumlah' => 'required|integer|min:1',
