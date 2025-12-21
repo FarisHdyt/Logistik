@@ -55,7 +55,7 @@ class DashboardController extends Controller
                 return $this->getDummyAdminData();
             }
             
-            // Data statistik dasar
+            // Data statistik dasar - PERBAIKAN DISINI: Ganti 'terkirim' dengan 'delivered'
             $basicData = [
                 'total_barang' => Barang::count(),
                 'total_stok' => Barang::sum('stok'),
@@ -63,7 +63,7 @@ class DashboardController extends Controller
                 'permintaan_pending' => Permintaan::where('status', 'pending')->count(),
                 'permintaan_diproses' => Permintaan::where('status', 'diproses')->count(),
                 'permintaan_disetujui' => Permintaan::where('status', 'approved')->count(),
-                'permintaan_terkirim' => Permintaan::where('status', 'terkirim')->count(),
+                'permintaan_delivered' => Permintaan::where('status', 'delivered')->count(), // PERBAIKAN DISINI
                 'permintaan_ditolak' => Permintaan::where('status', 'rejected')->count(),
                 'permintaan_bulan_ini' => Permintaan::whereMonth('created_at', now()->month)
                     ->whereYear('created_at', now()->year)
@@ -121,13 +121,13 @@ class DashboardController extends Controller
                 }
             }
             
-            // 2. DATA BARANG KELUAR: HANYA dari permintaan yang statusnya TERKIRIM
+            // 2. DATA BARANG KELUAR: HANYA dari permintaan yang statusnya DELIVERED - PERBAIKAN DISINI
             if (\Schema::hasTable('permintaans')) {
                 $barangKeluar = Permintaan::select(
                         DB::raw('MONTH(updated_at) as bulan'),
                         DB::raw('SUM(jumlah) as total')
                     )
-                    ->where('status', 'terkirim') // HANYA status TERKIRIM
+                    ->where('status', 'delivered') // PERBAIKAN DISINI: 'delivered' bukan 'terkirim'
                     ->whereYear('updated_at', $currentYear)
                     ->groupBy('bulan')
                     ->orderBy('bulan')
@@ -168,7 +168,7 @@ class DashboardController extends Controller
             'permintaan_pending' => 12,
             'permintaan_diproses' => 8,
             'permintaan_disetujui' => 28,
-            'permintaan_terkirim' => 20,
+            'permintaan_delivered' => 20, // PERBAIKAN DISINI
             'permintaan_ditolak' => 5,
             'permintaan_bulan_ini' => 15,
             'total_pengeluaran' => 42,
@@ -183,11 +183,12 @@ class DashboardController extends Controller
     }
 
     /**
-     * Dummy requests data
+     * Dummy requests data - PERBAIKAN DISINI
      */
     private function getDummyRequests()
     {
-        $statuses = ['pending', 'diproses', 'approved', 'terkirim', 'rejected'];
+        // PERBAIKAN: Tambahkan 'delivered' ke daftar status
+        $statuses = ['pending', 'diproses', 'approved', 'delivered', 'rejected'];
         $barangNames = [
             'Bahan Bakar Pertamax', 'Ban Mobil Patroli', 'Oli Mesin', 
             'Sparepart Motor', 'Alat Tulis Kantor', 'Seragam Polisi',
@@ -256,7 +257,7 @@ class DashboardController extends Controller
     }
 
     /**
-     * Dashboard data for kabid
+     * Dashboard data for kabid - PERBAIKAN DISINI
      */
     private function getKabidDashboardData($user)
     {
@@ -276,8 +277,8 @@ class DashboardController extends Controller
                 'permintaan_disetujui' => Permintaan::where('satker_id', $user->satker_id)
                     ->where('status', 'approved')
                     ->count(),
-                'permintaan_terkirim' => Permintaan::where('satker_id', $user->satker_id)
-                    ->where('status', 'terkirim')
+                'permintaan_delivered' => Permintaan::where('satker_id', $user->satker_id)
+                    ->where('status', 'delivered') // PERBAIKAN DISINI
                     ->count(),
                 'permintaan_ditolak' => Permintaan::where('satker_id', $user->satker_id)
                     ->where('status', 'rejected')
@@ -306,7 +307,7 @@ class DashboardController extends Controller
             'permintaan_pending' => rand(1, 10),
             'permintaan_diproses' => rand(1, 5),
             'permintaan_disetujui' => rand(5, 20),
-            'permintaan_terkirim' => rand(3, 15),
+            'permintaan_delivered' => rand(3, 15), // PERBAIKAN DISINI
             'permintaan_ditolak' => rand(0, 5),
             'total_barang_satker' => rand(10, 50),
             'recent_requests' => $this->getDummyRequests()->take(3),
@@ -314,7 +315,7 @@ class DashboardController extends Controller
     }
 
     /**
-     * Dashboard data for regular user
+     * Dashboard data for regular user - PERBAIKAN DISINI
      */
     private function getUserDashboardData($user)
     {
@@ -335,8 +336,8 @@ class DashboardController extends Controller
                 'requests_approved' => Permintaan::where('user_id', $user->id)
                     ->where('status', 'approved')
                     ->count(),
-                'requests_terkirim' => Permintaan::where('user_id', $user->id)
-                    ->where('status', 'terkirim')
+                'requests_delivered' => Permintaan::where('user_id', $user->id)
+                    ->where('status', 'delivered') // PERBAIKAN DISINI
                     ->count(),
                 'requests_rejected' => Permintaan::where('user_id', $user->id)
                     ->where('status', 'rejected')
@@ -363,7 +364,7 @@ class DashboardController extends Controller
             'requests_pending' => rand(0, 5),
             'requests_diproses' => rand(0, 3),
             'requests_approved' => rand(0, 8),
-            'requests_terkirim' => rand(0, 6),
+            'requests_delivered' => rand(0, 6), // PERBAIKAN DISINI
             'requests_rejected' => rand(0, 2),
             'recent_requests' => collect(),
         ];
@@ -454,13 +455,13 @@ class DashboardController extends Controller
                 }
             }
             
-            // 2. Barang Keluar: HANYA dari permintaan yang statusnya TERKIRIM
+            // 2. Barang Keluar: HANYA dari permintaan yang statusnya DELIVERED - PERBAIKAN DISINI
             if (\Schema::hasTable('permintaans')) {
                 $barangKeluar = Permintaan::select(
                         DB::raw('MONTH(updated_at) as bulan'),
                         DB::raw('SUM(jumlah) as total')
                     )
-                    ->where('status', 'terkirim') // HANYA status TERKIRIM
+                    ->where('status', 'delivered') // PERBAIKAN DISINI
                     ->whereYear('updated_at', $year)
                     ->groupBy('bulan')
                     ->orderBy('bulan')

@@ -27,6 +27,7 @@ class User extends Authenticatable
         'no_hp',
         'is_active',
         'last_login_at',
+        'current_login_at',
         'last_login_ip',
     ];
 
@@ -38,6 +39,7 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'last_login_at' => 'datetime',
+        'current_login_at' => 'datetime',
         'is_active' => 'boolean',
     ];
 

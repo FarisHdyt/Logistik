@@ -39,10 +39,7 @@ Route::middleware('guest')->group(function () {
 
 // Protected Routes - SEMUA user yang login
 Route::middleware(['auth'])->group(function () {
-    // Dashboard umum
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-
-    // Logout - Harus di luar group prefix
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/logout', [AuthController::class, 'logout'])->name('logout.get');
 
@@ -54,9 +51,9 @@ Route::middleware(['auth'])->group(function () {
         })->name('user.dashboard');
         
         // Laporan Routes - Tambahkan 'user.' prefix
-    Route::get('/laporan', [UserLaporanController::class, 'index'])->name('user.laporan');
-    Route::get('/laporan/export/{type}', [UserLaporanController::class, 'export'])->name('user.laporan.export');
-    Route::get('/laporan/print', [UserLaporanController::class, 'print'])->name('user.laporan.print');
+        Route::get('/laporan', [UserLaporanController::class, 'index'])->name('user.laporan');
+        Route::get('/laporan/export/{type}', [UserLaporanController::class, 'export'])->name('user.laporan.export');
+        Route::get('/laporan/print', [UserLaporanController::class, 'print'])->name('user.laporan.print');
         
         // Permintaan Routes
         Route::prefix('permintaan')->group(function () {
@@ -74,9 +71,12 @@ Route::middleware(['auth'])->group(function () {
 
     // ==================== ROUTES UNTUK ADMIN ====================
     Route::prefix('admin')->group(function () {
-        // Dashboard admin
+        // Dashboard admin - PERBAIKAN: TAMBAHKAN ROUTE INI
         Route::get('/dashboard', [DashboardController::class, 'adminDashboard'])->name('admin.dashboard');
-        
+        // ========== DASHBOARD CHART API ROUTE ==========
+        Route::get('/dashboard/chart-data', [DashboardController::class, 'getChartDataApi'])->name('admin.dashboard.chart-data');
+        // ==============================================
+
         // Inventory Routes
         Route::prefix('inventory')->group(function () {
             Route::get('/', [InventoryController::class, 'index'])->name('admin.inventory');
@@ -103,32 +103,33 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/', [PermintaanController::class, 'index'])->name('admin.requests');
             Route::get('/create', [PermintaanController::class, 'create'])->name('admin.requests.create');
             Route::post('/', [PermintaanController::class, 'store'])->name('admin.requests.store');
-            Route::get('/{permintaan}', [PermintaanController::class, 'show'])->name('admin.requests.show');
             Route::post('/{permintaan}/approve', [PermintaanController::class, 'approve'])->name('admin.requests.approve');
             Route::post('/{permintaan}/reject', [PermintaanController::class, 'reject'])->name('admin.requests.reject');
+            Route::post('/{permintaan}/deliver', [PermintaanController::class, 'markAsDelivered'])->name('admin.requests.deliver');
             Route::delete('/{permintaan}', [PermintaanController::class, 'destroy'])->name('admin.requests.destroy');
+            Route::get('/{permintaan}', [PermintaanController::class, 'show'])->name('admin.requests.show');
         });
         
         // Reports Routes
         Route::prefix('reports')->group(function () {
             Route::get('/', [ReportController::class, 'index'])->name('admin.reports');
-            Route::post('/generate', [ReportController::class, 'generate'])->name('admin.reports.generate');
-            Route::get('/export/{type}', [ReportController::class, 'export'])->name('admin.reports.export');
-            Route::get('/chart-data', [ReportController::class, 'getChartData'])->name('admin.reports.chart-data');
+            Route::get('/generate', [ReportController::class, 'generate'])->name('admin.reports.generate');
+            Route::get('/export/{type?}', [ReportController::class, 'export'])->name('admin.reports.export');
+            Route::get('/get-monthly-stats', [ReportController::class, 'getMonthlyStats'])->name('admin.reports.get-monthly-stats');
+            Route::get('/view-details', [ReportController::class, 'viewDetails'])->name('admin.reports.view-details');
+            Route::get('/get-chart-data', [ReportController::class, 'getChartData'])->name('admin.reports.get-chart-data');
         });
     });
 
-    // ==================== ROUTES UNTUK KABID ====================
+    // ==================== ROUTES UNTUK SUPERADMIN ====================
     Route::prefix('kabid')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'kabidDashboard'])->name('kabid.dashboard');
         // Tambahkan route kabid lainnya di sini
     });
 
     // ==================== API ROUTES UNTUK SEMUA USER ====================
-    // API untuk pencarian barang (digunakan oleh user dalam form permintaan)
     Route::get('/api/barang/search', function (Request $request) {
         $query = $request->get('q');
-        
         $barang = \App\Models\Barang::with(['kategori', 'satuan', 'gudang'])
             ->where('stok', '>', 0)
             ->where(function($q) use ($query) {
@@ -138,19 +139,15 @@ Route::middleware(['auth'])->group(function () {
             ->orderBy('nama_barang')
             ->limit(10)
             ->get();
-        
         return response()->json($barang);
     })->name('api.barang.search');
 
-    // API untuk mendapatkan data barang by ID (untuk edit form)
     Route::get('/api/barang/{id}', function ($id) {
         $barang = \App\Models\Barang::with(['kategori', 'satuan', 'gudang'])
-            ->find($id);
-        
+            ->find($id);        
         if (!$barang) {
             return response()->json(['error' => 'Barang tidak ditemukan'], 404);
         }
-        
         return response()->json($barang);
     })->name('api.barang.get');
 });

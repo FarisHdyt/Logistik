@@ -6,7 +6,6 @@
     <title>@yield('title', 'SILOG - Sistem Logistik Polres')</title>
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
     <style>
-        /* Copy styles dari landing page yang relevan */
         :root {
             --primary: #1e3a8a;
             --primary-light: #3b82f6;
@@ -29,8 +28,6 @@
             margin: 0 auto;
             padding: 0 15px;
         }
-        
-        /* Tambahkan style lainnya sesuai kebutuhan */
     </style>
     @stack('styles')
 </head>

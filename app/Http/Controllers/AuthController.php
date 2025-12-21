@@ -27,53 +27,52 @@ class AuthController extends Controller
     /**
      * Handle login request
      */
-    public function login(Request $request)
-    {
-        $request->validate([
-            'username' => 'required',
-            'password' => 'required',
-        ]);
+public function login(Request $request)
+{
+    $request->validate([
+        'username' => 'required',
+        'password' => 'required',
+    ]);
 
-        // Check if user exists
-        $user = User::where('username', $request->username)
-                    ->orWhere('nrp', $request->username)
-                    ->first();
+    $user = User::where('username', $request->username)
+                ->orWhere('nrp', $request->username)
+                ->first();
 
-        if (!$user) {
-            return back()->withErrors([
-                'username' => 'Username/NRP tidak ditemukan.',
-            ])->withInput($request->except('password'));
-        }
-
-        // Check password
-        if (!Hash::check($request->password, $user->password)) {
-            return back()->withErrors([
-                'password' => 'Password salah.',
-            ])->withInput($request->except('password'));
-        }
-
-        // Check if user is active
-        if (!$user->is_active) {
-            return back()->withErrors([
-                'username' => 'Akun ini tidak aktif. Hubungi administrator.',
-            ])->withInput($request->except('password'));
-        }
-
-        // Attempt to login
-        Auth::login($user, $request->has('remember'));
-
-        // Update last login info
-        $user->update([
-            'last_login_at' => now(),
-            'last_login_ip' => $request->ip(),
-        ]);
-
-        // Redirect based on role
-        $route = $this->getRedirectRoute($user->role);
-        
-        return redirect()->route($route)
-            ->with('success', 'Selamat datang kembali, ' . $user->name . '!');
+    if (!$user) {
+        return back()->withErrors([
+            'username' => 'Username/NRP tidak ditemukan.',
+        ])->withInput($request->except('password'));
     }
+
+    if (!Hash::check($request->password, $user->password)) {
+        return back()->withErrors([
+            'password' => 'Password salah.',
+        ])->withInput($request->except('password'));
+    }
+
+    if (!$user->is_active) {
+        return back()->withErrors([
+            'username' => 'Akun ini tidak aktif. Hubungi administrator.',
+        ])->withInput($request->except('password'));
+    }
+
+    // Simpan login sebelumnya
+    $previousLogin = $user->current_login_at;
+
+    // Login user
+    Auth::login($user, $request->boolean('remember'));
+
+    // Update waktu login
+    $user->update([
+        'last_login_at'    => $previousLogin,
+        'current_login_at' => now(),
+        'last_login_ip'    => $request->ip(),
+    ]);
+
+    return redirect()->route($this->getRedirectRoute($user->role))
+        ->with('success', 'Selamat datang kembali, ' . $user->name . '!');
+}
+
 
     /**
      * Get redirect route based on user role

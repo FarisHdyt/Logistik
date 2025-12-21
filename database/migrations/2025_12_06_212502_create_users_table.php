@@ -22,8 +22,9 @@ return new class extends Migration
             $table->string('pangkat')->nullable();
             $table->string('no_hp')->nullable();
             $table->boolean('is_active')->default(true);
-            $table->timestamp('last_login_at')->nullable();
             $table->string('last_login_ip')->nullable();
+            $table->timestamp('last_login_at')->nullable();
+            $table->timestamp('current_login_at')->nullable();
             $table->rememberToken();
             $table->timestamps();
             $table->softDeletes();

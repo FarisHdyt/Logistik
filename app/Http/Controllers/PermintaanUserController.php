@@ -146,6 +146,7 @@ class PermintaanUserController extends Controller
                 'satker_id' => $validated['satker_id'],
                 'jumlah' => $validated['jumlah'],
                 'keterangan' => $validated['keterangan'] ?? null,
+                'tanggal_dibutuhkan' => $validated['tanggal_dibutuhkan'],
                 'status' => 'pending',
             ]);
             
@@ -169,7 +170,7 @@ class PermintaanUserController extends Controller
         $user = auth()->user();
         
         $permintaan = Permintaan::where('user_id', $user->id)
-            ->with(['barang', 'satker', 'approvedBy'])
+            ->with(['barang', 'satker', 'approver'])
             ->findOrFail($id);
         
         return view('user.permintaan', [
@@ -245,6 +246,7 @@ class PermintaanUserController extends Controller
                 'satker_id' => $validated['satker_id'],
                 'jumlah' => $validated['jumlah'],
                 'keterangan' => $validated['keterangan'] ?? null,
+                'tanggal_dibutuhkan' => $validated['tanggal_dibutuhkan'],
             ]);
             
             DB::commit();
@@ -291,7 +293,7 @@ class PermintaanUserController extends Controller
         
         $permintaan = Permintaan::where('user_id', $user->id)
             ->where('kode_permintaan', $kode_permintaan)
-            ->with(['barang', 'satker', 'approvedBy'])
+            ->with(['barang', 'satker', 'approver'])
             ->firstOrFail();
         
         // Status timeline
@@ -309,8 +311,8 @@ class PermintaanUserController extends Controller
                 'status' => 'Diproses',
                 'date' => $permintaan->approved_at->format('d/m/Y H:i'),
                 'description' => $permintaan->status == 'approved' ? 
-                    'Disetujui oleh ' . ($permintaan->approvedBy->name ?? 'Admin') : 
-                    'Ditolak oleh ' . ($permintaan->approvedBy->name ?? 'Admin'),
+                    'Disetujui oleh ' . ($permintaan->approver->name ?? 'Admin') : 
+                    'Ditolak oleh ' . ($permintaan->approver->name ?? 'Admin'),
                 'completed' => true,
             ];
             
