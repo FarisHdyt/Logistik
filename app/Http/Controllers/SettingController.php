@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use App\Http\Controllers\ActivityLogController;
 
 class SettingController extends Controller
 {
@@ -73,8 +74,13 @@ class SettingController extends Controller
             'log_user_activity' => 'boolean',
         ]);
         
-        // In a real implementation, you would save these to database or config files
-        // For now, we'll cache them
+        // Get current settings for logging
+        $oldSettings = [];
+        foreach ($validated as $key => $value) {
+            $oldSettings[$key] = Cache::get('setting.' . $key) ?? config("app.{$key}", config("inventory.{$key}", config("auth.{$key}", config("session.{$key}"))));
+        }
+        
+        // Save to cache
         foreach ($validated as $key => $value) {
             Cache::forever('setting.' . $key, $value);
         }
@@ -86,6 +92,15 @@ class SettingController extends Controller
             'app.locale' => $validated['language'],
             'app.items_per_page' => $validated['items_per_page'],
         ]);
+        
+        // Log activity
+        $logData = [
+            'old_settings' => $oldSettings,
+            'new_settings' => $validated,
+            'changed_by' => auth()->user()->name ?? 'System',
+            'changed_count' => count(array_diff_assoc($validated, $oldSettings))
+        ];
+        ActivityLogController::logAction('update_settings', 'Memperbarui pengaturan sistem', $logData);
         
         return redirect()->route('admin.settings')
             ->with('success', 'Pengaturan berhasil disimpan.');

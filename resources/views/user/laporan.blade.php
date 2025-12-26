@@ -9,12 +9,13 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --primary: #1e3a8a;
+            --primary: #0f172a;
             --primary-light: #3b82f6;
+            --delivered-color: #8b5cf6;
         }
         
         .sidebar {
-            background: var(--primary);
+            background: linear-gradient(180deg, var(--primary) 0%, #0f172a 100%);
             color: white;
             min-height: 100vh;
             width: 250px;
@@ -78,7 +79,7 @@
         .nav-link.active {
             background-color: rgba(59, 130, 246, 0.15);
             color: white;
-            border-left-color: var(--primary-light);
+            border-left-color: var(--delivered-color);
         }
         
         .nav-link i {

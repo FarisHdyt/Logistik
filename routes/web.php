@@ -9,7 +9,9 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\PermintaanController;
 use App\Http\Controllers\PermintaanUserController;
 use App\Http\Controllers\UserLaporanController;
-use Illuminate\Http\Request;
+use App\Http\Controllers\AccountsController;
+use App\Http\Controllers\SatkerController;
+use App\Http\Controllers\ActivityLogController;
 
 /*
 |--------------------------------------------------------------------------
@@ -50,7 +52,7 @@ Route::middleware(['auth'])->group(function () {
             return redirect()->route('user.permintaan');
         })->name('user.dashboard');
         
-        // Laporan Routes - Tambahkan 'user.' prefix
+        // Laporan Routes
         Route::get('/laporan', [UserLaporanController::class, 'index'])->name('user.laporan');
         Route::get('/laporan/export/{type}', [UserLaporanController::class, 'export'])->name('user.laporan.export');
         Route::get('/laporan/print', [UserLaporanController::class, 'print'])->name('user.laporan.print');
@@ -70,12 +72,10 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // ==================== ROUTES UNTUK ADMIN ====================
-    Route::prefix('admin')->group(function () {
-        // Dashboard admin - PERBAIKAN: TAMBAHKAN ROUTE INI
+    Route::prefix('admin')->middleware(['role:admin,superadmin'])->group(function () {
+        // Dashboard admin
         Route::get('/dashboard', [DashboardController::class, 'adminDashboard'])->name('admin.dashboard');
-        // ========== DASHBOARD CHART API ROUTE ==========
         Route::get('/dashboard/chart-data', [DashboardController::class, 'getChartDataApi'])->name('admin.dashboard.chart-data');
-        // ==============================================
 
         // Inventory Routes
         Route::prefix('inventory')->group(function () {
@@ -119,16 +119,112 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/view-details', [ReportController::class, 'viewDetails'])->name('admin.reports.view-details');
             Route::get('/get-chart-data', [ReportController::class, 'getChartData'])->name('admin.reports.get-chart-data');
         });
+        
+        // Satker Routes untuk Admin
+        Route::prefix('satker')->group(function () {
+            Route::get('/', [SatkerController::class, 'index'])->name('admin.satker');
+            Route::post('/', [SatkerController::class, 'store'])->name('admin.satker.store');
+            Route::put('/{satker}', [SatkerController::class, 'update'])->name('admin.satker.update');
+            Route::delete('/{satker}', [SatkerController::class, 'destroy'])->name('admin.satker.destroy');
+            Route::get('/{id}/details', [SatkerController::class, 'getDetails'])->name('admin.satker.details');
+            Route::post('/{satker}/toggle-status', [SatkerController::class, 'toggleStatus'])->name('admin.satker.toggle-status');
+            Route::get('/{satker}/edit', [SatkerController::class, 'edit'])->name('admin.satker.edit');
+            Route::get('/create', [SatkerController::class, 'create'])->name('admin.satker.create');
+            Route::get('/{id}', [SatkerController::class, 'show'])->name('admin.satker.show');
+        });
     });
 
     // ==================== ROUTES UNTUK SUPERADMIN ====================
-    Route::prefix('kabid')->group(function () {
-        Route::get('/dashboard', [DashboardController::class, 'kabidDashboard'])->name('kabid.dashboard');
-        // Tambahkan route kabid lainnya di sini
+    Route::prefix('superadmin')->middleware(['role:superadmin'])->group(function () {
+        // Dashboard Superadmin
+        Route::get('/dashboard', [DashboardController::class, 'superadminDashboard'])->name('superadmin.dashboard');
+        Route::get('/dashboard/chart-data', [DashboardController::class, 'getSuperadminChartData'])->name('superadmin.dashboard.chart-data');
+        
+        // Accounts Management Routes menggunakan Controller
+        Route::prefix('accounts')->group(function () {
+            Route::get('/', [AccountsController::class, 'index'])->name('superadmin.accounts.index');
+            Route::get('/create', [AccountsController::class, 'create'])->name('superadmin.accounts.create');
+            Route::post('/', [AccountsController::class, 'store'])->name('superadmin.accounts.store');
+            Route::get('/{user}', [AccountsController::class, 'show'])->name('superadmin.accounts.show');
+            Route::get('/{user}/edit', [AccountsController::class, 'edit'])->name('superadmin.accounts.edit');
+            Route::put('/{user}', [AccountsController::class, 'update'])->name('superadmin.accounts.update');
+            Route::delete('/{user}', [AccountsController::class, 'destroy'])->name('superadmin.accounts.destroy');
+            
+            // Additional routes
+            Route::post('/{user}/toggle-status', [AccountsController::class, 'toggleStatus'])
+                ->name('superadmin.accounts.toggle-status');
+            
+            Route::post('/bulk-action', [AccountsController::class, 'bulkAction'])
+                ->name('superadmin.accounts.bulk-action');
+            
+            Route::post('/{user}/reset-password', [AccountsController::class, 'resetPassword'])
+                ->name('superadmin.accounts.reset-password');
+            
+            Route::get('/{user}/activity-logs', [AccountsController::class, 'activityLogs'])
+                ->name('superadmin.accounts.activity-logs');
+        });
+        
+        // Manajemen Satker untuk Superadmin
+        Route::prefix('satker')->group(function () {
+            // Index page
+            Route::get('/', [SatkerController::class, 'index'])->name('superadmin.satker.index');
+            
+            // Create page
+            Route::get('/create', [SatkerController::class, 'create'])->name('superadmin.satker.create');
+            
+            // Store new satker
+            Route::post('/', [SatkerController::class, 'store'])->name('superadmin.satker.store');
+            
+            // Show satker details (AJAX)
+            Route::get('/{id}', [SatkerController::class, 'show'])->name('superadmin.satker.show');
+            
+            // Edit page
+            Route::get('/{satker}/edit', [SatkerController::class, 'edit'])->name('superadmin.satker.edit');
+            
+            // Update satker
+            Route::put('/{satker}', [SatkerController::class, 'update'])->name('superadmin.satker.update');
+            
+            // Delete satker
+            Route::delete('/{satker}', [SatkerController::class, 'destroy'])->name('superadmin.satker.destroy');
+            
+            // AJAX routes untuk fitur tambahan
+            Route::get('/{id}/details', [SatkerController::class, 'getDetails'])->name('superadmin.satker.details');
+            Route::get('/select-options', [SatkerController::class, 'getSatkersForSelect'])->name('superadmin.satker.select-options');
+            Route::post('/search', [SatkerController::class, 'search'])->name('superadmin.satker.search');
+            Route::get('/statistics', [SatkerController::class, 'getStatistics'])->name('superadmin.satker.statistics');
+            Route::get('/{satker}/check-users', [SatkerController::class, 'checkHasUsers'])->name('superadmin.satker.check-users');
+        });
+        
+        // Log Aktivitas - menggunakan Controller
+        Route::prefix('activity-logs')->group(function () {
+            // Index page
+            Route::get('/', [ActivityLogController::class, 'index'])->name('superadmin.activity-logs');
+            
+            // Show log details (AJAX)
+            Route::get('/{id}', [ActivityLogController::class, 'show'])->name('superadmin.activity-logs.show');
+            
+            // Clear all logs
+            Route::post('/clear', [ActivityLogController::class, 'clear'])->name('superadmin.activity-logs.clear');
+            
+            // Export logs
+            Route::get('/export', [ActivityLogController::class, 'export'])->name('superadmin.activity-logs.export');
+        });
+        
+        // Pengaturan Sistem - simple route
+        Route::get('/settings', function() {
+            $user = auth()->user();
+            return view('superadmin.settings.index', compact('user'));
+        })->name('superadmin.settings');
+        
+        // Laporan - simple route
+        Route::get('/reports', function() {
+            $user = auth()->user();
+            return view('superadmin.reports.index', compact('user'));
+        })->name('superadmin.reports');
     });
 
     // ==================== API ROUTES UNTUK SEMUA USER ====================
-    Route::get('/api/barang/search', function (Request $request) {
+    Route::get('/api/barang/search', function (\Illuminate\Http\Request $request) {
         $query = $request->get('q');
         $barang = \App\Models\Barang::with(['kategori', 'satuan', 'gudang'])
             ->where('stok', '>', 0)
@@ -150,6 +246,13 @@ Route::middleware(['auth'])->group(function () {
         }
         return response()->json($barang);
     })->name('api.barang.get');
+    
+    // API Routes untuk Satker
+    Route::prefix('api')->group(function () {
+        Route::get('/satker/{id}/details', [SatkerController::class, 'getDetails'])->name('api.satker.details');
+        Route::get('/satker/select-options', [SatkerController::class, 'getSatkersForSelect'])->name('api.satker.select-options');
+        Route::post('/satker/search', [SatkerController::class, 'search'])->name('api.satker.search');
+    });
 });
 
 // Fallback Route

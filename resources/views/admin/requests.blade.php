@@ -20,6 +20,7 @@
             --info: #0ea5e9;
             --dark: #1e293b;
             --light: #f8fafc;
+            --delivered-color: #8b5cf6;
             --sidebar-width: 250px;
         }
         
@@ -37,7 +38,7 @@
         
         /* Sidebar */
         .sidebar {
-            background: linear-gradient(180deg, var(--primary) 0%, #1e40af 100%);
+            background: linear-gradient(180deg, var(--dark) 0%, #0f172a 100%);
             color: white;
             min-height: 100vh;
             width: var(--sidebar-width);
@@ -82,7 +83,7 @@
         .nav-link:hover, .nav-link.active {
             background-color: rgba(255,255,255,0.1);
             color: white;
-            border-left: 4px solid var(--primary-light);
+            border-left: 4px solid var(--delivered-color);
         }
         
         .nav-link i {

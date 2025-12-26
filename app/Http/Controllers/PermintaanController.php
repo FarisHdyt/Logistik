@@ -7,6 +7,7 @@ use App\Models\Barang;
 use App\Models\Satker;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\ActivityLogController;
 
 class PermintaanController extends Controller
 {
@@ -75,7 +76,6 @@ class PermintaanController extends Controller
         // Check stock availability (hanya warning, tidak block)
         $barang = Barang::find($validated['barang_id']);
         if ($barang->stok < $validated['jumlah']) {
-            // Hanya warning, tidak block karena baru akan dikurangi saat terkirim
             \Log::warning('Stok tidak mencukupi untuk permintaan baru', [
                 'barang' => $barang->nama_barang,
                 'stok_tersedia' => $barang->stok,
@@ -88,7 +88,7 @@ class PermintaanController extends Controller
         $nextNumber = $lastRequest ? intval(substr($lastRequest->kode_permintaan, 4)) + 1 : 1;
         $kodePermintaan = 'PMT-' . str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
         
-        Permintaan::create([
+        $permintaan = Permintaan::create([
             'kode_permintaan' => $kodePermintaan,
             'user_id' => auth()->id(),
             'barang_id' => $validated['barang_id'],
@@ -121,6 +121,9 @@ class PermintaanController extends Controller
         }
         
         try {
+            // Simpan status lama untuk logging
+            $oldStatus = $permintaan->status;
+            
             // Update request status menjadi approved
             $permintaan->update([
                 'status' => 'approved',
@@ -129,8 +132,8 @@ class PermintaanController extends Controller
                 'catatan' => $permintaan->catatan ?? 'Disetujui oleh admin - Menunggu pengiriman',
             ]);
             
-            // TIDAK mengurangi stok di sini
-            // Stok akan dikurangi saat status berubah menjadi delivered
+            // Log aktivitas approval
+            ActivityLogController::logApprovePermintaan($permintaan, $oldStatus);
             
             return response()->json([
                 'success' => true,
@@ -159,12 +162,18 @@ class PermintaanController extends Controller
             'reason' => 'required|string',
         ]);
         
+        // Simpan status lama untuk logging
+        $oldStatus = $permintaan->status;
+        
         $permintaan->update([
             'status' => 'rejected',
             'approved_by' => auth()->id(),
             'approved_at' => now(),
             'catatan' => $validated['reason'],
         ]);
+        
+        // Log aktivitas reject
+        ActivityLogController::logRejectPermintaan($permintaan, $oldStatus, $validated['reason']);
         
         return response()->json([
             'success' => true,
@@ -196,6 +205,9 @@ class PermintaanController extends Controller
         
         DB::beginTransaction();
         try {
+            // Simpan status lama untuk logging
+            $oldStatus = $permintaan->status;
+            
             // Kurangi stok barang
             $permintaan->barang->decrement('stok', $permintaan->jumlah);
             
@@ -206,6 +218,9 @@ class PermintaanController extends Controller
                 'delivered_by' => auth()->id(),
                 'catatan' => $validated['catatan'] ?? $permintaan->catatan . ' - Barang telah dikirim',
             ]);
+            
+            // Log aktivitas distribusi barang
+            ActivityLogController::logDeliverPermintaan($permintaan, $oldStatus, $validated['catatan'] ?? null);
             
             DB::commit();
             
@@ -248,6 +263,9 @@ class PermintaanController extends Controller
         
         DB::beginTransaction();
         try {
+            // Simpan status lama untuk logging
+            $oldStatus = $permintaan->status;
+            
             // Update status menjadi delivered TANPA mengurangi stok
             $permintaan->update([
                 'status' => 'delivered',
@@ -255,6 +273,17 @@ class PermintaanController extends Controller
                 'delivered_by' => auth()->id(),
                 'catatan' => $permintaan->catatan . ' - ' . $validated['catatan'] . ' (FORCE: ' . $validated['force_reason'] . ')',
             ]);
+            
+            // Log aktivitas distribusi paksa (tanpa mengurangi stok)
+            $logData = [
+                'permintaan_id' => $permintaan->id,
+                'kode_permintaan' => $permintaan->kode_permintaan,
+                'old_status' => $oldStatus,
+                'new_status' => 'delivered',
+                'force_reason' => $validated['force_reason'],
+                'note' => 'Force delivered without stock reduction'
+            ];
+            ActivityLogController::logAction('force_deliver', 'Force delivered permintaan: ' . $permintaan->kode_permintaan, $logData);
             
             DB::commit();
             
