@@ -7,7 +7,6 @@ use App\Models\Barang;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use PDF;
-use Excel;
 
 class UserLaporanController extends Controller
 {
@@ -108,7 +107,7 @@ class UserLaporanController extends Controller
         
         // Apply filters untuk export user
         $query = Permintaan::where('user_id', $user->id)
-            ->with(['barang.kategori', 'barang.satuan', 'satker', 'approvedBy'])
+            ->with(['barang.kategori', 'barang.satuan', 'satker', 'approver'])
             ->orderBy('created_at', 'desc');
         
         if ($request->has('start_date') && $request->start_date != '') {
@@ -145,9 +144,15 @@ class UserLaporanController extends Controller
         ];
         
         if ($type === 'excel') {
-            return Excel::download(new UserPermintaanExport($data), 
-                'laporan-permintaan-' . $user->name . '-' . date('Y-m-d') . '.xlsx');
-        }
+
+    $filename = 'laporan-permintaan-' . $user->name . '-' . date('Y-m-d') . '.xls';
+
+    return response()
+        ->view('exports.user-permintaan-excel', $data)
+        ->header('Content-Type', 'application/vnd.ms-excel')
+        ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+}
+
         
         // PDF Export
         $pdf = PDF::loadView('exports.user-permintaan-pdf', $data);
@@ -164,7 +169,7 @@ class UserLaporanController extends Controller
         
         // Apply filters untuk print user
         $query = Permintaan::where('user_id', $user->id)
-            ->with(['barang.kategori', 'barang.satuan', 'satker', 'approvedBy'])
+            ->with(['barang.kategori', 'barang.satuan', 'satker', 'approver'])
             ->orderBy('created_at', 'desc');
         
         if ($request->has('start_date') && $request->start_date != '') {

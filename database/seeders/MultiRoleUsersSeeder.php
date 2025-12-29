@@ -58,21 +58,6 @@ class MultiRoleUsersSeeder extends Seeder
             'is_active' => true,
         ]);
 
-        // ==================== KABID ====================
-        User::create([
-            'name' => 'Kepala Bidang Logistik',
-            'username' => 'kabid_log',
-            'nrp' => '10000003',
-            'email' => 'kabid@silog-polres.id',
-            'password' => Hash::make('password123'),
-            'role' => 'kabid',
-            'satker_id' => $satker->id,
-            'jabatan' => 'Kepala Bidang Logistik',
-            'pangkat' => 'KOMPOL',
-            'no_hp' => '081100000003',
-            'is_active' => true,
-        ]);
-
         // ==================== USER BIASA ====================
         User::create([
             'name' => 'Brigadir Ahmad',
@@ -135,7 +120,6 @@ class MultiRoleUsersSeeder extends Seeder
         $this->command->info('----------------------------------------');
         $this->command->info('SUPERADMIN: superadmin / password123');
         $this->command->info('ADMIN: admin / password123');
-        $this->command->info('KABID: kabid_log / password123');
         $this->command->info('USER: ahmad123 / password123');
         $this->command->info('USER: siti456 / password123');
         $this->command->info('USER: joko789 / password123');

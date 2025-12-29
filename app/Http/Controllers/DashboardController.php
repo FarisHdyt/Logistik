@@ -9,6 +9,8 @@ use App\Models\Permintaan;
 use App\Models\Pengeluaran;
 use App\Models\User;
 use App\Models\Satker;
+use App\Models\ActivityLog;
+use App\Models\Kategori;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
@@ -29,23 +31,24 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
         
-        // Jika user adalah admin/superadmin, redirect ke admin dashboard
-        if (in_array($user->role, ['admin', 'superadmin'])) {
-            return redirect()->route('admin.dashboard');
+        // Redirect berdasarkan role
+        switch ($user->role) {
+            case 'superadmin':
+                // Perbaikan: Langsung redirect ke route superadmin
+                return redirect()->route('superadmin.dashboard');
+            case 'admin':
+                return redirect()->route('admin.dashboard');
+            case 'kabid':
+                return redirect()->route('kabid.dashboard');
+            default:
+                // Untuk user biasa, tampilkan dashboard user
+                $data = $this->getUserDashboardData($user);
+                return view('dashboard.index', compact('data', 'user'));
         }
-        
-        // Jika user adalah kabid, redirect ke kabid dashboard
-        if ($user->role === 'kabid') {
-            return redirect()->route('kabid.dashboard');
-        }
-        
-        // Untuk user biasa, tampilkan dashboard user
-        $data = $this->getUserDashboardData($user);
-        return view('dashboard.index', compact('data', 'user'));
     }
 
     /**
-     * Dashboard data for admin/superadmin
+     * Dashboard data for admin
      */
     private function getAdminDashboardData()
     {
@@ -63,7 +66,7 @@ class DashboardController extends Controller
                 'permintaan_pending' => Permintaan::where('status', 'pending')->count(),
                 'permintaan_diproses' => Permintaan::where('status', 'diproses')->count(),
                 'permintaan_disetujui' => Permintaan::where('status', 'approved')->count(),
-                'permintaan_terkirim' => Permintaan::where('status', 'terkirim')->count(),
+                'permintaan_delivered' => Permintaan::where('status', 'delivered')->count(),
                 'permintaan_ditolak' => Permintaan::where('status', 'rejected')->count(),
                 'permintaan_bulan_ini' => Permintaan::whereMonth('created_at', now()->month)
                     ->whereYear('created_at', now()->year)
@@ -80,7 +83,7 @@ class DashboardController extends Controller
                     ->get(),
             ];
             
-            // Data untuk grafik status barang (dari permintaan)
+            // Data untuk grafik
             $chartData = $this->getChartData();
             
             // Gabungkan semua data
@@ -90,6 +93,121 @@ class DashboardController extends Controller
             \Log::error('Error getting admin dashboard data: ' . $e->getMessage());
             return $this->getDummyAdminData();
         }
+    }
+
+    /**
+     * Dashboard data for superadmin
+     */
+    private function getSuperadminDashboardData()
+    {
+        try {
+            $basicData = [
+                'total_users' => User::count(),
+                'total_admins' => User::where('role', 'admin')->count(),
+                'total_satker' => Satker::count(),
+                'total_activities' => class_exists(ActivityLog::class) ? ActivityLog::whereDate('created_at', today())->count() : 0,
+                'superadmin_count' => User::where('role', 'superadmin')->count(),
+                'admin_count' => User::where('role', 'admin')->count(),
+                'user_count' => User::where('role', 'user')->count(),
+                'recent_users' => User::with('satker')->latest()->take(5)->get(),
+                'recent_activities' => class_exists(ActivityLog::class) ? ActivityLog::with('user')->latest()->take(5)->get() : collect(),
+                'active_users' => User::where('is_active', true)->count(),
+                'today_activities' => class_exists(ActivityLog::class) ? ActivityLog::whereDate('created_at', today())->count() : 0,
+                'chart_months' => $this->getMonthLabels(),
+                'chart_new_users' => $this->getMonthlyUserData(),
+                'chart_new_admins' => $this->getMonthlyAdminData(),
+                'current_year' => date('Y'),
+                
+                // Additional stats for system info
+                'barang_count' => class_exists(Barang::class) ? Barang::count() : 0,
+                'permintaan_count' => class_exists(Permintaan::class) ? Permintaan::count() : 0,
+                'kategori_count' => class_exists(Kategori::class) ? Kategori::count() : 0,
+                'total_stok' => class_exists(Barang::class) ? Barang::sum('stok') : 0,
+                'permintaan_pending' => class_exists(Permintaan::class) ? Permintaan::where('status', 'pending')->count() : 0,
+                'permintaan_disetujui' => class_exists(Permintaan::class) ? Permintaan::where('status', 'approved')->count() : 0,
+                'permintaan_ditolak' => class_exists(Permintaan::class) ? Permintaan::where('status', 'rejected')->count() : 0,
+                'permintaan_delivered' => class_exists(Permintaan::class) ? Permintaan::where('status', 'delivered')->count() : 0,
+            ];
+            
+            return $basicData;
+            
+        } catch (\Exception $e) {
+            \Log::error('Error getting superadmin dashboard data: ' . $e->getMessage());
+            
+            // Return fallback data
+            return [
+                'total_users' => User::count(),
+                'total_admins' => User::where('role', 'admin')->count(),
+                'total_satker' => 0,
+                'total_activities' => 0,
+                'superadmin_count' => User::where('role', 'superadmin')->count(),
+                'admin_count' => User::where('role', 'admin')->count(),
+                'user_count' => User::where('role', 'user')->count(),
+                'recent_users' => User::latest()->take(5)->get(),
+                'recent_activities' => collect(),
+                'active_users' => User::where('is_active', true)->count(),
+                'today_activities' => 0,
+                'chart_months' => $this->getMonthLabels(),
+                'chart_new_users' => array_fill(0, 12, 0),
+                'chart_new_admins' => array_fill(0, 12, 0),
+                'current_year' => date('Y'),
+            ];
+        }
+    }
+
+    /**
+     * Get month labels for charts
+     */
+    private function getMonthLabels()
+    {
+        return ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+    }
+
+    /**
+     * Get monthly user data for charts
+     */
+    private function getMonthlyUserData($year = null)
+    {
+        $year = $year ?? date('Y');
+        $data = [];
+        
+        try {
+            for ($i = 1; $i <= 12; $i++) {
+                $count = User::whereYear('created_at', $year)
+                    ->whereMonth('created_at', $i)
+                    ->count();
+                $data[] = $count;
+            }
+        } catch (\Exception $e) {
+            \Log::error('Error getting monthly user data: ' . $e->getMessage());
+            $data = array_fill(0, 12, 0);
+        }
+        
+        return $data;
+    }
+
+    /**
+     * Get monthly admin data for charts
+     */
+    private function getMonthlyAdminData($year = null)
+    {
+        $year = $year ?? date('Y');
+        $data = [];
+        
+        try {
+            for ($i = 1; $i <= 12; $i++) {
+                $count = User::where('role', 'admin')
+                    ->whereYear('created_at', $year)
+                    ->whereMonth('created_at', $i)
+                    ->count();
+                $data[] = $count;
+            }
+        } catch (\Exception $e) {
+            \Log::error('Error getting monthly admin data: ' . $e->getMessage());
+            $data = array_fill(0, 12, 0);
+        }
+        
+        return $data;
     }
 
     /**
@@ -121,13 +239,13 @@ class DashboardController extends Controller
                 }
             }
             
-            // 2. DATA BARANG KELUAR: HANYA dari permintaan yang statusnya TERKIRIM
+            // 2. DATA BARANG KELUAR: HANYA dari permintaan yang statusnya DELIVERED
             if (\Schema::hasTable('permintaans')) {
                 $barangKeluar = Permintaan::select(
                         DB::raw('MONTH(updated_at) as bulan'),
                         DB::raw('SUM(jumlah) as total')
                     )
-                    ->where('status', 'terkirim') // HANYA status TERKIRIM
+                    ->where('status', 'delivered')
                     ->whereYear('updated_at', $currentYear)
                     ->groupBy('bulan')
                     ->orderBy('bulan')
@@ -168,7 +286,7 @@ class DashboardController extends Controller
             'permintaan_pending' => 12,
             'permintaan_diproses' => 8,
             'permintaan_disetujui' => 28,
-            'permintaan_terkirim' => 20,
+            'permintaan_delivered' => 20,
             'permintaan_ditolak' => 5,
             'permintaan_bulan_ini' => 15,
             'total_pengeluaran' => 42,
@@ -187,7 +305,7 @@ class DashboardController extends Controller
      */
     private function getDummyRequests()
     {
-        $statuses = ['pending', 'diproses', 'approved', 'terkirim', 'rejected'];
+        $statuses = ['pending', 'diproses', 'approved', 'delivered', 'rejected'];
         $barangNames = [
             'Bahan Bakar Pertamax', 'Ban Mobil Patroli', 'Oli Mesin', 
             'Sparepart Motor', 'Alat Tulis Kantor', 'Seragam Polisi',
@@ -276,8 +394,8 @@ class DashboardController extends Controller
                 'permintaan_disetujui' => Permintaan::where('satker_id', $user->satker_id)
                     ->where('status', 'approved')
                     ->count(),
-                'permintaan_terkirim' => Permintaan::where('satker_id', $user->satker_id)
-                    ->where('status', 'terkirim')
+                'permintaan_delivered' => Permintaan::where('satker_id', $user->satker_id)
+                    ->where('status', 'delivered')
                     ->count(),
                 'permintaan_ditolak' => Permintaan::where('satker_id', $user->satker_id)
                     ->where('status', 'rejected')
@@ -306,7 +424,7 @@ class DashboardController extends Controller
             'permintaan_pending' => rand(1, 10),
             'permintaan_diproses' => rand(1, 5),
             'permintaan_disetujui' => rand(5, 20),
-            'permintaan_terkirim' => rand(3, 15),
+            'permintaan_delivered' => rand(3, 15),
             'permintaan_ditolak' => rand(0, 5),
             'total_barang_satker' => rand(10, 50),
             'recent_requests' => $this->getDummyRequests()->take(3),
@@ -335,8 +453,8 @@ class DashboardController extends Controller
                 'requests_approved' => Permintaan::where('user_id', $user->id)
                     ->where('status', 'approved')
                     ->count(),
-                'requests_terkirim' => Permintaan::where('user_id', $user->id)
-                    ->where('status', 'terkirim')
+                'requests_delivered' => Permintaan::where('user_id', $user->id)
+                    ->where('status', 'delivered')
                     ->count(),
                 'requests_rejected' => Permintaan::where('user_id', $user->id)
                     ->where('status', 'rejected')
@@ -363,7 +481,7 @@ class DashboardController extends Controller
             'requests_pending' => rand(0, 5),
             'requests_diproses' => rand(0, 3),
             'requests_approved' => rand(0, 8),
-            'requests_terkirim' => rand(0, 6),
+            'requests_delivered' => rand(0, 6),
             'requests_rejected' => rand(0, 2),
             'recent_requests' => collect(),
         ];
@@ -376,13 +494,34 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
         
-        // Authorization check
+        // Authorization check - hanya admin dan superadmin
         if (!in_array($user->role, ['admin', 'superadmin'])) {
             abort(403, 'Unauthorized access.');
         }
         
+        // Jika user adalah superadmin, redirect ke dashboard superadmin
+        if ($user->role === 'superadmin') {
+            return redirect()->route('superadmin.dashboard');
+        }
+        
         $data = $this->getAdminDashboardData();
         return view('dashboard.admin', compact('data', 'user'));
+    }
+
+    /**
+     * Show superadmin dashboard
+     */
+    public function superadminDashboard()
+    {
+        $user = Auth::user();
+        
+        // Authorization check - hanya superadmin
+        if ($user->role !== 'superadmin') {
+            abort(403, 'Unauthorized access.');
+        }
+        
+        $data = $this->getSuperadminDashboardData();
+        return view('dashboard.superadmin', compact('data', 'user'));
     }
 
     /**
@@ -402,7 +541,7 @@ class DashboardController extends Controller
     }
 
     /**
-     * API endpoint for chart data (AJAX)
+     * API endpoint for chart data (AJAX) - Admin Dashboard
      */
     public function getChartDataApi(Request $request)
     {
@@ -424,6 +563,36 @@ class DashboardController extends Controller
                 'success' => false,
                 'message' => 'Gagal mengambil data chart',
                 'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * API endpoint for superadmin chart data (AJAX)
+     */
+    public function getSuperadminChartData(Request $request)
+    {
+        try {
+            $year = $request->get('year', date('Y'));
+            
+            $data = [
+                'success' => true,
+                'data' => [
+                    'months' => $this->getMonthLabels(),
+                    'new_users' => $this->getMonthlyUserData($year),
+                    'new_admins' => $this->getMonthlyAdminData($year)
+                ]
+            ];
+            
+            return response()->json($data);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error getting superadmin chart data: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memuat data chart',
+                'error' => env('APP_DEBUG') ? $e->getMessage() : null
             ], 500);
         }
     }
@@ -454,13 +623,13 @@ class DashboardController extends Controller
                 }
             }
             
-            // 2. Barang Keluar: HANYA dari permintaan yang statusnya TERKIRIM
+            // 2. Barang Keluar: HANYA dari permintaan yang statusnya DELIVERED
             if (\Schema::hasTable('permintaans')) {
                 $barangKeluar = Permintaan::select(
                         DB::raw('MONTH(updated_at) as bulan'),
                         DB::raw('SUM(jumlah) as total')
                     )
-                    ->where('status', 'terkirim') // HANYA status TERKIRIM
+                    ->where('status', 'delivered')
                     ->whereYear('updated_at', $year)
                     ->groupBy('bulan')
                     ->orderBy('bulan')

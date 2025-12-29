@@ -13,5 +13,7 @@ class PreventRequestsDuringMaintenance extends Middleware
      */
     protected $except = [
         //
+        'maintenance-bypass/*',
+        'superadmin/*',
     ];
 }

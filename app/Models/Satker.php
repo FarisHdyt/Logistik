@@ -24,4 +24,9 @@ class Satker extends Model
     {
         return $this->hasMany(User::class);
     }
+
+        public function permintaans()
+    {
+        return $this->hasMany(Permintaan::class);
+    }
 }

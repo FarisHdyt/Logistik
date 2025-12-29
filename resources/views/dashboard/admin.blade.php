@@ -15,6 +15,7 @@
             --success: #10b981;
             --warning: #f59e0b;
             --info: #0ea5e9;
+            --delivered-color: #8b5cf6; /* Warna baru untuk status terkirim */
             --dark: #1e293b;
             --light: #f8fafc;
             --sidebar-width: 250px;
@@ -34,12 +35,12 @@
         
         /* Sidebar */
         .sidebar {
-            background: linear-gradient(180deg, var(--primary) 0%, #1e40af 100%);
+            background: linear-gradient(180deg, var(--dark) 0%, #0f172a 100%);
             color: white;
             min-height: 100vh;
             width: var(--sidebar-width);
             position: fixed;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            box-shadow: 2px 0 10px rgba(0,0,0,0.2);
             z-index: 1000;
         }
         
@@ -79,7 +80,7 @@
         .nav-link:hover, .nav-link.active {
             background-color: rgba(255,255,255,0.1);
             color: white;
-            border-left: 4px solid var(--primary-light);
+            border-left: 4px solid var(--delivered-color);
         }
         
         .nav-link i {
@@ -261,24 +262,19 @@
             color: #92400e;
         }
         
-        .badge-diproses {
-            background-color: #e0f2fe;
-            color: #0369a1;
-        }
-        
         .badge-approved {
             background-color: #d1fae5;
             color: #065f46;
         }
         
+        .badge-delivered {
+            background-color: var(--delivered-color); /* Menggunakan warna #8b5cf6 */
+            color: white;
+        }
+        
         .badge-rejected {
             background-color: #fee2e2;
             color: #991b1b;
-        }
-        
-        .badge-terkirim {
-            background-color: #f3e8ff;
-            color: #7c3aed;
         }
         
         /* Quick Actions */
@@ -506,12 +502,12 @@
             </div>
             
             <div class="stat-card">
-                <div class="stat-icon" style="background-color: #fce7f3; color: #be185d;">
-                    <i class="bi bi-clipboard-check"></i>
+                <div class="stat-icon" style="background-color: #8b5cf6; color: white;">
+                    <i class="bi bi-truck"></i>
                 </div>
                 <div class="stat-content">
-                    <h3>{{ $data['permintaan_diproses'] ?? 0 }}</h3>
-                    <p>Permintaan Diproses</p>
+                    <h3>{{ $data['permintaan_delivered'] ?? 0 }}</h3>
+                    <p>Permintaan Terkirim</p>
                 </div>
             </div>
         </div>
@@ -525,7 +521,7 @@
             
             <div class="chart-card">
                 <div class="chart-header">
-                    <h5 class="mb-0">Status Barang</h5>
+                    <h5 class="mb-0">Statistik Barang</h5>
                     <div class="year-selector">
                         <label for="yearSelect">Tahun:</label>
                         <select id="yearSelect">
@@ -580,14 +576,14 @@
                                 @endphp
                                 @if($status == 'pending')
                                     <span class="badge badge-pending">Pending</span>
-                                @elseif($status == 'diproses')
-                                    <span class="badge badge-diproses">Diproses</span>
                                 @elseif($status == 'approved')
                                     <span class="badge badge-approved">Disetujui</span>
-                                @elseif($status == 'terkirim')
-                                    <span class="badge badge-terkirim">Terkirim</span>
-                                @else
+                                @elseif($status == 'delivered')
+                                    <span class="badge badge-delivered">Terkirim</span>
+                                @elseif($status == 'rejected')
                                     <span class="badge badge-rejected">Ditolak</span>
+                                @else
+                                    <span class="badge badge-secondary">{{ ucfirst($status) }}</span>
                                 @endif
                             </td>
                             <td>{{ $request->created_at->format('d/m/Y') ?? '-' }}</td>
@@ -739,33 +735,54 @@
         
         // Requests Chart
         const requestsCtx = document.getElementById('requestsChart').getContext('2d');
+        
+        // Data untuk chart permintaan - sesuaikan dengan controller
+        const requestData = {
+            pending: {{ $data['permintaan_pending'] ?? 0 }},
+            approved: {{ $data['permintaan_disetujui'] ?? 0 }},
+            delivered: {{ $data['permintaan_delivered'] ?? 0 }},
+            rejected: {{ $data['permintaan_ditolak'] ?? 0 }}
+        };
+        
+        // Jika data delivered tidak ada, hitung dari recent_requests
+        let deliveredCount = requestData.delivered;
+        if (deliveredCount === 0 && {{ isset($data['recent_requests']) && count($data['recent_requests']) > 0 ? 'true' : 'false' }}) {
+            const recentRequests = {!! json_encode($data['recent_requests'] ?? []) !!};
+            deliveredCount = recentRequests.filter(r => r.status === 'delivered').length;
+        }
+        
         const requestsChart = new Chart(requestsCtx, {
             type: 'doughnut',
             data: {
-                labels: ['Pending', 'Diproses', 'Disetujui', 'Terkirim', 'Ditolak'],
+                labels: ['Pending', 'Disetujui', 'Terkirim', 'Ditolak'],
                 datasets: [{
                     data: [
-                        {{ $data['permintaan_pending'] ?? 0 }},
-                        {{ $data['permintaan_diproses'] ?? 0 }},
-                        {{ $data['permintaan_disetujui'] ?? 0 }},
-                        {{ $data['permintaan_terkirim'] ?? 0 }},
-                        {{ $data['permintaan_ditolak'] ?? 0 }}
+                        requestData.pending,
+                        requestData.approved,
+                        deliveredCount,
+                        requestData.rejected
                     ],
                     backgroundColor: [
-                        '#fbbf24', // Pending
-                        '#0ea5e9', // Diproses
-                        '#10b981', // Disetujui
-                        '#8b5cf6', // Terkirim
-                        '#ef4444'  // Ditolak
+                        '#fbbf24', // Pending - kuning
+                        '#10b981', // Disetujui - hijau
+                        '#8b5cf6', // Terkirim - ungu (#8b5cf6)
+                        '#ef4444'  // Ditolak - merah
                     ],
-                    borderWidth: 1
+                    borderWidth: 1,
+                    borderColor: '#ffffff'
                 }]
             },
             options: {
                 responsive: true,
+                maintainAspectRatio: true,
                 plugins: {
                     legend: {
-                        position: 'bottom'
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            usePointStyle: true,
+                            pointStyle: 'circle'
+                        }
                     },
                     tooltip: {
                         callbacks: {
@@ -773,7 +790,7 @@
                                 const label = context.label || '';
                                 const value = context.raw || 0;
                                 const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                const percentage = Math.round((value / total) * 100);
+                                const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
                                 return `${label}: ${value} (${percentage}%)`;
                             }
                         }
@@ -792,17 +809,19 @@
                 datasets: [{
                     label: 'Barang Masuk',
                     data: {!! json_encode($data['chart_barang_masuk'] ?? [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]) !!},
-                    backgroundColor: 'rgba(59, 130, 246, 0.5)',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
                     borderColor: 'rgba(59, 130, 246, 1)',
-                    borderWidth: 1,
-                    tension: 0.1
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: true
                 }, {
                     label: 'Barang Keluar',
                     data: {!! json_encode($data['chart_barang_keluar'] ?? [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]) !!},
-                    backgroundColor: 'rgba(239, 68, 68, 0.5)',
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
                     borderColor: 'rgba(239, 68, 68, 1)',
-                    borderWidth: 1,
-                    tension: 0.1
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: true
                 }]
             };
             
@@ -811,25 +830,53 @@
                 data: chartData,
                 options: {
                     responsive: true,
+                    maintainAspectRatio: true,
                     scales: {
                         y: {
                             beginAtZero: true,
                             title: {
                                 display: true,
-                                text: 'Jumlah Barang'
+                                text: 'Jumlah Barang',
+                                font: {
+                                    weight: 'bold'
+                                }
+                            },
+                            grid: {
+                                drawBorder: false
                             }
                         },
                         x: {
                             title: {
                                 display: true,
-                                text: 'Bulan'
+                                text: 'Bulan',
+                                font: {
+                                    weight: 'bold'
+                                }
+                            },
+                            grid: {
+                                display: false
                             }
                         }
                     },
                     plugins: {
                         title: {
                             display: true,
-                            text: 'Statistik Barang Masuk dan Keluar {{ $data["current_year"] ?? date("Y") }}'
+                            text: 'Statistik Barang Masuk dan Keluar {{ $data["current_year"] ?? date("Y") }}',
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            },
+                            padding: {
+                                bottom: 20
+                            }
+                        },
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                pointStyle: 'circle',
+                                padding: 20
+                            }
                         }
                     }
                 }
@@ -884,7 +931,7 @@
             alert.className = `alert alert-${type} alert-dismissible fade show`;
             alert.role = 'alert';
             alert.innerHTML = `
-                <i class="bi ${type === 'danger' ? 'bi-exclamation-triangle' : 'bi-info-circle'} me-2"></i>
+                <i class="bi ${type === 'danger' ? 'bi-exclamation-triangle' : type === 'success' ? 'bi-check-circle' : 'bi-info-circle'} me-2"></i>
                 ${message}
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             `;
@@ -923,7 +970,6 @@
         
         // View Request Detail
         function viewRequest(requestId) {
-            // In a real implementation, this would open a modal or redirect to request detail page
             window.location.href = `/admin/requests/${requestId}`;
         }
         

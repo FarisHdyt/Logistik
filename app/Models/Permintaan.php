@@ -16,9 +16,12 @@ class Permintaan extends Model
         'satker_id',
         'jumlah',
         'keterangan',
+        'tanggal_dibutuhkan',
         'status',
         'approved_by',
         'approved_at',
+        'delivered_at',
+        'delivered_by',
         'alasan_penolakan'
     ];
 
@@ -45,6 +48,11 @@ class Permintaan extends Model
     public function approver()
     {
         return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    public function deliverer()
+    {
+        return $this->belongsTo(User::class, 'delivered_by');
     }
 
     public function pengeluaran()

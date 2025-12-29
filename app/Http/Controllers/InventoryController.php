@@ -9,6 +9,7 @@ use App\Models\Gudang;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use App\Http\Controllers\ActivityLogController;
 
 class InventoryController extends Controller
 {
@@ -168,13 +169,14 @@ class InventoryController extends Controller
             'harga_jual' => 'nullable|numeric|min:0',
             'lokasi' => 'nullable',
             'keterangan' => 'nullable',
-            // Hapus validasi untuk gambar karena fitur gambar sudah dihapus
         ]);
         
-        // Hapus field gambar karena sudah tidak ada
         $data = $request->all();
         
-        Barang::create($data);
+        $barang = Barang::create($data);
+        
+        // Log aktivitas tambah barang
+        ActivityLogController::logCreateBarang($barang);
         
         return redirect()->route('admin.inventory')
             ->with('success', 'Barang berhasil ditambahkan.');
@@ -208,13 +210,29 @@ class InventoryController extends Controller
             'harga_jual' => 'nullable|numeric|min:0',
             'lokasi' => 'nullable',
             'keterangan' => 'nullable',
-            // Hapus validasi untuk gambar karena fitur gambar sudah dihapus
         ]);
         
-        // Hapus field gambar karena sudah tidak ada
-        $data = $request->all();
+        // Simpan data lama untuk logging
+        $oldData = [
+            'kode_barang' => $barang->kode_barang,
+            'nama_barang' => $barang->nama_barang,
+            'kategori_id' => $barang->kategori_id,
+            'satuan_id' => $barang->satuan_id,
+            'stok' => $barang->stok,
+            'stok_minimal' => $barang->stok_minimal,
+            'harga_beli' => $barang->harga_beli,
+            'harga_jual' => $barang->harga_jual,
+            'lokasi' => $barang->lokasi,
+            'gudang_id' => $barang->gudang_id,
+            'keterangan' => $barang->keterangan,
+        ];
         
-        $barang->update($data);
+        $newData = $request->all();
+        
+        $barang->update($newData);
+        
+        // Log aktivitas ubah barang
+        ActivityLogController::logUpdateBarang($barang, $oldData, $newData);
         
         return redirect()->route('admin.inventory')
             ->with('success', 'Barang berhasil diperbarui.');
@@ -222,7 +240,22 @@ class InventoryController extends Controller
     
     public function destroy(Barang $barang)
     {
-        // Hapus logika delete image karena fitur gambar sudah dihapus
+        // Simpan data barang untuk logging sebelum dihapus
+        $barangData = [
+            'id' => $barang->id,
+            'kode_barang' => $barang->kode_barang,
+            'nama_barang' => $barang->nama_barang,
+            'kategori_id' => $barang->kategori_id,
+            'satuan_id' => $barang->satuan_id,
+            'stok' => $barang->stok,
+            'stok_minimal' => $barang->stok_minimal,
+            'harga_beli' => $barang->harga_beli,
+            'harga_jual' => $barang->harga_jual,
+        ];
+        
+        // Log aktivitas hapus barang
+        ActivityLogController::logDeleteBarang($barangData);
+        
         $barang->delete();
         
         return redirect()->route('admin.inventory')
@@ -244,12 +277,19 @@ class InventoryController extends Controller
             'keterangan' => 'nullable',
         ]);
         
-        $barang->increment('stok', $request->jumlah);
+        // Simpan stok lama untuk logging
+        $oldStok = $barang->stok;
+        $addedStok = $request->jumlah;
+        
+        $barang->increment('stok', $addedStok);
         
         // Update harga beli if provided
         if ($request->filled('harga_beli')) {
             $barang->update(['harga_beli' => $request->harga_beli]);
         }
+        
+        // Log aktivitas restock barang
+        ActivityLogController::logRestockBarang($barang, $oldStok, $addedStok, $request->keterangan);
         
         return redirect()->route('admin.inventory')
             ->with('success', 'Stok berhasil ditambahkan.');

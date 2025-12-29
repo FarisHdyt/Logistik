@@ -16,9 +16,12 @@ return new class extends Migration
             $table->foreignId('satker_id')->constrained('satkers')->onDelete('cascade');
             $table->integer('jumlah');
             $table->text('keterangan')->nullable();
+            $table->date('tanggal_dibutuhkan')->nullable();
             $table->enum('status', ['pending', 'approved', 'rejected', 'delivered'])->default('pending');
             $table->foreignId('approved_by')->nullable()->constrained('users')->onDelete('set null');
             $table->timestamp('approved_at')->nullable();
+            $table->timestamp('delivered_at')->nullable();
+            $table->foreignId('delivered_by')->nullable()->constrained('users');
             $table->text('alasan_penolakan')->nullable();
             $table->timestamps();
         });

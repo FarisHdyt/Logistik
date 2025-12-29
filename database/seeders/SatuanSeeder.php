@@ -13,7 +13,7 @@ class SatuanSeeder extends Seeder
         $satuans = [
             ['kode_satuan' => 'SAT-001', 'nama_satuan' => 'Unit', 'simbol' => 'u'],
             ['kode_satuan' => 'SAT-002', 'nama_satuan' => 'Pcs', 'simbol' => 'pcs'],
-            ['kode_satuan' => 'SAT-003', 'nama_satuan' => 'Pak', 'simbol' => 'pk'],
+            ['kode_satuan' => 'SAT-003', 'nama_satuan' => 'Pack', 'simbol' => 'pk'],
             ['kode_satuan' => 'SAT-004', 'nama_satuan' => 'Lusin', 'simbol' => 'lzn'],
             ['kode_satuan' => 'SAT-005', 'nama_satuan' => 'Rim', 'simbol' => 'rm'],
             ['kode_satuan' => 'SAT-006', 'nama_satuan' => 'Kg', 'simbol' => 'kg'],

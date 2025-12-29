@@ -7,13 +7,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- 
-    
-    -->
-    <!-- LAPORAN BELOM RAMPUNG, MAISIH ADA USER SAMA SATKERNYA. SAMA GENERATE LAPORANNYA MASIH ANEH -->
-    <!-- 
-    
-    -->
     <style>
         :root {
             --primary: #1e3a8a;
@@ -24,6 +17,7 @@
             --info: #0ea5e9;
             --dark: #1e293b;
             --light: #f8fafc;
+            --delivered-color: #8b5cf6;
             --sidebar-width: 250px;
         }
         
@@ -39,9 +33,8 @@
             color: var(--dark);
         }
         
-        /* Sidebar */
         .sidebar {
-            background: linear-gradient(180deg, var(--primary) 0%, #1e40af 100%);
+            background: linear-gradient(180deg, var(--dark) 0%, #0f172a 100%);
             color: white;
             min-height: 100vh;
             width: var(--sidebar-width);
@@ -53,16 +46,6 @@
         .sidebar-brand {
             padding: 1.5rem;
             border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-        
-        .sidebar-brand h3 {
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-        }
-        
-        .sidebar-brand p {
-            font-size: 0.85rem;
-            opacity: 0.8;
         }
         
         .sidebar-nav {
@@ -86,22 +69,15 @@
         .nav-link:hover, .nav-link.active {
             background-color: rgba(255,255,255,0.1);
             color: white;
-            border-left: 4px solid var(--primary-light);
+            border-left: 4px solid var(--delivered-color);
         }
         
-        .nav-link i {
-            width: 20px;
-            text-align: center;
-        }
-        
-        /* Main Content */
         .main-content {
             margin-left: var(--sidebar-width);
             padding: 1.5rem;
             min-height: 100vh;
         }
         
-        /* Top Bar */
         .topbar {
             background: white;
             padding: 1rem 1.5rem;
@@ -132,21 +108,6 @@
             font-size: 1.2rem;
         }
         
-        .logout-btn {
-            background: var(--secondary);
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 5px;
-            font-weight: 500;
-            transition: background 0.3s;
-        }
-        
-        .logout-btn:hover {
-            background: #b91c1c;
-        }
-        
-        /* Page Header */
         .page-header {
             background: white;
             border-radius: 10px;
@@ -166,7 +127,6 @@
             gap: 0.5rem;
         }
         
-        /* Stats Cards */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -181,19 +141,6 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
         
-        .stat-content h5 {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 0.25rem;
-        }
-        
-        .stat-content p {
-            color: #64748b;
-            font-size: 0.8rem;
-            margin: 0;
-        }
-        
-        /* Report Cards */
         .report-cards {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -227,49 +174,18 @@
             color: white;
         }
         
-        .report-icon.inventory {
-            background-color: var(--primary);
-        }
+        .report-icon.inventory { background-color: var(--primary); }
+        .report-icon.requests { background-color: var(--warning); }
+        .report-icon.expenditures { background-color: var(--info); }
         
-        .report-icon.requests {
-            background-color: var(--warning);
-        }
-        
-        .report-icon.expenditures {
-            background-color: var(--info);
-        }
-        
-        .report-icon.users {
-            background-color: var(--success);
-        }
-        
-        .report-content h5 {
-            font-size: 1.8rem;
-            font-weight: 700;
-            margin-bottom: 0.25rem;
-        }
-        
-        .report-content p {
-            color: var(--dark);
-            font-weight: 600;
-            margin-bottom: 0.25rem;
-        }
-        
-        .report-content small {
-            color: #64748b;
-            font-size: 0.85rem;
-        }
-        
-        /* Filter Bar */
-        .filter-bar {
+        .charts-container {
             background: white;
             border-radius: 10px;
-            padding: 1rem;
+            padding: 1.5rem;
             margin-bottom: 1.5rem;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         }
         
-        /* Alert */
         .alert-container {
             position: fixed;
             top: 20px;
@@ -278,30 +194,11 @@
             min-width: 300px;
         }
         
-        /* Badges */
         .badge {
             padding: 0.4rem 0.8rem;
             font-weight: 600;
             border-radius: 6px;
             border: 1px solid rgba(0,0,0,0.1);
-        }
-        
-        .badge-admin {
-            background-color: #dbeafe !important;
-            color: #1e40af !important;
-            border-color: #60a5fa;
-        }
-        
-        .badge-user {
-            background-color: #f0f9ff !important;
-            color: #0c4a6e !important;
-            border-color: #7dd3fc;
-        }
-        
-        .badge-operator {
-            background-color: #f3e8ff !important;
-            color: #6b21a8 !important;
-            border-color: #c084fc;
         }
         
         .badge-pending {
@@ -322,19 +219,12 @@
             border-color: #ef4444;
         }
         
-        .badge-processing {
-            background-color: #dbeafe !important;
-            color: #1e40af !important;
-            border-color: #3b82f6;
-        }
-        
         .badge-delivered {
             background-color: #ede9fe !important;
             color: #5b21b6 !important;
             border-color: #8b5cf6;
         }
         
-        /* Tables */
         .table-card {
             background: white;
             border-radius: 10px;
@@ -350,42 +240,6 @@
             border-bottom: 2px solid #e2e8f0;
         }
         
-        /* Charts Container */
-        .charts-container {
-            background: white;
-            border-radius: 10px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-        }
-        
-        /* Form Section Styling */
-        .form-section {
-            background: #f8fafc;
-            border-radius: 8px;
-            padding: 1.25rem;
-            margin-bottom: 1.5rem;
-            border-left: 4px solid var(--primary);
-        }
-        
-        .form-section-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: var(--primary);
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        /* Modal Form Styling */
-        .modal-form {
-            max-height: 70vh;
-            overflow-y: auto;
-            padding-right: 0.5rem;
-        }
-        
-        /* Responsive */
         @media (max-width: 768px) {
             .sidebar {
                 width: 70px;
@@ -404,30 +258,8 @@
                 padding: 0.8rem;
             }
             
-            .action-buttons {
-                flex-direction: column;
-                width: 100%;
-            }
-            
-            .btn-action {
-                width: 100%;
-                justify-content: center;
-            }
-            
             .report-cards {
                 grid-template-columns: 1fr;
-            }
-            
-            .charts-container .row {
-                flex-direction: column;
-            }
-            
-            .charts-container .col-md-6 {
-                margin-bottom: 1.5rem;
-            }
-            
-            .charts-container .col-md-6:last-child {
-                margin-bottom: 0;
             }
         }
         
@@ -435,42 +267,6 @@
             .stats-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
-            
-            .filter-bar .row {
-                flex-direction: column;
-            }
-            
-            .filter-bar .col-md-3 {
-                margin-bottom: 0.75rem;
-                width: 100%;
-            }
-        }
-        
-        /* Pagination Styling */
-        .pagination {
-            margin-bottom: 0;
-        }
-        
-        .pagination .page-item .page-link {
-            border: 1px solid #dee2e6;
-            color: var(--primary);
-            padding: 0.5rem 0.75rem;
-        }
-        
-        .pagination .page-item.active .page-link {
-            background-color: var(--primary);
-            border-color: var(--primary);
-            color: white;
-        }
-        
-        .pagination .page-item.disabled .page-link {
-            color: #6c757d;
-            background-color: #f8fafc;
-        }
-        
-        .pagination .page-item .page-link:hover {
-            background-color: #e9ecef;
-            border-color: #dee2e6;
         }
     </style>
 </head>
@@ -510,8 +306,6 @@
                     <span>Laporan</span>
                 </a>
             </div>
-            
-            <!-- Hapus menu Manajemen User dan Pengaturan yang hanya untuk superadmin -->
         </div>
         
         <div class="sidebar-footer" style="padding: 1.5rem; position: absolute; bottom: 0; width: 100%;">
@@ -537,7 +331,7 @@
                 </div>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
-                    <button type="submit" class="logout-btn">
+                    <button type="submit" class="btn btn-danger btn-sm">
                         <i class="bi bi-box-arrow-right"></i> Logout
                     </button>
                 </form>
@@ -585,114 +379,39 @@
         
         <!-- Stats Cards -->
         <div class="stats-grid">
+            @foreach(['total_items' => 'Total Barang', 'total_categories' => 'Total Kategori', 
+                    'critical_stock' => 'Stok Kritis', 'out_of_stock' => 'Stok Habis'] as $key => $label)
             <div class="stat-card">
                 <div class="stat-content">
-                    <h5>{{ $stats['total_items'] ?? 0 }}</h5>
-                    <p>Total Barang</p>
+                    <h5>{{ $stats[$key] ?? 0 }}</h5>
+                    <p>{{ $label }}</p>
                 </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-content">
-                    <h5>{{ $stats['total_categories'] ?? 0 }}</h5>
-                    <p>Total Kategori</p>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-content">
-                    <h5>{{ $stats['critical_stock'] ?? 0 }}</h5>
-                    <p>Stok Kritis</p>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-content">
-                    <h5>{{ $stats['out_of_stock'] ?? 0 }}</h5>
-                    <p>Stok Habis</p>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Filter Bar -->
-        <div class="filter-bar">
-            <form method="GET" action="{{ route('admin.reports.generate') }}" id="filterForm">
-                <div class="row g-3">
-                    <div class="col-md-3">
-                        <label for="start_date" class="form-label">Dari Tanggal</label>
-                        <input type="date" class="form-control" id="start_date" name="start_date" 
-                               value="{{ date('Y-m-01') }}">
-                    </div>
-                    <div class="col-md-3">
-                        <label for="end_date" class="form-label">Sampai Tanggal</label>
-                        <input type="date" class="form-control" id="end_date" name="end_date" 
-                               value="{{ date('Y-m-t') }}">
-                    </div>
-                    <div class="col-md-3">
-                        <label for="report_type" class="form-label">Jenis Laporan</label>
-                        <select class="form-select" id="report_type" name="report_type">
-                            <option value="inventory">Laporan Stok Barang</option>
-                            <option value="requests">Laporan Permintaan</option>
-                            <option value="expenditures">Laporan Pengeluaran</option>
-                            <option value="users">Laporan User</option>
-                            <option value="satker">Laporan Satker</option>
-                            <option value="summary">Laporan Ringkasan</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3 d-flex gap-2 align-items-end">
-                        <button type="submit" class="btn btn-primary flex-grow-1">
-                            <i class="bi bi-filter"></i> Filter
-                        </button>
-                        <button type="button" class="btn btn-secondary" onclick="resetFilter()">
-                            <i class="bi bi-arrow-clockwise"></i> Reset
-                        </button>
-                    </div>
-                </div>
-            </form>
+            @endforeach
         </div>
         
         <!-- Report Cards -->
         <div class="report-cards">
-            <div class="report-card">
-                <div class="report-icon inventory">
-                    <i class="bi bi-box"></i>
-                </div>
-                <div class="report-content">
-                    <h5>{{ $stats['total_items'] ?? 0 }}</h5>
-                    <p>Total Barang</p>
-                    <small class="text-muted">Data stok barang saat ini</small>
-                </div>
-            </div>
+            @php
+                $reportData = [
+                    ['type' => 'inventory', 'value' => $stats['total_items'] ?? 0, 'label' => 'Total Barang', 'desc' => 'Data stok barang saat ini'],
+                    ['type' => 'requests', 'value' => $stats['total_requests'] ?? 0, 'label' => 'Permintaan Barang', 'desc' => 'Total permintaan bulan ini'],
+                    ['type' => 'expenditures', 'value' => $stats['total_expenditures'] ?? 0, 'label' => 'Pengeluaran', 'desc' => 'Pengeluaran barang bulan ini']
+                ];
+            @endphp
             
+            @foreach($reportData as $report)
             <div class="report-card">
-                <div class="report-icon requests">
-                    <i class="bi bi-clipboard-check"></i>
+                <div class="report-icon {{ $report['type'] }}">
+                    <i class="bi bi-{{ $report['type'] == 'inventory' ? 'box' : ($report['type'] == 'requests' ? 'clipboard-check' : 'cash-stack') }}"></i>
                 </div>
                 <div class="report-content">
-                    <h5>{{ $stats['total_requests'] ?? 0 }}</h5>
-                    <p>Permintaan Barang</p>
-                    <small class="text-muted">Total permintaan bulan ini</small>
+                    <h5>{{ $report['value'] }}</h5>
+                    <p>{{ $report['label'] }}</p>
+                    <small class="text-muted">{{ $report['desc'] }}</small>
                 </div>
             </div>
-            
-            <div class="report-card">
-                <div class="report-icon expenditures">
-                    <i class="bi bi-cash-stack"></i>
-                </div>
-                <div class="report-content">
-                    <h5>{{ $stats['total_expenditures'] ?? 0 }}</h5>
-                    <p>Pengeluaran</p>
-                    <small class="text-muted">Pengeluaran barang bulan ini</small>
-                </div>
-            </div>
-            
-            <div class="report-card">
-                <div class="report-icon users">
-                    <i class="bi bi-people"></i>
-                </div>
-                <div class="report-content">
-                    <h5>{{ $stats['total_users'] ?? 0 }}</h5>
-                    <p>Total User</p>
-                    <small class="text-muted">User aktif sistem</small>
-                </div>
-            </div>
+            @endforeach
         </div>
         
         <!-- Charts Container -->
@@ -709,116 +428,104 @@
             </div>
         </div>
         
-        <!-- Report Summary Table -->
+        <!-- Period Selection -->
         <div class="table-card">
-            <h5 class="mb-3">Ringkasan Laporan</h5>
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th>Jenis Laporan</th>
-                            <th>Periode</th>
-                            <th>Total Data</th>
-                            <th>Detail Status</th>
-                            <th>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Laporan Stok Barang</td>
-                            <td>{{ date('F Y') }}</td>
-                            <td>{{ $stats['total_items'] ?? 0 }} barang</td>
-                            <td>
-                                <span class="badge bg-success">{{ $stats['good_stock'] ?? 0 }} Baik</span>
-                                <span class="badge bg-warning">{{ $stats['low_stock'] ?? 0 }} Rendah</span>
-                                <span class="badge bg-danger">{{ $stats['critical_stock'] ?? 0 }} Kritis</span>
-                                <span class="badge bg-secondary">{{ $stats['out_of_stock'] ?? 0 }} Habis</span>
-                            </td>
-                            <td>
-                                <button class="btn btn-sm btn-info" onclick="viewReport('inventory')" title="Lihat">
-                                    <i class="bi bi-eye"></i>
-                                </button>
-                                <button class="btn btn-sm btn-success" onclick="exportReport('inventory')" title="Export">
-                                    <i class="bi bi-download"></i>
-                                </button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>Laporan Permintaan</td>
-                            <td>{{ date('F Y') }}</td>
-                            <td>{{ $stats['total_requests'] ?? 0 }} permintaan</td>
-                            <td>
-                                <span class="badge badge-pending">{{ $stats['pending_requests'] ?? 0 }} Pending</span>
-                                <span class="badge badge-approved">{{ $stats['approved_requests'] ?? 0 }} Disetujui</span>
-                                <span class="badge badge-rejected">{{ $stats['rejected_requests'] ?? 0 }} Ditolak</span>
-                                <span class="badge badge-processing">{{ $stats['processing_requests'] ?? 0 }} Diproses</span>
-                                <span class="badge badge-delivered">{{ $stats['delivered_requests'] ?? 0 }} Terkirim</span>
-                            </td>
-                            <td>
-                                <button class="btn btn-sm btn-info" onclick="viewReport('requests')" title="Lihat">
-                                    <i class="bi bi-eye"></i>
-                                </button>
-                                <button class="btn btn-sm btn-success" onclick="exportReport('requests')" title="Export">
-                                    <i class="bi bi-download"></i>
-                                </button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>Laporan Pengeluaran</td>
-                            <td>{{ date('F Y') }}</td>
-                            <td>{{ $stats['total_expenditures'] ?? 0 }} pengeluaran</td>
-                            <td>
-                                <span class="badge bg-info">Pengeluaran Barang</span>
-                            </td>
-                            <td>
-                                <button class="btn btn-sm btn-info" onclick="viewReport('expenditures')" title="Lihat">
-                                    <i class="bi bi-eye"></i>
-                                </button>
-                                <button class="btn btn-sm btn-success" onclick="exportReport('expenditures')" title="Export">
-                                    <i class="bi bi-download"></i>
-                                </button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>Laporan User</td>
-                            <td>{{ date('F Y') }}</td>
-                            <td>{{ $stats['total_users'] ?? 0 }} user</td>
-                            <td>
-                                <span class="badge badge-admin">{{ $stats['admin_users'] ?? 0 }} Admin</span>
-                                <span class="badge badge-user">{{ $stats['user_users'] ?? 0 }} User</span>
-                                <span class="badge badge-operator">{{ $stats['operator_users'] ?? 0 }} Operator</span>
-                            </td>
-                            <td>
-                                <button class="btn btn-sm btn-info" onclick="viewReport('users')" title="Lihat">
-                                    <i class="bi bi-eye"></i>
-                                </button>
-                                <button class="btn btn-sm btn-success" onclick="exportReport('users')" title="Export">
-                                    <i class="bi bi-download"></i>
-                                </button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>Laporan Satker</td>
-                            <td>{{ date('F Y') }}</td>
-                            <td>{{ $stats['total_satker'] ?? 0 }} satker</td>
-                            <td>
-                                <span class="badge bg-primary">Satuan Kerja</span>
-                            </td>
-                            <td>
-                                <button class="btn btn-sm btn-info" onclick="viewReport('satker')" title="Lihat">
-                                    <i class="bi bi-eye"></i>
-                                </button>
-                                <button class="btn btn-sm btn-success" onclick="exportReport('satker')" title="Export">
-                                    <i class="bi bi-download"></i>
-                                </button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">Ringkasan Laporan</h5>
+                <div class="d-flex gap-2 align-items-center">
+                    <label for="month" class="form-label mb-0">Pilih Periode:</label>
+                    <select class="form-select w-auto" id="month" name="month">
+                        @php
+                            $currentYear = date('Y');
+                            $currentMonth = date('m');
+                            $selectedMonth = request('month', date('Y-m'));
+                        @endphp
+                        @for($i = 0; $i < 12; $i++)
+                            @php
+                                $date = date('Y-m', strtotime("-$i months"));
+                                $monthName = date('F Y', strtotime("-$i months"));
+                            @endphp
+                            <option value="{{ $date }}" {{ $selectedMonth == $date ? 'selected' : '' }}>
+                                {{ $monthName }}
+                            </option>
+                        @endfor
+                    </select>
+                    <button class="btn btn-primary" onclick="updateReportSummary()">
+                        <i class="bi bi-search"></i> Tampilkan
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Loading Indicator -->
+            <div id="loadingIndicator" class="text-center py-4" style="display: none;">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2">Memuat data...</p>
+            </div>
+            
+            <!-- Report Summary Table -->
+            <div id="reportSummaryTable">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Jenis Laporan</th>
+                                <th>Periode</th>
+                                <th>Total Data</th>
+                                <th>Detail Status</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @php
+                                $reportTypes = [
+                                    ['type' => 'inventory', 'name' => 'Laporan Stok Barang'],
+                                    ['type' => 'requests', 'name' => 'Laporan Permintaan'],
+                                    ['type' => 'expenditures', 'name' => 'Laporan Pengeluaran']
+                                ];
+                            @endphp
+                            
+                            @foreach($reportTypes as $report)
+                            <tr>
+                                <td>{{ $report['name'] }}</td>
+                                <td>{{ date('F Y', strtotime($selectedMonth . '-01')) }}</td>
+                                <td id="total_{{ $report['type'] }}_monthly">
+                                    {{ $monthlyStats['total_' . $report['type']] ?? ($report['type'] == 'expenditures' ? $monthlyStats['total_expenditures'] : ($monthlyStats['total_' . $report['type'] . 's'] ?? 0)) }} 
+                                    {{ $report['type'] == 'inventory' ? 'barang' : ($report['type'] == 'requests' ? 'permintaan' : 'pengeluaran') }}
+                                </td>
+                                <td id="status_{{ $report['type'] }}_monthly">
+                                    @if($report['type'] == 'inventory')
+                                    <span class="badge bg-success">{{ $monthlyStats['good_stock'] ?? 0 }} Baik</span>
+                                    <span class="badge bg-warning">{{ $monthlyStats['low_stock'] ?? 0 }} Rendah</span>
+                                    <span class="badge bg-danger">{{ $monthlyStats['critical_stock'] ?? 0 }} Kritis</span>
+                                    <span class="badge bg-secondary">{{ $monthlyStats['out_of_stock'] ?? 0 }} Habis</span>
+                                    @elseif($report['type'] == 'requests')
+                                    <span class="badge badge-pending">{{ $monthlyStats['pending_requests'] ?? 0 }} Pending</span>
+                                    <span class="badge badge-approved">{{ $monthlyStats['approved_requests'] ?? 0 }} Disetujui</span>
+                                    <span class="badge badge-rejected">{{ $monthlyStats['rejected_requests'] ?? 0 }} Ditolak</span>
+                                    <span class="badge badge-delivered">{{ $monthlyStats['delivered_requests'] ?? 0 }} Terkirim</span>
+                                    @else
+                                    <span class="badge bg-info">Pengeluaran Barang</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-info" onclick="viewReport('{{ $report['type'] }}', '{{ $selectedMonth }}')" title="Lihat">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-success" onclick="exportReportWithPeriod('{{ $report['type'] }}', '{{ $selectedMonth }}')" title="Export">
+                                        <i class="bi bi-download"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
         
-        <!-- Report Details Table (Hidden by default) -->
+        <!-- Report Details Table -->
         <div class="table-card" id="reportDetails" style="display: none;">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h5 class="mb-0" id="reportTitle">Detail Laporan</h5>
@@ -826,9 +533,7 @@
                     <i class="bi bi-x"></i> Tutup
                 </button>
             </div>
-            <div class="table-responsive" id="reportTable">
-                <!-- Report table will be loaded here -->
-            </div>
+            <div class="table-responsive" id="reportTable"></div>
         </div>
     </div>
     
@@ -842,24 +547,16 @@
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="export_type" class="form-label">
-                            Jenis Laporan
-                            <span class="required-star">*</span>
-                        </label>
+                        <label for="export_type" class="form-label">Jenis Laporan *</label>
                         <select class="form-select" id="export_type" name="type" required>
                             <option value="">Pilih Jenis Laporan</option>
                             <option value="inventory">Laporan Stok Barang</option>
                             <option value="requests">Laporan Permintaan</option>
                             <option value="expenditures">Laporan Pengeluaran</option>
-                            <option value="users">Laporan User</option>
-                            <option value="satker">Laporan Satker</option>
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label for="export_format" class="form-label">
-                            Format Export
-                            <span class="required-star">*</span>
-                        </label>
+                        <label for="export_format" class="form-label">Format Export *</label>
                         <select class="form-select" id="export_format" name="format" required>
                             <option value="csv">CSV</option>
                             <option value="excel">Excel</option>
@@ -867,12 +564,31 @@
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label for="export_start_date" class="form-label">Dari Tanggal</label>
-                        <input type="date" class="form-control" id="export_start_date" name="start_date">
+                        <label for="export_period" class="form-label">Periode Bulan</label>
+                        <select class="form-select" id="export_period" name="period">
+                            <option value="">Pilih Periode</option>
+                            @for($i = 0; $i < 12; $i++)
+                                @php
+                                    $date = date('Y-m', strtotime("-$i months"));
+                                    $monthName = date('F Y', strtotime("-$i months"));
+                                @endphp
+                                <option value="{{ $date }}">{{ $monthName }}</option>
+                            @endfor
+                        </select>
                     </div>
-                    <div class="mb-3">
-                        <label for="export_end_date" class="form-label">Sampai Tanggal</label>
-                        <input type="date" class="form-control" id="export_end_date" name="end_date">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="export_start_date" class="form-label">Dari Tanggal</label>
+                                <input type="date" class="form-control" id="export_start_date" name="start_date">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="export_end_date" class="form-label">Sampai Tanggal</label>
+                                <input type="date" class="form-control" id="export_end_date" name="end_date">
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -889,34 +605,20 @@
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 <script>
     $(document).ready(function() {
-        // Set default dates for export modal
-        $('#export_start_date').val('{{ date("Y-m-01") }}');
-        $('#export_end_date').val('{{ date("Y-m-t") }}');
-        
-        // Auto dismiss alerts
-        setTimeout(() => {
-            $('.alert').alert('close');
-        }, 5000);
-        
-        // Initialize Charts
-        initializeCharts();
+        initCharts();
+        initExportModal();
+        setupAjax();
+        autoDismissAlerts();
     });
     
-    // Initialize Charts dengan data dinamis dari Laravel
-    function initializeCharts() {
-        const monthlyRequestsCtx = document.getElementById('monthlyRequestsChart').getContext('2d');
-        
-        // Data dari controller - menggunakan escape JavaScript untuk array
-        const monthlyLabels = {!! json_encode($monthlyRequestsData['labels'] ?? []) !!};
-        const monthlyData = {!! json_encode($monthlyRequestsData['data'] ?? []) !!};
-        
-        const monthlyRequestsChart = new Chart(monthlyRequestsCtx, {
+    function initCharts() {
+        new Chart(document.getElementById('monthlyRequestsChart').getContext('2d'), {
             type: 'bar',
             data: {
-                labels: monthlyLabels,
+                labels: {!! json_encode($monthlyRequestsData['labels'] ?? []) !!},
                 datasets: [{
                     label: 'Jumlah Permintaan',
-                    data: monthlyData,
+                    data: {!! json_encode($monthlyRequestsData['data'] ?? []) !!},
                     backgroundColor: 'rgba(59, 130, 246, 0.5)',
                     borderColor: 'rgba(59, 130, 246, 1)',
                     borderWidth: 1
@@ -924,50 +626,29 @@
             },
             options: {
                 responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            stepSize: 1
-                        }
-                    }
-                }
+                scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
             }
         });
-
-        const requestStatusCtx = document.getElementById('requestStatusChart').getContext('2d');
         
-        // Data status dari controller
-        const requestStatusData = {!! json_encode($requestStatusData ?? []) !!};
-        
-        const requestStatusChart = new Chart(requestStatusCtx, {
+        new Chart(document.getElementById('requestStatusChart').getContext('2d'), {
             type: 'doughnut',
             data: {
-                labels: ['Pending', 'Disetujui', 'Ditolak', 'Diproses', 'Terkirim'],
+                labels: ['Pending', 'Disetujui', 'Ditolak', 'Terkirim'],
                 datasets: [{
                     data: [
-                        requestStatusData['pending'] ? requestStatusData['pending']['count'] : 0,
-                        requestStatusData['approved'] ? requestStatusData['approved']['count'] : 0,
-                        requestStatusData['rejected'] ? requestStatusData['rejected']['count'] : 0,
-                        requestStatusData['processing'] ? requestStatusData['processing']['count'] : 0,
-                        requestStatusData['delivered'] ? requestStatusData['delivered']['count'] : 0
+                        {{ $requestStatusData['pending']['count'] ?? 0 }},
+                        {{ $requestStatusData['approved']['count'] ?? 0 }},
+                        {{ $requestStatusData['rejected']['count'] ?? 0 }},
+                        {{ $requestStatusData['delivered']['count'] ?? 0 }}
                     ],
-                    backgroundColor: [
-                        '#fbbf24',
-                        '#10b981',
-                        '#ef4444',
-                        '#3b82f6',
-                        '#8b5cf6'
-                    ],
+                    backgroundColor: ['#fbbf24', '#10b981', '#ef4444', '#8b5cf6'],
                     borderWidth: 1
                 }]
             },
             options: {
                 responsive: true,
                 plugins: {
-                    legend: {
-                        position: 'bottom'
-                    },
+                    legend: { position: 'bottom' },
                     tooltip: {
                         callbacks: {
                             label: function(context) {
@@ -984,103 +665,265 @@
         });
     }
     
-    // Report Functions
-    function resetFilter() {
-        document.getElementById('start_date').value = '{{ date("Y-m-01") }}';
-        document.getElementById('end_date').value = '{{ date("Y-m-t") }}';
-        document.getElementById('report_type').value = 'inventory';
+    function initExportModal() {
+        const selectedMonth = $('#month').val();
+        const startDate = selectedMonth + '-01';
+        const endDate = getMonthEndDate(selectedMonth);
+        
+        $('#export_start_date').val(startDate);
+        $('#export_end_date').val(endDate);
+        $('#export_period').val(selectedMonth);
+        
+        $('#export_period').on('change', function() {
+            const period = $(this).val();
+            if (period) {
+                $('#export_start_date').val(period + '-01');
+                $('#export_end_date').val(getMonthEndDate(period));
+            }
+        });
+    }
+    
+    function setupAjax() {
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+    }
+    
+    function autoDismissAlerts() {
+        setTimeout(() => $('.alert').alert('close'), 5000);
+    }
+    
+    function getMonthEndDate(monthString) {
+        const [year, month] = monthString.split('-');
+        const lastDay = new Date(year, month, 0).getDate();
+        return monthString + '-' + lastDay.toString().padStart(2, '0');
+    }
+    
+    function updateReportSummary() {
+        const selectedMonth = $('#month').val();
+        
+        $('#loadingIndicator').show();
+        $('#reportSummaryTable').hide();
+        
+        $.ajax({
+            url: '{{ route("admin.reports.get-monthly-stats") }}',
+            type: 'GET',
+            data: { month: selectedMonth },
+            success: function(response) {
+                updateStats(response);
+                updateButtons(selectedMonth);
+                $('#loadingIndicator').hide();
+                $('#reportSummaryTable').show();
+            },
+            error: function(xhr) {
+                console.error('Error updating report summary:', xhr);
+                alert('Terjadi kesalahan saat memuat data. Silakan coba lagi.');
+                $('#loadingIndicator').hide();
+                $('#reportSummaryTable').show();
+            }
+        });
+    }
+    
+    function updateStats(data) {
+        $('#total_inventory_monthly').text(data.total_items + ' barang');
+        $('#status_inventory_monthly').html(`
+            <span class="badge bg-success">${data.good_stock} Baik</span>
+            <span class="badge bg-warning">${data.low_stock} Rendah</span>
+            <span class="badge bg-danger">${data.critical_stock} Kritis</span>
+            <span class="badge bg-secondary">${data.out_of_stock} Habis</span>
+        `);
+        
+        $('#total_requests_monthly').text(data.total_requests + ' permintaan');
+        $('#status_requests_monthly').html(`
+            <span class="badge badge-pending">${data.pending_requests} Pending</span>
+            <span class="badge badge-approved">${data.approved_requests} Disetujui</span>
+            <span class="badge badge-rejected">${data.rejected_requests} Ditolak</span>
+            <span class="badge badge-delivered">${data.delivered_requests} Terkirim</span>
+        `);
+        
+        $('#total_expenditures_monthly').text(data.total_expenditures + ' pengeluaran');
+    }
+    
+    function updateButtons(selectedMonth) {
+        $('button[onclick*="viewReport("]').attr('onclick', function(i, old) {
+            return old.replace(/viewReport\('(inventory|requests|expenditures)'.*?\)/, 
+                "viewReport('$1', '" + selectedMonth + "')");
+        });
+        
+        $('button[onclick*="exportReportWithPeriod("]').attr('onclick', function(i, old) {
+            return old.replace(/exportReportWithPeriod\('(inventory|requests|expenditures)'.*?\)/, 
+                "exportReportWithPeriod('$1', '" + selectedMonth + "')");
+        });
     }
     
     function printReport() {
-        // Sembunyikan elemen yang tidak perlu dicetak
-        const elementsToHide = document.querySelectorAll('.sidebar, .topbar, .action-buttons, .filter-bar, .btn-group');
-        elementsToHide.forEach(el => el.style.display = 'none');
-        
-        // Perlebar konten untuk cetak
+        const elementsToHide = document.querySelectorAll('.sidebar, .topbar, .action-buttons, .btn-group');
         const tableCard = document.querySelector('.table-card');
         const originalStyles = {
             boxShadow: tableCard.style.boxShadow,
             padding: tableCard.style.padding
         };
+        
+        elementsToHide.forEach(el => el.style.display = 'none');
         tableCard.style.boxShadow = 'none';
         tableCard.style.padding = '0';
         
-        // Tambahkan judul cetak
         const printTitle = document.createElement('h4');
         printTitle.textContent = 'Laporan Sistem SILOG Polres';
-        printTitle.style.textAlign = 'center';
-        printTitle.style.marginBottom = '20px';
-        printTitle.style.fontWeight = 'bold';
-        tableCard.parentNode.insertBefore(printTitle, tableCard);
+        printTitle.style.cssText = 'text-align: center; margin-bottom: 20px; font-weight: bold;';
         
-        // Tambahkan tanggal cetak
         const printDate = document.createElement('p');
         printDate.textContent = 'Tanggal: ' + new Date().toLocaleDateString('id-ID');
-        printDate.style.textAlign = 'center';
-        printDate.style.marginBottom = '20px';
-        printDate.style.color = '#666';
+        printDate.style.cssText = 'text-align: center; margin-bottom: 20px; color: #666;';
+        
+        tableCard.parentNode.insertBefore(printTitle, tableCard);
         printTitle.parentNode.insertBefore(printDate, printTitle.nextSibling);
         
-        // Cetak
         window.print();
         
-        // Kembalikan tampilan normal setelah cetak
         setTimeout(() => {
             elementsToHide.forEach(el => el.style.display = '');
             tableCard.style.boxShadow = originalStyles.boxShadow;
             tableCard.style.padding = originalStyles.padding;
-            if (printTitle.parentNode) {
-                printTitle.parentNode.removeChild(printTitle);
-            }
-            if (printDate.parentNode) {
-                printDate.parentNode.removeChild(printDate);
-            }
+            printTitle.parentNode?.removeChild(printTitle);
+            printDate.parentNode?.removeChild(printDate);
         }, 500);
     }
     
-    function viewReport(type) {
-        const reportTitle = document.getElementById('reportTitle');
-        const reportTable = document.getElementById('reportTable');
-        const reportDetails = document.getElementById('reportDetails');
+    function viewReport(type, month = null) {
+        const selectedMonth = month || $('#month').val();
+        const monthName = getMonthName(selectedMonth);
         
-        // Set title
-        reportTitle.textContent = `Detail Laporan ${getReportTypeName(type)}`;
+        $('#reportTitle').text(`Detail Laporan ${getReportTypeName(type)} - ${monthName}`);
         
-        // Show loading
-        reportTable.innerHTML = `
-            <div class="text-center py-4">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-                <p class="mt-2">Memuat data...</p>
-            </div>
+        // Panggil fungsi untuk memuat data
+        loadReportData(type, selectedMonth);
+        
+        $('#reportDetails').show().scrollIntoView({ behavior: 'smooth' });
+    }
+    
+    function loadReportData(type, month) {
+        const startDate = month + '-01';
+        const endDate = getMonthEndDate(month);
+        
+        // Buat struktur tabel yang lengkap dengan loading state
+        const tableHeaders = getTableHeaders(type);
+        const columnCount = getColumnCount(type);
+        
+        const tableStructure = `
+            <table class="table table-hover">
+                <thead>
+                    ${tableHeaders}
+                </thead>
+                <tbody id="reportDataBody">
+                    <tr>
+                        <td colspan="${columnCount}" class="text-center py-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-2">Memuat data...</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         `;
         
-        // Show report details
-        reportDetails.style.display = 'block';
+        $('#reportTable').html(tableStructure);
         
-        // Scroll to report details
-        reportDetails.scrollIntoView({ behavior: 'smooth' });
-        
-        // Simulate AJAX call (in real implementation, you would fetch data from server)
-        setTimeout(() => {
-            reportTable.innerHTML = getReportTableHTML(type);
-        }, 1000);
+        $.ajax({
+            url: '{{ route("admin.reports.view-details") }}',
+            type: 'GET',
+            data: { report_type: type, start_date: startDate, end_date: endDate },
+            success: function(response) {
+                $('#reportDataBody').html(response);
+            },
+            error: function(xhr) {
+                $('#reportDataBody').html(`
+                    <tr>
+                        <td colspan="${columnCount}" class="text-center py-4">
+                            <div class="alert alert-danger">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                Terjadi kesalahan saat memuat data.
+                            </div>
+                        </td>
+                    </tr>
+                `);
+            }
+        });
+    }
+    
+    function getTableHeaders(type) {
+        switch(type) {
+            case 'inventory':
+                return `<tr>
+                    <th>No</th>
+                    <th>Kode Barang</th>
+                    <th>Nama Barang</th>
+                    <th>Kategori</th>
+                    <th>Stok</th>
+                    <th>Stok Minimal</th>
+                    <th>Satuan</th>
+                    <th>Gudang</th>
+                    <th>Status</th>
+                </tr>`;
+                
+            case 'requests':
+                return `<tr>
+                    <th>No</th>
+                    <th>Kode Permintaan</th>
+                    <th>Tanggal</th>
+                    <th>Pemohon</th>
+                    <th>Satker</th>
+                    <th>Barang</th>
+                    <th>Jumlah</th>
+                    <th>Keperluan</th>
+                    <th>Status</th>
+                </tr>`;
+                
+            case 'expenditures':
+                return `<tr>
+                    <th>No</th>
+                    <th>Kode Permintaan</th>
+                    <th>Tanggal Pengiriman</th>
+                    <th>Barang</th>
+                    <th>Jumlah</th>
+                    <th>Satuan</th>
+                    <th>Penerima</th>
+                    <th>Keperluan</th>
+                </tr>`;
+                
+            default:
+                return `<tr><th>Data</th></tr>`;
+        }
+    }
+    
+    function getColumnCount(type) {
+        switch(type) {
+            case 'inventory': return 9;
+            case 'requests': return 9;
+            case 'expenditures': return 8;
+            default: return 1;
+        }
     }
     
     function hideReportDetails() {
-        document.getElementById('reportDetails').style.display = 'none';
+        $('#reportDetails').hide();
     }
     
-    function exportReport(type) {
-        // Tampilkan modal export
+    function exportReportWithPeriod(type, month) {
         $('#export_type').val(type);
+        $('#export_period').val(month);
+        $('#export_start_date').val(month + '-01');
+        $('#export_end_date').val(getMonthEndDate(month));
         $('#generateReportModal').modal('show');
     }
     
     function downloadReport() {
         const type = $('#export_type').val();
         const format = $('#export_format').val();
+        const period = $('#export_period').val();
         const startDate = $('#export_start_date').val();
         const endDate = $('#export_end_date').val();
         
@@ -1089,22 +932,16 @@
             return;
         }
         
-        // Build download URL
         let url = '{{ route("admin.reports.export", ["type" => ":type"]) }}'.replace(':type', type);
         url += '?format=' + format;
         
-        if (startDate) {
-            url += '&start_date=' + startDate;
+        if (period) {
+            url += '&start_date=' + period + '-01&end_date=' + getMonthEndDate(period);
+        } else if (startDate && endDate) {
+            url += '&start_date=' + startDate + '&end_date=' + endDate;
         }
         
-        if (endDate) {
-            url += '&end_date=' + endDate;
-        }
-        
-        // Download file
         window.location.href = url;
-        
-        // Close modal
         $('#generateReportModal').modal('hide');
     }
     
@@ -1112,79 +949,16 @@
         const types = {
             'inventory': 'Stok Barang',
             'requests': 'Permintaan Barang',
-            'expenditures': 'Pengeluaran',
-            'users': 'User',
-            'satker': 'Satuan Kerja',
-            'summary': 'Ringkasan'
+            'expenditures': 'Pengeluaran'
         };
         return types[type] || type;
     }
     
-    function getReportTableHTML(type) {
-        const tables = {
-            'inventory': `
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th>Kode Barang</th>
-                            <th>Nama Barang</th>
-                            <th>Kategori</th>
-                            <th>Stok</th>
-                            <th>Stok Minimal</th>
-                            <th>Satuan</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>BRG-001</td>
-                            <td>Komputer</td>
-                            <td>Elektronik</td>
-                            <td>15</td>
-                            <td>5</td>
-                            <td>Unit</td>
-                            <td><span class="badge bg-success">Baik</span></td>
-                        </tr>
-                        <!-- More rows would be loaded from server -->
-                    </tbody>
-                </table>
-            `,
-            'requests': `
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th>Kode Permintaan</th>
-                            <th>Pemohon</th>
-                            <th>Barang</th>
-                            <th>Jumlah</th>
-                            <th>Satker</th>
-                            <th>Status</th>
-                            <th>Tanggal</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>PMT-001</td>
-                            <td>{{ $user->name }}</td>
-                            <td>Komputer</td>
-                            <td>2</td>
-                            <td>Satker Utama</td>
-                            <td><span class="badge badge-approved">Disetujui</span></td>
-                            <td>15/10/2023</td>
-                        </tr>
-                        <!-- More rows would be loaded from server -->
-                    </tbody>
-                </table>
-            `
-        };
-        
-        return tables[type] || `
-            <div class="alert alert-info">
-                <i class="bi bi-info-circle me-2"></i>
-                Data laporan ${getReportTypeName(type)} akan ditampilkan di sini.
-                <br><small>Pada implementasi sebenarnya, data akan diambil dari server.</small>
-            </div>
-        `;
+    function getMonthName(monthString) {
+        if (!monthString) return '';
+        const [year, month] = monthString.split('-');
+        const date = new Date(year, month - 1, 1);
+        return date.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
     }
     
     // Logout confirmation

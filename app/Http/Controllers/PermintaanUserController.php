@@ -4,11 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Permintaan;
 use App\Models\Barang;
-use App\Models\Satker; // Tambahkan model Satker
+use App\Models\Satker;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
+use App\Http\Controllers\ActivityLogController;
 
 class PermintaanUserController extends Controller
 {
@@ -139,15 +140,27 @@ class PermintaanUserController extends Controller
             $kodePermintaan = 'PM-' . date('Ymd') . '-' . Str::random(6);
             
             // Simpan permintaan sesuai struktur tabel
-            Permintaan::create([
+            $permintaan = Permintaan::create([
                 'kode_permintaan' => $kodePermintaan,
                 'user_id' => auth()->id(),
                 'barang_id' => $validated['barang_id'],
                 'satker_id' => $validated['satker_id'],
                 'jumlah' => $validated['jumlah'],
                 'keterangan' => $validated['keterangan'] ?? null,
+                'tanggal_dibutuhkan' => $validated['tanggal_dibutuhkan'],
                 'status' => 'pending',
             ]);
+            
+            // Log aktivitas pengajuan permintaan baru
+            $logData = [
+                'permintaan_id' => $permintaan->id,
+                'kode_permintaan' => $kodePermintaan,
+                'barang' => $barang->nama_barang,
+                'jumlah' => $validated['jumlah'],
+                'satker' => Satker::find($validated['satker_id'])->nama_satker ?? 'Tidak diketahui',
+                'tanggal_dibutuhkan' => $validated['tanggal_dibutuhkan'],
+            ];
+            ActivityLogController::logAction('create_request', 'Mengajukan permintaan baru: ' . $kodePermintaan, $logData);
             
             DB::commit();
             
@@ -169,7 +182,7 @@ class PermintaanUserController extends Controller
         $user = auth()->user();
         
         $permintaan = Permintaan::where('user_id', $user->id)
-            ->with(['barang', 'satker', 'approvedBy'])
+            ->with(['barang', 'satker', 'approver'])
             ->findOrFail($id);
         
         return view('user.permintaan', [
@@ -227,6 +240,15 @@ class PermintaanUserController extends Controller
                 ->where('status', 'pending')
                 ->findOrFail($id);
             
+            // Simpan data lama untuk logging
+            $oldData = [
+                'barang_id' => $permintaan->barang_id,
+                'satker_id' => $permintaan->satker_id,
+                'jumlah' => $permintaan->jumlah,
+                'keterangan' => $permintaan->keterangan,
+                'tanggal_dibutuhkan' => $permintaan->tanggal_dibutuhkan,
+            ];
+            
             // Cek stok barang
             $barang = Barang::findOrFail($validated['barang_id']);
             
@@ -245,7 +267,18 @@ class PermintaanUserController extends Controller
                 'satker_id' => $validated['satker_id'],
                 'jumlah' => $validated['jumlah'],
                 'keterangan' => $validated['keterangan'] ?? null,
+                'tanggal_dibutuhkan' => $validated['tanggal_dibutuhkan'],
             ]);
+            
+            // Log aktivitas edit permintaan
+            $logData = [
+                'permintaan_id' => $permintaan->id,
+                'kode_permintaan' => $permintaan->kode_permintaan,
+                'old_data' => $oldData,
+                'new_data' => $validated,
+                'barang' => $barang->nama_barang,
+            ];
+            ActivityLogController::logAction('update_request', 'Mengubah permintaan: ' . $permintaan->kode_permintaan, $logData);
             
             DB::commit();
             
@@ -272,7 +305,19 @@ class PermintaanUserController extends Controller
                 ->where('status', 'pending')
                 ->findOrFail($id);
             
+            // Simpan data untuk logging sebelum dihapus
+            $logData = [
+                'permintaan_id' => $permintaan->id,
+                'kode_permintaan' => $permintaan->kode_permintaan,
+                'barang' => $permintaan->barang->nama_barang ?? 'Tidak diketahui',
+                'jumlah' => $permintaan->jumlah,
+                'satker' => $permintaan->satker->nama_satker ?? 'Tidak diketahui',
+            ];
+            
             $permintaan->delete();
+            
+            // Log aktivitas hapus permintaan
+            ActivityLogController::logAction('delete_request', 'Menghapus permintaan: ' . $logData['kode_permintaan'], $logData);
             
             return redirect()->route('user.permintaan')
                 ->with('success', 'Permintaan berhasil dihapus');
@@ -291,7 +336,7 @@ class PermintaanUserController extends Controller
         
         $permintaan = Permintaan::where('user_id', $user->id)
             ->where('kode_permintaan', $kode_permintaan)
-            ->with(['barang', 'satker', 'approvedBy'])
+            ->with(['barang', 'satker', 'approver'])
             ->firstOrFail();
         
         // Status timeline
@@ -309,8 +354,8 @@ class PermintaanUserController extends Controller
                 'status' => 'Diproses',
                 'date' => $permintaan->approved_at->format('d/m/Y H:i'),
                 'description' => $permintaan->status == 'approved' ? 
-                    'Disetujui oleh ' . ($permintaan->approvedBy->name ?? 'Admin') : 
-                    'Ditolak oleh ' . ($permintaan->approvedBy->name ?? 'Admin'),
+                    'Disetujui oleh ' . ($permintaan->approver->name ?? 'Admin') : 
+                    'Ditolak oleh ' . ($permintaan->approver->name ?? 'Admin'),
                 'completed' => true,
             ];
             

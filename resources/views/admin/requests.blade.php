@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Permintaan Barang | SILOG Polres</title>
+    <!-- CSRF Token Meta Tag -->
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
@@ -17,6 +20,7 @@
             --info: #0ea5e9;
             --dark: #1e293b;
             --light: #f8fafc;
+            --delivered-color: #8b5cf6;
             --sidebar-width: 250px;
         }
         
@@ -34,7 +38,7 @@
         
         /* Sidebar */
         .sidebar {
-            background: linear-gradient(180deg, var(--primary) 0%, #1e40af 100%);
+            background: linear-gradient(180deg, var(--dark) 0%, #0f172a 100%);
             color: white;
             min-height: 100vh;
             width: var(--sidebar-width);
@@ -79,7 +83,7 @@
         .nav-link:hover, .nav-link.active {
             background-color: rgba(255,255,255,0.1);
             color: white;
-            border-left: 4px solid var(--primary-light);
+            border-left: 4px solid var(--delivered-color);
         }
         
         .nav-link i {
@@ -227,6 +231,15 @@
             font-weight: 600;
             border-radius: 6px;
             border: 1px solid rgba(0,0,0,0.1);
+            color: var(--dark) !important; /* Warna teks default untuk badge */
+        }
+        
+        /* Styling khusus untuk badge jumlah/informasi */
+        .badge-amount {
+            background-color: #f0f9ff !important;
+            color: #0c4a6e !important;
+            border: 1px solid #bae6fd !important;
+            font-weight: 700;
         }
         
         .badge-pending {
@@ -390,6 +403,11 @@
             border-radius: 3px;
         }
         
+        /* Required Star */
+        .required-star {
+            color: #dc2626;
+        }
+        
         /* Responsive */
         @media (max-width: 768px) {
             .sidebar {
@@ -508,7 +526,10 @@
             </div>
         </div>
         
-        <!-- Alert Messages -->
+        <!-- Alert Container (SELALU ADA) -->
+        <div class="alert-container" id="alertContainer"></div>
+        
+        <!-- Alert Messages dari Session -->
         @if(session('success'))
         <div class="alert-container">
             <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -570,6 +591,12 @@
                     <p>Ditolak</p>
                 </div>
             </div>
+            <div class="stat-card">
+                <div class="stat-content">
+                    <h5>{{ $stats['delivered_requests'] ?? 0 }}</h5>
+                    <p>Terkirim</p>
+                </div>
+            </div>
         </div>
         
         <!-- Filter Bar -->
@@ -596,7 +623,6 @@
                             <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
                             <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Disetujui</option>
                             <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Ditolak</option>
-                            <option value="processing" {{ request('status') == 'processing' ? 'selected' : '' }}>Diproses</option>
                             <option value="delivered" {{ request('status') == 'delivered' ? 'selected' : '' }}>Terkirim</option>
                         </select>
                     </div>
@@ -620,7 +646,6 @@
             <a href="{{ route('admin.requests', ['status' => 'pending']) }}" class="status-tab {{ request('status') == 'pending' ? 'active' : '' }}">Pending</a>
             <a href="{{ route('admin.requests', ['status' => 'approved']) }}" class="status-tab {{ request('status') == 'approved' ? 'active' : '' }}">Disetujui</a>
             <a href="{{ route('admin.requests', ['status' => 'rejected']) }}" class="status-tab {{ request('status') == 'rejected' ? 'active' : '' }}">Ditolak</a>
-            <a href="{{ route('admin.requests', ['status' => 'processing']) }}" class="status-tab {{ request('status') == 'processing' ? 'active' : '' }}">Diproses</a>
             <a href="{{ route('admin.requests', ['status' => 'delivered']) }}" class="status-tab {{ request('status') == 'delivered' ? 'active' : '' }}">Terkirim</a>
         </div>
         
@@ -650,7 +675,7 @@
                                 <td>{{ $request->user->name ?? '-' }}</td>
                                 <td>{{ $request->barang->nama_barang ?? '-' }}</td>
                                 <td class="text-center">
-                                    <span class="badge">
+                                    <span class="badge badge-amount">
                                         <strong>{{ $request->jumlah }}</strong>
                                         {{ $request->barang->satuan->nama_satuan ?? '-' }}
                                     </span>
@@ -664,26 +689,30 @@
                                         <span class="badge badge-approved">Disetujui</span>
                                     @elseif($request->status == 'rejected')
                                         <span class="badge badge-rejected">Ditolak</span>
-                                    @elseif($request->status == 'processing')
-                                        <span class="badge badge-processing">Diproses</span>
                                     @elseif($request->status == 'delivered')
                                         <span class="badge badge-delivered">Terkirim</span>
                                     @endif
                                 </td>
                                 <td>
                                     <div class="btn-group" role="group" aria-label="Aksi">
-                                        <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" 
+                                        <button type="button" class="btn btn-info btn-sm btn-detail" data-bs-toggle="modal" 
                                                 data-bs-target="#detailRequestModal" data-request-id="{{ $request->id }}" title="Detail">
                                             <i class="bi bi-eye"></i>
                                         </button>
                                         @if($request->status == 'pending')
-                                        <button type="button" class="btn btn-success btn-sm approve-request" 
+                                        <button type="button" class="btn btn-success btn-sm btn-approve" 
                                                 data-request-id="{{ $request->id }}" title="Setujui">
                                             <i class="bi bi-check"></i>
                                         </button>
-                                        <button type="button" class="btn btn-danger btn-sm reject-request" 
+                                        <button type="button" class="btn btn-danger btn-sm btn-reject" 
                                                 data-request-id="{{ $request->id }}" title="Tolak">
                                             <i class="bi bi-x"></i>
+                                        </button>
+                                        @endif
+                                        @if($request->status == 'approved')
+                                        <button type="button" class="btn btn-primary btn-sm btn-deliver" 
+                                                data-request-id="{{ $request->id }}" title="Tandai Terkirim">
+                                            <i class="bi bi-truck"></i>
                                         </button>
                                         @endif
                                     </div>
@@ -802,6 +831,10 @@
                         <i class="bi bi-check-circle text-success display-4"></i>
                     </div>
                     <p class="text-center">Apakah Anda yakin ingin menyetujui permintaan ini?</p>
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Stok akan dikurangi saat barang ditandai sebagai "Terkirim"
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
@@ -843,6 +876,39 @@
             </div>
         </div>
     </div>
+    
+    <!-- Deliver Confirmation Modal -->
+    <div class="modal fade" id="deliverModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Tandai Sebagai Terkirim</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center mb-3">
+                        <i class="bi bi-truck text-primary display-4"></i>
+                    </div>
+                    <p class="text-center">Apakah barang sudah dikirim kepada pemohon?</p>
+                    <div class="mb-3">
+                        <label for="deliverNote" class="form-label">Catatan Pengiriman (Opsional)</label>
+                        <textarea class="form-control" id="deliverNote" rows="2" 
+                                  placeholder="Masukkan catatan pengiriman..."></textarea>
+                    </div>
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        Stok barang akan dikurangi setelah ditandai sebagai terkirim.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" id="confirmDeliver">
+                        <i class="bi bi-check me-1"></i> Ya, Sudah Terkirim
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
@@ -863,355 +929,571 @@
             }
         });
         
-        // Auto dismiss alerts
+        // Auto dismiss alerts setelah 5 detik
         setTimeout(() => {
             $('.alert').alert('close');
         }, 5000);
         
-        // Approve Request Handler
-        let currentRequestId;
+        // Variabel global untuk menyimpan request ID
+        let currentRequestId = null;
         
-        $('.approve-request').click(function() {
+        // Event Delegation untuk tombol approve (untuk data dinamis/pagination)
+        $(document).on('click', '.btn-approve', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
             currentRequestId = $(this).data('request-id');
+            console.log('Approve clicked for ID:', currentRequestId);
+            
+            if (!currentRequestId) {
+                showAlert('ID permintaan tidak valid', 'warning');
+                return;
+            }
+            
             $('#approveModal').modal('show');
         });
         
-        $('#confirmApprove').click(function() {
-            if (!currentRequestId) return;
+        // Event Delegation untuk tombol reject
+        $(document).on('click', '.btn-reject', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
             
-            $.ajax({
-                url: `/admin/requests/${currentRequestId}/approve`,
-                type: 'POST',
-                data: {
-                    _token: '{{ csrf_token() }}'
-                },
-                success: function(response) {
-                    if (response.success) {
-                        showAlert(response.message, 'success');
-                        setTimeout(() => {
-                            location.reload();
-                        }, 1500);
-                    } else {
-                        showAlert(response.message, 'danger');
-                    }
-                    $('#approveModal').modal('hide');
-                },
-                error: function(xhr) {
-                    showAlert('Terjadi kesalahan saat menyetujui permintaan', 'danger');
-                    $('#approveModal').modal('hide');
-                }
-            });
-        });
-        
-        // Reject Request Handler
-        $('.reject-request').click(function() {
             currentRequestId = $(this).data('request-id');
+            console.log('Reject clicked for ID:', currentRequestId);
+            
+            if (!currentRequestId) {
+                showAlert('ID permintaan tidak valid', 'warning');
+                return;
+            }
+            
             $('#rejectReason').val('');
             $('#rejectModal').modal('show');
         });
         
-        $('#confirmReject').click(function() {
-            if (!currentRequestId) return;
+        // Event Delegation untuk tombol deliver (tandai terkirim)
+        $(document).on('click', '.btn-deliver', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
             
-            const reason = $('#rejectReason').val().trim();
-            if (!reason) {
-                showAlert('Harap masukkan alasan penolakan', 'warning');
+            currentRequestId = $(this).data('request-id');
+            console.log('Deliver clicked for ID:', currentRequestId);
+            
+            if (!currentRequestId) {
+                showAlert('ID permintaan tidak valid', 'warning');
                 return;
             }
             
+            $('#deliverNote').val('');
+            $('#deliverModal').modal('show');
+        });
+        
+        // Handler untuk confirm approve
+        $('#confirmApprove').click(function(e) {
+            e.preventDefault();
+            
+            if (!currentRequestId) {
+                showAlert('ID permintaan tidak ditemukan', 'warning');
+                return;
+            }
+            
+            console.log('Confirm approve for ID:', currentRequestId);
+            
+            // Ambil CSRF token dari meta tag
+            const csrfToken = $('meta[name="csrf-token"]').attr('content') || '{{ csrf_token() }}';
+            
+            // Kirim request approve
             $.ajax({
-                url: `/admin/requests/${currentRequestId}/reject`,
-                type: 'POST',
+                url: `/admin/requests/${currentRequestId}/approve`,
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken
+                },
                 data: {
-                    _token: '{{ csrf_token() }}',
-                    reason: reason
+                    _token: csrfToken
+                },
+                beforeSend: function() {
+                    $('#confirmApprove').prop('disabled', true)
+                        .html('<span class="spinner-border spinner-border-sm"></span> Memproses...');
                 },
                 success: function(response) {
+                    console.log('Approve Response:', response);
+                    
                     if (response.success) {
                         showAlert(response.message, 'success');
                         setTimeout(() => {
                             location.reload();
                         }, 1500);
                     } else {
-                        showAlert(response.message, 'danger');
+                        showAlert(response.message || 'Terjadi kesalahan', 'danger');
                     }
-                    $('#rejectModal').modal('hide');
                 },
-                error: function(xhr) {
-                    showAlert('Terjadi kesalahan saat menolak permintaan', 'danger');
+                error: function(xhr, status, error) {
+                    console.error('Approve AJAX Error:', xhr.responseText);
+                    let errorMessage = 'Terjadi kesalahan saat menyetujui permintaan';
+                    
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    }
+                    
+                    showAlert(errorMessage, 'danger');
+                },
+                complete: function() {
+                    $('#confirmApprove').prop('disabled', false)
+                        .html('<i class="bi bi-check me-1"></i> Setujui');
+                    $('#approveModal').modal('hide');
+                }
+            });
+        });
+        
+        // Handler untuk confirm reject
+        $('#confirmReject').click(function(e) {
+            e.preventDefault();
+            
+            if (!currentRequestId) {
+                showAlert('ID permintaan tidak ditemukan', 'warning');
+                return;
+            }
+            
+            const reason = $('#rejectReason').val().trim();
+            if (!reason) {
+                showAlert('Harap masukkan alasan penolakan', 'warning');
+                $('#rejectReason').focus();
+                return;
+            }
+            
+            console.log('Confirm reject for ID:', currentRequestId, 'Reason:', reason);
+            
+            // Ambil CSRF token dari meta tag
+            const csrfToken = $('meta[name="csrf-token"]').attr('content') || '{{ csrf_token() }}';
+            
+            // Kirim request reject
+            $.ajax({
+                url: `/admin/requests/${currentRequestId}/reject`,
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                data: {
+                    _token: csrfToken,
+                    reason: reason
+                },
+                beforeSend: function() {
+                    $('#confirmReject').prop('disabled', true)
+                        .html('<span class="spinner-border spinner-border-sm"></span> Memproses...');
+                },
+                success: function(response) {
+                    console.log('Reject Response:', response);
+                    
+                    if (response.success) {
+                        showAlert(response.message, 'success');
+                        setTimeout(() => {
+                            location.reload();
+                        }, 1500);
+                    } else {
+                        showAlert(response.message || 'Terjadi kesalahan', 'danger');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Reject AJAX Error:', xhr.responseText);
+                    let errorMessage = 'Terjadi kesalahan saat menolak permintaan';
+                    
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    }
+                    
+                    showAlert(errorMessage, 'danger');
+                },
+                complete: function() {
+                    $('#confirmReject').prop('disabled', false)
+                        .html('<i class="bi bi-x me-1"></i> Tolak');
                     $('#rejectModal').modal('hide');
                 }
             });
         });
-    });
-    
-    // Detail Request Modal Handler
-    const detailRequestModal = document.getElementById('detailRequestModal');
-    detailRequestModal.addEventListener('show.bs.modal', function(event) {
-        const button = event.relatedTarget;
-        const requestId = button.getAttribute('data-request-id');
         
-        // Tampilkan loading state
-        $('#detailRequestModalBody').html(`
-            <div class="text-center py-4">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-                <p class="mt-2 text-muted">Memuat data permintaan...</p>
-            </div>
-        `);
-        
-        // Fetch request data via AJAX
-        fetch(`/admin/requests/${requestId}`)
-            .then(response => response.json())
-            .then(data => {
-                const request = data.request || data;
-                
-                let html = `
-                    <!-- Bagian Informasi Dasar -->
-                    <div class="detail-section">
-                        <div class="detail-section-title">
-                            <i class="bi bi-info-circle"></i>
-                            Informasi Dasar
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 detail-row">
-                                <div class="detail-label">Kode Permintaan</div>
-                                <div class="detail-value">${request.kode_permintaan || '-'}</div>
-                            </div>
-                            <div class="col-md-6 detail-row">
-                                <div class="detail-label">Tanggal Permintaan</div>
-                                <div class="detail-value">${new Date(request.created_at).toLocaleDateString('id-ID')}</div>
-                            </div>
-                        </div>
-                    </div>
+        // Handler untuk confirm deliver
+        $('#confirmDeliver').click(function(e) {
+            e.preventDefault();
+            
+            if (!currentRequestId) {
+                showAlert('ID permintaan tidak ditemukan', 'warning');
+                return;
+            }
+            
+            const note = $('#deliverNote').val().trim();
+            
+            console.log('Confirm deliver for ID:', currentRequestId, 'Note:', note);
+            
+            // Ambil CSRF token dari meta tag
+            const csrfToken = $('meta[name="csrf-token"]').attr('content') || '{{ csrf_token() }}';
+            
+            // Kirim request deliver
+            $.ajax({
+                url: `/admin/requests/${currentRequestId}/deliver`,
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                data: {
+                    _token: csrfToken,
+                    catatan: note || 'Barang telah dikirim'
+                },
+                beforeSend: function() {
+                    $('#confirmDeliver').prop('disabled', true)
+                        .html('<span class="spinner-border spinner-border-sm"></span> Memproses...');
+                },
+                success: function(response) {
+                    console.log('Deliver Response:', response);
                     
-                    <!-- Bagian Pemohon -->
-                    <div class="detail-section">
-                        <div class="detail-section-title">
-                            <i class="bi bi-person"></i>
-                            Informasi Pemohon
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 detail-row">
-                                <div class="detail-label">Nama Pemohon</div>
-                                <div class="detail-value">${request.user?.name || '-'}</div>
-                            </div>
-                            <div class="col-md-6 detail-row">
-                                <div class="detail-label">Satuan Kerja</div>
-                                <div class="detail-value">${request.satker?.nama_satker || '-'}</div>
-                            </div>
-                        </div>
-                    </div>
+                    if (response.success) {
+                        showAlert(response.message, 'success');
+                        setTimeout(() => {
+                            location.reload();
+                        }, 1500);
+                    } else {
+                        showAlert(response.message || 'Terjadi kesalahan', 'danger');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Deliver AJAX Error:', xhr.responseText);
+                    let errorMessage = 'Terjadi kesalahan saat menandai sebagai terkirim';
                     
-                    <!-- Bagian Barang -->
-                    <div class="detail-section">
-                        <div class="detail-section-title">
-                            <i class="bi bi-box"></i>
-                            Detail Barang
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 detail-row">
-                                <div class="detail-label">Nama Barang</div>
-                                <div class="detail-value">${request.barang?.nama_barang || '-'}</div>
-                            </div>
-                            <div class="col-md-3 detail-row">
-                                <div class="detail-label">Kode Barang</div>
-                                <div class="detail-value">${request.barang?.kode_barang || '-'}</div>
-                            </div>
-                            <div class="col-md-3 detail-row">
-                                <div class="detail-label">Jumlah</div>
-                                <div class="detail-value">
-                                    <span class="badge">
-                                        <strong>${request.jumlah || 0}</strong> ${request.barang?.satuan?.nama_satuan || '-'}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    }
                     
-                    <!-- Bagian Status -->
-                    <div class="detail-section">
-                        <div class="detail-section-title">
-                            <i class="bi bi-clipboard-check"></i>
-                            Status Permintaan
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 detail-row">
-                                <div class="detail-label">Status</div>
-                                <div class="detail-value">
-                                    ${request.status == 'pending' ? 
-                                        '<span class="badge badge-pending">Pending</span>' : 
-                                    request.status == 'approved' ? 
-                                        '<span class="badge badge-approved">Disetujui</span>' : 
-                                    request.status == 'rejected' ? 
-                                        '<span class="badge badge-rejected">Ditolak</span>' : 
-                                    request.status == 'processing' ? 
-                                        '<span class="badge badge-processing">Diproses</span>' : 
-                                        '<span class="badge badge-delivered">Terkirim</span>'}
-                                </div>
-                            </div>
-                            <div class="col-md-6 detail-row">
-                                <div class="detail-label">Tanggal Status</div>
-                                <div class="detail-value">${request.approved_at ? new Date(request.approved_at).toLocaleDateString('id-ID') : '-'}</div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                
-                // Bagian Keterangan (jika ada)
-                if (request.keperluan || request.catatan) {
-                    html += `
-                        <div class="detail-section">
-                            <div class="detail-section-title">
-                                <i class="bi bi-card-text"></i>
-                                Keterangan
-                            </div>
-                            <div class="detail-row">
-                                ${request.keperluan ? `
-                                    <div class="mb-2">
-                                        <div class="detail-label">Keperluan</div>
-                                        <div class="detail-value">${request.keperluan}</div>
-                                    </div>
-                                ` : ''}
-                                ${request.catatan ? `
-                                    <div>
-                                        <div class="detail-label">Catatan Admin</div>
-                                        <div class="detail-value">${request.catatan}</div>
-                                    </div>
-                                ` : ''}
-                            </div>
-                        </div>
-                    `;
+                    showAlert(errorMessage, 'danger');
+                },
+                complete: function() {
+                    $('#confirmDeliver').prop('disabled', false)
+                        .html('<i class="bi bi-check me-1"></i> Ya, Sudah Terkirim');
+                    $('#deliverModal').modal('hide');
                 }
-                
-                // Bagian Disetujui/Ditolak Oleh (jika ada)
-                if (request.approved_by_user) {
-                    html += `
-                        <div class="detail-section">
-                            <div class="detail-section-title">
-                                <i class="bi bi-person-check"></i>
-                                Disetujui/Ditolak Oleh
-                            </div>
-                            <div class="detail-row">
-                                <div class="detail-label">Admin</div>
-                                <div class="detail-value">${request.approved_by_user.name || '-'}</div>
-                            </div>
-                        </div>
-                    `;
-                }
-                
-                $('#detailRequestModalBody').html(html);
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                $('#detailRequestModalBody').html(`
-                    <div class="text-center py-4">
-                        <i class="bi bi-exclamation-triangle text-danger display-4"></i>
-                        <p class="mt-2 text-danger">Gagal memuat data permintaan</p>
-                        <button class="btn btn-primary btn-sm mt-2" onclick="location.reload()">
-                            <i class="bi bi-arrow-clockwise"></i> Coba Lagi
-                        </button>
-                    </div>
-                `);
             });
+        });
+        
+        // Detail Request Modal Handler
+        $(document).on('click', '.btn-detail', function() {
+            const requestId = $(this).data('request-id');
+            
+            // Tampilkan loading state
+            $('#detailRequestModalBody').html(`
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2 text-muted">Memuat data permintaan...</p>
+                </div>
+            `);
+            
+            // Fetch request data via AJAX
+            fetch(`/admin/requests/${requestId}`)
+                .then(response => response.json())
+                .then(data => {
+                    const request = data.request || data;
+                    
+                    let html = `
+                        <!-- Bagian Informasi Dasar -->
+                        <div class="detail-section">
+                            <div class="detail-section-title">
+                                <i class="bi bi-info-circle"></i>
+                                Informasi Dasar
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 detail-row">
+                                    <div class="detail-label">Kode Permintaan</div>
+                                    <div class="detail-value">${request.kode_permintaan || '-'}</div>
+                                </div>
+                                <div class="col-md-6 detail-row">
+                                    <div class="detail-label">Tanggal Permintaan</div>
+                                    <div class="detail-value">${new Date(request.created_at).toLocaleDateString('id-ID')}</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Bagian Pemohon -->
+                        <div class="detail-section">
+                            <div class="detail-section-title">
+                                <i class="bi bi-person"></i>
+                                Informasi Pemohon
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 detail-row">
+                                    <div class="detail-label">Nama Pemohon</div>
+                                    <div class="detail-value">${request.user?.name || '-'}</div>
+                                </div>
+                                <div class="col-md-6 detail-row">
+                                    <div class="detail-label">Satuan Kerja</div>
+                                    <div class="detail-value">${request.satker?.nama_satker || '-'}</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Bagian Barang -->
+                        <div class="detail-section">
+                            <div class="detail-section-title">
+                                <i class="bi bi-box"></i>
+                                Detail Barang
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 detail-row">
+                                    <div class="detail-label">Nama Barang</div>
+                                    <div class="detail-value">${request.barang?.nama_barang || '-'}</div>
+                                </div>
+                                <div class="col-md-3 detail-row">
+                                    <div class="detail-label">Kode Barang</div>
+                                    <div class="detail-value">${request.barang?.kode_barang || '-'}</div>
+                                </div>
+                                <div class="col-md-3 detail-row">
+                                    <div class="detail-label">Jumlah</div>
+                                    <div class="detail-value">
+                                        <span class="badge badge-amount">
+                                            <strong>${request.jumlah || 0}</strong> ${request.barang?.satuan?.nama_satuan || '-'}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Bagian Status -->
+                        <div class="detail-section">
+                            <div class="detail-section-title">
+                                <i class="bi bi-clipboard-check"></i>
+                                Status Permintaan
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 detail-row">
+                                    <div class="detail-label">Status</div>
+                                    <div class="detail-value">
+                                        ${request.status == 'pending' ? 
+                                            '<span class="badge badge-pending">Pending</span>' : 
+                                        request.status == 'approved' ? 
+                                            '<span class="badge badge-approved">Disetujui</span>' : 
+                                        request.status == 'rejected' ? 
+                                            '<span class="badge badge-rejected">Ditolak</span>' : 
+                                            '<span class="badge badge-delivered">Terkirim</span>'}
+                                    </div>
+                                </div>
+                                <div class="col-md-6 detail-row">
+                                    <div class="detail-label">Tanggal Status</div>
+                                    <div class="detail-value">
+                                        ${request.delivered_at ? 
+                                            'Terkirim: ' + new Date(request.delivered_at).toLocaleDateString('id-ID') : 
+                                        request.approved_at ? 
+                                            'Disetujui: ' + new Date(request.approved_at).toLocaleDateString('id-ID') : 
+                                        '-'}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Bagian Keterangan (jika ada)
+                    if (request.keperluan || request.catatan) {
+                        html += `
+                            <div class="detail-section">
+                                <div class="detail-section-title">
+                                    <i class="bi bi-card-text"></i>
+                                    Keterangan
+                                </div>
+                                <div class="detail-row">
+                                    ${request.keperluan ? `
+                                        <div class="mb-2">
+                                            <div class="detail-label">Keperluan</div>
+                                            <div class="detail-value">${request.keperluan}</div>
+                                        </div>
+                                    ` : ''}
+                                    ${request.catatan ? `
+                                        <div>
+                                            <div class="detail-label">Catatan Admin</div>
+                                            <div class="detail-value">${request.catatan}</div>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        `;
+                    }
+                    
+                    // Bagian Disetujui/Ditolak Oleh (jika ada)
+                    if (request.approved_by_user) {
+                        html += `
+                            <div class="detail-section">
+                                <div class="detail-section-title">
+                                    <i class="bi bi-person-check"></i>
+                                    Disetujui/Ditolak Oleh
+                                </div>
+                                <div class="detail-row">
+                                    <div class="detail-label">Admin</div>
+                                    <div class="detail-value">${request.approved_by_user.name || '-'}</div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    
+                    $('#detailRequestModalBody').html(html);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    $('#detailRequestModalBody').html(`
+                        <div class="text-center py-4">
+                            <i class="bi bi-exclamation-triangle text-danger display-4"></i>
+                            <p class="mt-2 text-danger">Gagal memuat data permintaan</p>
+                            <button class="btn btn-primary btn-sm mt-2" onclick="location.reload()">
+                                <i class="bi bi-arrow-clockwise"></i> Coba Lagi
+                            </button>
+                        </div>
+                    `);
+                });
+        });
     });
     
     // Fungsi untuk menampilkan alert
     function showAlert(message, type = 'success') {
-        const alertContainer = document.querySelector('.alert-container');
+        // Pastikan alert container ada
+        let alertContainer = document.getElementById('alertContainer');
+        
+        if (!alertContainer) {
+            // Buat alert container jika tidak ada
+            alertContainer = document.createElement('div');
+            alertContainer.className = 'alert-container';
+            alertContainer.id = 'alertContainer';
+            document.body.appendChild(alertContainer);
+        }
+        
+        // Hapus alert sebelumnya
+        const existingAlerts = alertContainer.querySelectorAll('.alert');
+        existingAlerts.forEach(alert => {
+            const bsAlert = bootstrap.Alert.getInstance(alert);
+            if (bsAlert) {
+                bsAlert.close();
+            } else {
+                alert.remove();
+            }
+        });
+        
         const alert = document.createElement('div');
         alert.className = `alert alert-${type} alert-dismissible fade show`;
+        alert.setAttribute('role', 'alert');
+        
+        let icon = 'bi-check-circle';
+        if (type === 'warning') icon = 'bi-exclamation-triangle';
+        if (type === 'danger') icon = 'bi-exclamation-octagon';
+        if (type === 'info') icon = 'bi-info-circle';
+        
         alert.innerHTML = `
-            <i class="bi ${type === 'success' ? 'bi-check-circle' : 'bi-exclamation-triangle'} me-2"></i>
+            <i class="bi ${icon} me-2"></i>
             ${message}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         `;
+        
         alertContainer.appendChild(alert);
         
-        // Auto dismiss setelah 5 detik
-        setTimeout(() => {
-            if (alert.parentNode === alertContainer) {
-                alert.remove();
-            }
-        }, 5000);
+        // Inisialisasi Bootstrap alert
+        const bsAlert = new bootstrap.Alert(alert);
+        
+        // Auto dismiss setelah 5 detik (kecuali untuk warning/error penting)
+        if (type !== 'warning' && type !== 'danger') {
+            setTimeout(() => {
+                if (alert.parentNode === alertContainer) {
+                    bsAlert.close();
+                }
+            }, 5000);
+        }
     }
     
     // Print Function
     function printRequests() {
         // Sembunyikan elemen yang tidak perlu dicetak
         const elementsToHide = document.querySelectorAll('.sidebar, .topbar, .page-header, .stats-grid, .filter-bar, .status-tabs, .action-buttons, .btn-group');
-        elementsToHide.forEach(el => el.style.display = 'none');
+        elementsToHide.forEach(el => {
+            if (el) el.style.display = 'none';
+        });
         
         // Perlebar tabel untuk cetak
         const tableCard = document.querySelector('.table-card');
-        const originalStyles = {
-            boxShadow: tableCard.style.boxShadow,
-            padding: tableCard.style.padding
-        };
-        tableCard.style.boxShadow = 'none';
-        tableCard.style.padding = '0';
-        
-        // Tambahkan judul cetak
-        const printTitle = document.createElement('h4');
-        printTitle.textContent = 'Laporan Permintaan Barang - SILOG Polres';
-        printTitle.style.textAlign = 'center';
-        printTitle.style.marginBottom = '20px';
-        printTitle.style.fontWeight = 'bold';
-        tableCard.parentNode.insertBefore(printTitle, tableCard);
-        
-        // Tambahkan tanggal cetak
-        const printDate = document.createElement('p');
-        printDate.textContent = 'Tanggal: ' + new Date().toLocaleDateString('id-ID');
-        printDate.style.textAlign = 'center';
-        printDate.style.marginBottom = '20px';
-        printDate.style.color = '#666';
-        printTitle.parentNode.insertBefore(printDate, printTitle.nextSibling);
-        
-        // Tambahkan filter info jika ada
-        let filterInfo = '';
-        if (document.getElementById('searchInput').value) {
-            filterInfo += `Pencarian: ${document.getElementById('searchInput').value}<br>`;
-        }
-        if (document.getElementById('satkerFilter').value) {
-            const selectedSatker = document.querySelector('#satkerFilter option:checked').text;
-            filterInfo += `Satker: ${selectedSatker}<br>`;
-        }
-        if (document.getElementById('statusFilter').value) {
-            const selectedStatus = document.querySelector('#statusFilter option:checked').text;
-            filterInfo += `Status: ${selectedStatus}<br>`;
-        }
-        
-        if (filterInfo) {
-            const filterElement = document.createElement('p');
-            filterElement.innerHTML = filterInfo;
-            filterElement.style.textAlign = 'center';
-            filterElement.style.marginBottom = '20px';
-            filterElement.style.color = '#666';
-            filterElement.style.fontSize = '0.9rem';
-            printTitle.parentNode.insertBefore(filterElement, printTitle.nextSibling.nextSibling);
-        }
-        
-        // Cetak
-        window.print();
-        
-        // Kembalikan tampilan normal setelah cetak
-        setTimeout(() => {
-            elementsToHide.forEach(el => el.style.display = '');
-            tableCard.style.boxShadow = originalStyles.boxShadow;
-            tableCard.style.padding = originalStyles.padding;
-            if (printTitle.parentNode) {
-                printTitle.parentNode.removeChild(printTitle);
+        if (tableCard) {
+            const originalStyles = {
+                boxShadow: tableCard.style.boxShadow,
+                padding: tableCard.style.padding
+            };
+            tableCard.style.boxShadow = 'none';
+            tableCard.style.padding = '0';
+            
+            // Tambahkan judul cetak
+            const printTitle = document.createElement('h4');
+            printTitle.textContent = 'Laporan Permintaan Barang - SILOG Polres';
+            printTitle.style.textAlign = 'center';
+            printTitle.style.marginBottom = '20px';
+            printTitle.style.fontWeight = 'bold';
+            tableCard.parentNode.insertBefore(printTitle, tableCard);
+            
+            // Tambahkan tanggal cetak
+            const printDate = document.createElement('p');
+            printDate.textContent = 'Tanggal: ' + new Date().toLocaleDateString('id-ID');
+            printDate.style.textAlign = 'center';
+            printDate.style.marginBottom = '20px';
+            printDate.style.color = '#666';
+            printTitle.parentNode.insertBefore(printDate, printTitle.nextSibling);
+            
+            // Tambahkan filter info jika ada
+            let filterInfo = '';
+            const searchInput = document.getElementById('searchInput');
+            const satkerFilter = document.getElementById('satkerFilter');
+            const statusFilter = document.getElementById('statusFilter');
+            
+            if (searchInput && searchInput.value) {
+                filterInfo += `Pencarian: ${searchInput.value}<br>`;
             }
-            if (printDate.parentNode) {
-                printDate.parentNode.removeChild(printDate);
+            if (satkerFilter && satkerFilter.value) {
+                const selectedSatker = document.querySelector('#satkerFilter option:checked');
+                filterInfo += `Satker: ${selectedSatker ? selectedSatker.text : ''}<br>`;
             }
-        }, 500);
+            if (statusFilter && statusFilter.value) {
+                const selectedStatus = document.querySelector('#statusFilter option:checked');
+                filterInfo += `Status: ${selectedStatus ? selectedStatus.text : ''}<br>`;
+            }
+            
+            if (filterInfo) {
+                const filterElement = document.createElement('p');
+                filterElement.innerHTML = filterInfo;
+                filterElement.style.textAlign = 'center';
+                filterElement.style.marginBottom = '20px';
+                filterElement.style.color = '#666';
+                filterElement.style.fontSize = '0.9rem';
+                printTitle.parentNode.insertBefore(filterElement, printTitle.nextSibling.nextSibling);
+            }
+            
+            // Cetak
+            window.print();
+            
+            // Kembalikan tampilan normal setelah cetak
+            setTimeout(() => {
+                elementsToHide.forEach(el => {
+                    if (el) el.style.display = '';
+                });
+                
+                tableCard.style.boxShadow = originalStyles.boxShadow;
+                tableCard.style.padding = originalStyles.padding;
+                
+                // Hapus elemen yang ditambahkan
+                [printTitle, printDate, filterElement].forEach(el => {
+                    if (el && el.parentNode) {
+                        el.parentNode.removeChild(el);
+                    }
+                });
+            }, 500);
+        }
     }
     
     // Print Detail Function
     function printDetail() {
-        const detailContent = document.getElementById('detailRequestModalBody').cloneNode(true);
+        const detailContent = document.getElementById('detailRequestModalBody');
+        if (!detailContent) {
+            showAlert('Tidak ada konten untuk dicetak', 'warning');
+            return;
+        }
+        
+        const clonedContent = detailContent.cloneNode(true);
         const printWindow = window.open('', '_blank');
         
         // Tambahkan judul cetakan
@@ -1276,10 +1558,14 @@
                         border-radius: 4px; 
                         font-weight: bold;
                     }
+                    .badge-amount { 
+                        background-color: #f0f9ff !important; 
+                        color: #0c4a6e !important; 
+                        border: 1px solid #bae6fd !important; 
+                    }
                     .badge-pending { background-color: #fef3c7; color: #92400e; }
                     .badge-approved { background-color: #d1fae5; color: #065f46; }
                     .badge-rejected { background-color: #fee2e2; color: #991b1b; }
-                    .badge-processing { background-color: #dbeafe; color: #1e40af; }
                     .badge-delivered { background-color: #ede9fe; color: #7c3aed; }
                     @media print {
                         body { margin: 0; padding: 20px; }
@@ -1290,7 +1576,7 @@
             <body>
                 ${title.outerHTML}
                 ${date.outerHTML}
-                ${detailContent.innerHTML}
+                ${clonedContent.innerHTML}
                 <script>
                     window.onload = function() {
                         window.print();
@@ -1304,7 +1590,7 @@
     }
     
     // Logout confirmation
-    document.querySelector('form[action="{{ route("logout") }}"]').addEventListener('submit', function(e) {
+    document.querySelector('form[action="{{ route("logout") }}"]')?.addEventListener('submit', function(e) {
         if (!confirm('Apakah Anda yakin ingin logout?')) {
             e.preventDefault();
         }

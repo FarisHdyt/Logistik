@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Cookie;
 use App\Models\User;
+use App\Http\Controllers\ActivityLogController;
 
 class AuthController extends Controller
 {
@@ -34,7 +35,6 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
-        // Check if user exists
         $user = User::where('username', $request->username)
                     ->orWhere('nrp', $request->username)
                     ->first();
@@ -45,33 +45,35 @@ class AuthController extends Controller
             ])->withInput($request->except('password'));
         }
 
-        // Check password
         if (!Hash::check($request->password, $user->password)) {
             return back()->withErrors([
                 'password' => 'Password salah.',
             ])->withInput($request->except('password'));
         }
 
-        // Check if user is active
         if (!$user->is_active) {
             return back()->withErrors([
                 'username' => 'Akun ini tidak aktif. Hubungi administrator.',
             ])->withInput($request->except('password'));
         }
 
-        // Attempt to login
-        Auth::login($user, $request->has('remember'));
+        // Simpan login sebelumnya
+        $previousLogin = $user->current_login_at;
 
-        // Update last login info
+        // Login user
+        Auth::login($user, $request->boolean('remember'));
+
+        // Update waktu login
         $user->update([
-            'last_login_at' => now(),
-            'last_login_ip' => $request->ip(),
+            'last_login_at'    => $previousLogin,
+            'current_login_at' => now(),
+            'last_login_ip'    => $request->ip(),
         ]);
 
-        // Redirect based on role
-        $route = $this->getRedirectRoute($user->role);
-        
-        return redirect()->route($route)
+        // Log aktivitas login
+        ActivityLogController::logLogin($user);
+
+        return redirect()->route($this->getRedirectRoute($user->role))
             ->with('success', 'Selamat datang kembali, ' . $user->name . '!');
     }
 
@@ -127,6 +129,9 @@ class AuthController extends Controller
         // Auto login after registration
         Auth::login($user);
 
+        // Log aktivitas registrasi user baru
+        ActivityLogController::logCreateUser($user, 'Self Registration');
+
         return redirect()->route('dashboard')
             ->with('success', 'Pendaftaran berhasil! Selamat datang di SILOG POLRES.');
     }
@@ -136,6 +141,14 @@ class AuthController extends Controller
      */
     public function logout()
     {
+        // Dapatkan user sebelum logout
+        $user = Auth::user();
+        
+        // Log aktivitas logout jika user ada
+        if ($user) {
+            ActivityLogController::logLogout($user);
+        }
+
         // Clear authentication
         Auth::logout();
         
@@ -159,6 +172,14 @@ class AuthController extends Controller
      */
     public function forceLogout()
     {
+        // Dapatkan user sebelum logout
+        $user = Auth::user();
+        
+        // Log aktivitas logout jika user ada
+        if ($user) {
+            ActivityLogController::logLogout($user);
+        }
+        
         // Clear auth
         Auth::logout();
         
