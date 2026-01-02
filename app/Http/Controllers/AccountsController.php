@@ -31,7 +31,8 @@ class AccountsController extends Controller
             $query->where(function($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('username', 'like', "%{$search}%");
+                  ->orWhere('username', 'like', "%{$search}%")
+                  ->orWhere('nrp', 'like', "%{$search}%");
             });
         }
         
@@ -82,6 +83,7 @@ class AccountsController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'nrp' => ['required', 'string', 'max:10', 'unique:users'],
             'username' => ['nullable', 'string', 'max:50', 'unique:users'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'role' => ['required', 'string', 'in:superadmin,admin,user'],
@@ -99,6 +101,7 @@ class AccountsController extends Controller
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
+            'nrp' => $request->nrp,
             'username' => $request->username,
             'password' => Hash::make($request->password),
             'role' => $request->role,
@@ -113,6 +116,7 @@ class AccountsController extends Controller
             'user_id' => $user->id,
             'name' => $user->name,
             'email' => $user->email,
+            'nrp' => $user->nrp,
             'role' => $user->role
         ]);
 
@@ -174,6 +178,8 @@ class AccountsController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 
                         Rule::unique('users')->ignore($user->id)],
+            'nrp' => ['required', 'string', 'max:10',
+                     Rule::unique('users')->ignore($user->id)],
             'username' => ['nullable', 'string', 'max:50', 
                           Rule::unique('users')->ignore($user->id)],
             'role' => ['required', 'string', 'in:superadmin,admin,user'],
@@ -200,6 +206,7 @@ class AccountsController extends Controller
         $user->update([
             'name' => $request->name,
             'email' => $request->email,
+            'nrp' => $request->nrp,
             'username' => $request->username,
             'role' => $request->role,
             'satker_id' => $request->satker_id,
@@ -247,6 +254,7 @@ class AccountsController extends Controller
             'user_id' => $user->id,
             'name' => $user->name,
             'email' => $user->email,
+            'nrp' => $user->nrp,
             'role' => $user->role
         ]);
 
@@ -335,7 +343,8 @@ class AccountsController extends Controller
         ActivityLogController::logAction('update', 'Reset password akun: ' . $user->name, [
             'user_id' => $user->id,
             'name' => $user->name,
-            'email' => $user->email
+            'email' => $user->email,
+            'nrp' => $user->nrp
         ]);
 
         return response()->json([

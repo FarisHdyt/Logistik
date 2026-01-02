@@ -142,15 +142,25 @@
         
         /* Page Header */
         .page-header {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1.5rem;
         }
         
-        .page-title {
+        .page-header h1 {
             color: var(--dark);
-            font-weight: 600;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .page-header p {
+            color: #64748b;
+            margin-bottom: 0;
         }
         
         /* Stats Cards */
@@ -195,6 +205,40 @@
             font-size: 0.9rem;
         }
         
+        /* Filter and Search */
+        .filter-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .filter-card h6 {
+            color: var(--dark);
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+        
+        .search-box {
+            position: relative;
+        }
+        
+        .search-box i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+        }
+        
+        .search-box input {
+            padding-left: 40px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            width: 100%;
+        }
+        
         /* Main Card */
         .main-card {
             background: white;
@@ -234,11 +278,15 @@
             color: var(--dark);
             border-bottom: 2px solid #e2e8f0;
             padding: 1rem;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         
         .table tbody td {
             padding: 1rem;
             vertical-align: middle;
+            border-color: #e2e8f0;
         }
         
         .table tbody tr:hover {
@@ -249,54 +297,27 @@
         .badge {
             padding: 0.4rem 0.8rem;
             font-weight: 500;
+            font-size: 0.75rem;
         }
         
-        .badge-active {
+        .badge-info {
+            background-color: #e0f2fe;
+            color: #0369a1;
+        }
+        
+        .badge-success {
             background-color: #d1fae5;
             color: #065f46;
         }
         
-        .badge-inactive {
-            background-color: #f3f4f6;
-            color: #6b7280;
+        .badge-warning {
+            background-color: #fef3c7;
+            color: #92400e;
         }
         
-        /* Action Buttons */
+        /* Action Buttons in Table */
         .btn-group-sm .btn {
             padding: 0.25rem 0.5rem;
-        }
-        
-        /* Search and Filter */
-        .filter-bar {
-            background: #f8fafc;
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 1.5rem;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-            align-items: center;
-        }
-        
-        .search-box {
-            flex: 1;
-            min-width: 300px;
-            position: relative;
-        }
-        
-        .search-box i {
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #94a3b8;
-        }
-        
-        .search-box input {
-            padding-left: 40px;
-            border-radius: 8px;
-            border: 1px solid #cbd5e1;
-            width: 100%;
         }
         
         /* Pagination */
@@ -343,15 +364,10 @@
             padding: 3rem 1rem;
         }
         
-        .empty-state i {
-            font-size: 4rem;
+        .empty-state-icon {
+            font-size: 3rem;
             color: #cbd5e1;
             margin-bottom: 1rem;
-        }
-        
-        .empty-state p {
-            color: #64748b;
-            font-size: 1.1rem;
         }
         
         /* Loading Spinner */
@@ -359,6 +375,16 @@
             width: 1rem;
             height: 1rem;
             margin-right: 0.5rem;
+        }
+        
+        /* Form Controls */
+        .form-control.is-invalid {
+            border-color: #dc3545;
+            padding-right: calc(1.5em + .75rem);
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right calc(.375em + .1875rem) center;
+            background-size: calc(.75em + .375rem) calc(.75em + .375rem);
         }
         
         /* Responsive */
@@ -373,6 +399,7 @@
             
             .main-content {
                 margin-left: 70px;
+                padding: 1rem;
             }
             
             .nav-link {
@@ -384,20 +411,120 @@
                 min-width: 100%;
             }
             
-            .filter-bar {
-                flex-direction: column;
-                align-items: stretch;
+            .filter-card .row > div {
+                margin-bottom: 1rem;
+            }
+            
+            .table-responsive {
+                font-size: 0.85rem;
+            }
+            
+            .table th, .table td {
+                padding: 0.5rem;
+            }
+            
+            .badge {
+                font-size: 0.7rem;
+                padding: 0.3rem 0.5rem;
             }
         }
         
-        /* Custom Styles */
-        .form-control.is-invalid {
-            border-color: #dc3545;
-            padding-right: calc(1.5em + .75rem);
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
-            background-repeat: no-repeat;
-            background-position: right calc(.375em + .1875rem) center;
-            background-size: calc(.75em + .375rem) calc(.75em + .375rem);
+        @media (max-width: 576px) {
+            .page-header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .topbar h4 {
+                font-size: 1.2rem;
+            }
+            
+            .user-info {
+                flex-wrap: wrap;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .card-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        
+        /* Quick Info Card */
+        .quick-info-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+        
+        .quick-info-card h6 {
+            color: var(--dark);
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        
+        .quick-info-card hr {
+            margin: 0.5rem 0 1rem 0;
+            opacity: 0.2;
+        }
+        
+        /* Status indicators */
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .status-active {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+        
+        .status-inactive {
+            background-color: #f1f5f9;
+            color: #64748b;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        
+        .status-dot-active {
+            background-color: #10b981;
+        }
+        
+        .status-dot-inactive {
+            background-color: #94a3b8;
         }
     </style>
 </head>
@@ -507,8 +634,8 @@
         <!-- Page Header -->
         <div class="page-header">
             <div>
-                <h1 class="page-title">Manajemen Satuan Kerja (Satker)</h1>
-                <p class="text-muted mb-0">Kelola data satuan kerja di bawah naungan Polres</p>
+                <h1>Manajemen Satuan Kerja (Satker)</h1>
+                <p class="mb-0">Kelola data satuan kerja di bawah naungan Polres</p>
             </div>
             <button type="button" class="btn btn-primary" onclick="showAddSatkerForm()">
                 <i class="bi bi-plus-circle me-2"></i>Tambah Satker
@@ -528,26 +655,6 @@
             </div>
             
             <div class="stat-card">
-                <div class="stat-icon" style="background-color: #d1fae5; color: var(--success);">
-                    <i class="bi bi-check-circle"></i>
-                </div>
-                <div class="stat-content">
-                    <h3>{{ $stats['active_satker'] ?? 0 }}</h3>
-                    <p>Satker Aktif</p>
-                </div>
-            </div>
-            
-            <div class="stat-card">
-                <div class="stat-icon" style="background-color: #fef3c7; color: var(--warning);">
-                    <i class="bi bi-exclamation-triangle"></i>
-                </div>
-                <div class="stat-content">
-                    <h3>{{ $stats['inactive_satker'] ?? 0 }}</h3>
-                    <p>Satker Non-Aktif</p>
-                </div>
-            </div>
-            
-            <div class="stat-card">
                 <div class="stat-icon" style="background-color: #dbeafe; color: var(--primary);">
                     <i class="bi bi-people"></i>
                 </div>
@@ -556,25 +663,44 @@
                     <p>Total User</p>
                 </div>
             </div>
-        </div>
-        
-        <!-- Filter and Search -->
-        <div class="filter-bar">
-            <div class="search-box">
-                <i class="bi bi-search"></i>
-                <input type="text" class="form-control" placeholder="Cari satker..." id="searchInput">
+            
+            <div class="stat-card">
+                <div class="stat-icon" style="background-color: #fef3c7; color: var(--warning);">
+                    <i class="bi bi-clock-history"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>{{ $stats['total_permintaan'] ?? 0 }}</h3>
+                    <p>Total Permintaan</p>
+                </div>
             </div>
             
-            <div class="d-flex gap-2">
-                <select class="form-select" style="min-width: 150px;" id="statusFilter">
-                    <option value="">Semua Status</option>
-                    <option value="active">Aktif</option>
-                    <option value="inactive">Non-Aktif</option>
-                </select>
-                
-                <button class="btn btn-outline-secondary" id="resetFilter">
-                    <i class="bi bi-arrow-clockwise"></i> Reset
-                </button>
+            <!-- Stat Card Satker Aktif - DIPERBAHARUI -->
+            <div class="stat-card">
+                <div class="stat-icon" style="background-color: #d1fae5; color: var(--success);">
+                    <i class="bi bi-check-circle"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>{{ $stats['satker_aktif'] ?? 0 }}</h3>
+                    <p>Satker Aktif</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Filter Card -->
+        <div class="filter-card">
+            <h6><i class="bi bi-funnel me-2"></i>Filter & Pencarian</h6>
+            <div class="row g-3">
+                <div class="col-md-8">
+                    <div class="search-box">
+                        <i class="bi bi-search"></i>
+                        <input type="text" class="form-control" placeholder="Cari satker..." id="searchInput">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <button class="btn btn-outline-secondary w-100" id="resetFilter">
+                        <i class="bi bi-arrow-clockwise me-1"></i>Reset Filter
+                    </button>
+                </div>
             </div>
         </div>
         
@@ -583,28 +709,36 @@
             <div class="card-header">
                 <h5>Daftar Satker</h5>
                 <div>
-                    <span class="text-muted">Total: {{ $satkers->total() }} satker</span>
+                    <span class="text-muted">
+                        <i class="bi bi-building me-1"></i>
+                        Total: {{ $satkers->total() }} satker 
+                        ({{ $stats['satker_aktif'] ?? 0 }} aktif, 
+                        {{ $stats['total_satker'] - $stats['satker_aktif'] }} tidak aktif)
+                    </span>
                 </div>
             </div>
             
             <div class="table-responsive">
-                <table class="table table-hover">
+                <table class="table table-hover" id="satkerTable">
                     <thead>
                         <tr>
                             <th>#</th>
                             <th>Kode Satker</th>
                             <th>Nama Satker</th>
+                            <th>Status</th>
                             <th>Alamat</th>
                             <th>Telepon</th>
                             <th>Jumlah User</th>
-                            <th>Status</th>
                             <th>Tanggal Dibuat</th>
                             <th>Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($satkers as $index => $satker)
-                        <tr>
+                        @php
+                            $isActive = ($satker->users_count ?? 0) > 0;
+                        @endphp
+                        <tr data-satker-id="{{ $satker->id }}" class="{{ $isActive ? 'table-row-active' : '' }}">
                             <td>{{ $index + 1 + (($satkers->currentPage() - 1) * $satkers->perPage()) }}</td>
                             <td>
                                 <strong>{{ $satker->kode_satker ?? 'N/A' }}</strong>
@@ -615,26 +749,29 @@
                                         <i class="bi bi-building"></i>
                                     </div>
                                     <div>
-                                        <strong>{{ $satker->nama_satker }}</strong><br>
-                                        <small class="text-muted">{{ $satker->kategori ?? 'Satker Umum' }}</small>
+                                        <strong>{{ $satker->nama_satker }}</strong>
                                     </div>
                                 </div>
+                            </td>
+                            <td>
+                                @if($isActive)
+                                <span class="status-indicator status-active">
+                                    <span class="status-dot status-dot-active"></span>
+                                    Aktif
+                                </span>
+                                @else
+                                <span class="status-indicator status-inactive">
+                                    <span class="status-dot status-dot-inactive"></span>
+                                    Tidak Aktif
+                                </span>
+                                @endif
                             </td>
                             <td>{{ Str::limit($satker->alamat ?? 'Belum diisi', 30) }}</td>
                             <td>{{ $satker->telepon ?? '-' }}</td>
                             <td>
-                                <span class="badge bg-info">{{ $satker->users_count ?? 0 }}</span> user
-                            </td>
-                            <td>
-                                @if($satker->is_active)
-                                    <span class="badge badge-active">
-                                        <i class="bi bi-check-circle me-1"></i>Aktif
-                                    </span>
-                                @else
-                                    <span class="badge badge-inactive">
-                                        <i class="bi bi-x-circle me-1"></i>Non-Aktif
-                                    </span>
-                                @endif
+                                <span class="badge {{ $isActive ? 'badge-success' : 'badge-warning' }}">
+                                    {{ $satker->users_count ?? 0 }}
+                                </span> user
                             </td>
                             <td>
                                 {{ $satker->created_at->format('d/m/Y') }}
@@ -657,11 +794,18 @@
                         <tr>
                             <td colspan="9">
                                 <div class="empty-state">
-                                    <i class="bi bi-building"></i>
-                                    <p class="mb-3">Belum ada data satker</p>
-                                    <button type="button" class="btn btn-primary" onclick="showAddSatkerForm()">
-                                        <i class="bi bi-plus-circle me-2"></i>Tambah Satker Pertama
-                                    </button>
+                                    <div class="empty-state-icon">
+                                        <i class="bi bi-building"></i>
+                                    </div>
+                                    <h5 class="text-muted mb-3">Belum ada data satker</h5>
+                                    <p class="text-muted mb-4">
+                                        @if(request()->has('search'))
+                                            Coba ubah pencarian Anda atau
+                                        @endif
+                                        <button type="button" class="btn btn-primary" onclick="showAddSatkerForm()">
+                                            <i class="bi bi-plus-circle me-2"></i>Tambah Satker Pertama
+                                        </button>
+                                    </p>
                                 </div>
                             </td>
                         </tr>
@@ -678,49 +822,71 @@
                 </nav>
             </div>
             @endif
+            
+            <!-- Summary -->
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <small class="text-muted">
+                        Menampilkan {{ $satkers->firstItem() ?? 0 }} - {{ $satkers->lastItem() ?? 0 }} dari {{ $satkers->total() }} satker
+                    </small>
+                </div>
+                <div class="col-md-6 text-end">
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="changePerPage(10)" {{ request('per_page', 10) == 10 ? 'disabled' : '' }}>10</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="changePerPage(25)" {{ request('per_page', 10) == 25 ? 'disabled' : '' }}>25</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="changePerPage(50)" {{ request('per_page', 10) == 50 ? 'disabled' : '' }}>50</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="changePerPage(100)" {{ request('per_page', 10) == 100 ? 'disabled' : '' }}>100</button>
+                    </div>
+                </div>
+            </div>
         </div>
         
-        <!-- Quick Info -->
-        <div class="row">
-            <div class="col-md-12">
-                <div class="card bg-light">
-                    <div class="card-body">
-                        <h6><i class="bi bi-info-circle me-2"></i>Informasi Manajemen Satker</h6>
-                        <hr>
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="d-flex align-items-center mb-2">
-                                    <div class="flex-shrink-0">
-                                        <i class="bi bi-building text-primary"></i>
-                                    </div>
-                                    <div class="flex-grow-1 ms-3">
-                                        <small>Total Satker</small>
-                                        <p class="mb-0"><strong>{{ $stats['total_satker'] ?? 0 }}</strong></p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="d-flex align-items-center mb-2">
-                                    <div class="flex-shrink-0">
-                                        <i class="bi bi-check-circle text-success"></i>
-                                    </div>
-                                    <div class="flex-grow-1 ms-3">
-                                        <small>Satker Aktif</small>
-                                        <p class="mb-0"><strong>{{ $stats['active_satker'] ?? 0 }}</strong></p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="d-flex align-items-center">
-                                    <div class="flex-shrink-0">
-                                        <i class="bi bi-people text-info"></i>
-                                    </div>
-                                    <div class="flex-grow-1 ms-3">
-                                        <small>Total User</small>
-                                        <p class="mb-0"><strong>{{ $stats['total_users'] ?? 0 }}</strong></p>
-                                    </div>
-                                </div>
-                            </div>
+        <!-- Quick Info Card -->
+        <div class="quick-info-card">
+            <h6><i class="bi bi-info-circle me-2"></i>Informasi Manajemen Satker</h6>
+            <hr>
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="flex-shrink-0">
+                            <i class="bi bi-building text-primary fs-4"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <small class="text-muted">Total Satker</small>
+                            <p class="mb-0"><strong>{{ $stats['total_satker'] ?? 0 }}</strong></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="flex-shrink-0">
+                            <i class="bi bi-check-circle text-success fs-4"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <small class="text-muted">Satker Aktif</small>
+                            <p class="mb-0"><strong>{{ $stats['satker_aktif'] ?? 0 }}</strong></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="flex-shrink-0">
+                            <i class="bi bi-x-circle text-secondary fs-4"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <small class="text-muted">Satker Tidak Aktif</small>
+                            <p class="mb-0"><strong>{{ $stats['total_satker'] - $stats['satker_aktif'] }}</strong></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="flex-shrink-0">
+                            <i class="bi bi-people text-info fs-4"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <small class="text-muted">Total User</small>
+                            <p class="mb-0"><strong>{{ $stats['total_users'] ?? 0 }}</strong></p>
                         </div>
                     </div>
                 </div>
@@ -732,9 +898,9 @@
     <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
-                <div class="modal-header">
+                <div class="modal-header bg-danger text-white">
                     <h5 class="modal-title" id="deleteModalLabel">
-                        <i class="bi bi-exclamation-triangle me-2"></i>Konfirmasi Hapus
+                        <i class="bi bi-exclamation-triangle me-2"></i>Konfirmasi Hapus Satker
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -742,18 +908,18 @@
                     <p>Apakah Anda yakin ingin menghapus satker <strong id="satkerName"></strong>?</p>
                     <p class="text-danger">
                         <i class="bi bi-exclamation-circle me-1"></i>
-                        <small>Data yang dihapus tidak dapat dikembalikan.</small>
+                        <strong>Peringatan:</strong> Aksi ini tidak dapat dibatalkan. Semua data satker akan dihapus permanen.
                     </p>
+                    <form id="deleteForm" method="POST" style="display: none;">
+                        @csrf
+                        @method('DELETE')
+                    </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <form id="deleteForm" method="POST">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-danger">
-                            <i class="bi bi-trash me-1"></i>Hapus
-                        </button>
-                    </form>
+                    <button type="button" class="btn btn-danger" onclick="submitDelete()">
+                        <i class="bi bi-trash me-1"></i> Hapus
+                    </button>
                 </div>
             </div>
         </div>
@@ -765,7 +931,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="viewModalLabel">Detail Satker</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div id="satkerDetail"></div>
@@ -783,7 +949,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="satkerFormModalLabel">Tambah Satker Baru</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form id="satkerForm">
@@ -792,16 +958,20 @@
                         <input type="hidden" name="id" id="satkerId">
                         
                         <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="kode_satker" class="form-label">Kode Satker <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="kode_satker" name="kode_satker" required>
-                                <div class="invalid-feedback" id="kode_satker_error"></div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="kode_satker" class="form-label">Kode Satker <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="kode_satker" name="kode_satker" required>
+                                    <div class="invalid-feedback" id="kode_satker_error"></div>
+                                </div>
                             </div>
                             
-                            <div class="col-md-6 mb-3">
-                                <label for="nama_satker" class="form-label">Nama Satker <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="nama_satker" name="nama_satker" required>
-                                <div class="invalid-feedback" id="nama_satker_error"></div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="nama_satker" class="form-label">Nama Satker <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="nama_satker" name="nama_satker" required>
+                                    <div class="invalid-feedback" id="nama_satker_error"></div>
+                                </div>
                             </div>
                         </div>
                         
@@ -812,40 +982,41 @@
                         </div>
                         
                         <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="telepon" class="form-label">Telepon</label>
-                                <input type="text" class="form-control" id="telepon" name="telepon">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="telepon" class="form-label">Telepon</label>
+                                    <input type="text" class="form-control" id="telepon" name="telepon">
+                                </div>
                             </div>
                             
-                            <div class="col-md-6 mb-3">
-                                <label for="email" class="form-label">Email</label>
-                                <input type="email" class="form-control" id="email" name="email">
-                                <div class="invalid-feedback" id="email_error"></div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="email" name="email">
+                                    <div class="invalid-feedback" id="email_error"></div>
+                                </div>
                             </div>
                         </div>
                         
                         <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="nama_kepala" class="form-label">Nama Kepala</label>
-                                <input type="text" class="form-control" id="nama_kepala" name="nama_kepala">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="nama_kepala" class="form-label">Nama Kepala</label>
+                                    <input type="text" class="form-control" id="nama_kepala" name="nama_kepala">
+                                </div>
                             </div>
                             
-                            <div class="col-md-6 mb-3">
-                                <label for="pangkat_kepala" class="form-label">Pangkat Kepala</label>
-                                <input type="text" class="form-control" id="pangkat_kepala" name="pangkat_kepala">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="pangkat_kepala" class="form-label">Pangkat Kepala</label>
+                                    <input type="text" class="form-control" id="pangkat_kepala" name="pangkat_kepala">
+                                </div>
                             </div>
                         </div>
                         
                         <div class="mb-3">
                             <label for="nrp_kepala" class="form-label">NRP Kepala</label>
                             <input type="text" class="form-control" id="nrp_kepala" name="nrp_kepala">
-                        </div>
-                        
-                        <div class="mb-3">
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" id="is_active" name="is_active" value="1" checked>
-                                <label class="form-check-label" for="is_active">Status Aktif</label>
-                            </div>
                         </div>
                     </form>
                 </div>
@@ -865,6 +1036,7 @@
         let deleteModal = null;
         let viewModal = null;
         let satkerFormModal = null;
+        let userToDelete = null;
         
         // Initialize modals on DOM ready
         document.addEventListener('DOMContentLoaded', function() {
@@ -884,17 +1056,31 @@
                 });
             }
             
-            // Setup filter functionality
-            const statusFilter = document.getElementById('statusFilter');
-            if (statusFilter) {
-                statusFilter.addEventListener('change', filterSatkers);
-            }
-            
             // Setup reset filter
             const resetBtn = document.getElementById('resetFilter');
             if (resetBtn) {
                 resetBtn.addEventListener('click', resetFilters);
             }
+            
+            // Auto dismiss alerts
+            setTimeout(() => {
+                document.querySelectorAll('.alert').forEach(alert => {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                });
+            }, 5000);
+            
+            // Add CSS for active rows
+            const style = document.createElement('style');
+            style.textContent = `
+                .table-row-active {
+                    background-color: rgba(16, 185, 129, 0.05);
+                }
+                .table-row-active:hover {
+                    background-color: rgba(16, 185, 129, 0.1) !important;
+                }
+            `;
+            document.head.appendChild(style);
         });
         
         // Function to show add satker form
@@ -947,7 +1133,6 @@
                     document.getElementById('nama_kepala').value = data.data.nama_kepala || '';
                     document.getElementById('pangkat_kepala').value = data.data.pangkat_kepala || '';
                     document.getElementById('nrp_kepala').value = data.data.nrp_kepala || '';
-                    document.getElementById('is_active').checked = data.data.is_active == 1;
                     
                     // Show modal
                     satkerFormModal.show();
@@ -1084,12 +1269,20 @@
         
         // Delete Satker function
         function deleteSatker(id, name) {
+            userToDelete = id;
+            const deleteForm = document.getElementById('deleteForm');
+            deleteForm.action = `/superadmin/satker/${id}`;
             document.getElementById('satkerName').textContent = name;
-            document.getElementById('deleteForm').action = `/superadmin/satker/${id}`;
             deleteModal.show();
         }
         
-        // ==================== VIEW SATKER FUNCTION - FIXED ====================
+        function submitDelete() {
+            if (userToDelete) {
+                document.getElementById('deleteForm').submit();
+            }
+        }
+        
+        // View Satker function
         function viewSatker(id) {
             console.log('Viewing satker ID:', id);
             
@@ -1103,158 +1296,125 @@
                 </div>
             `;
             
-            // Pastikan modal sudah diinisialisasi
+            // Ensure modal is initialized
             if (!viewModal) {
                 viewModal = new bootstrap.Modal(document.getElementById('viewModal'));
             }
             viewModal.show();
             
-            // **PERBAIKAN: Gunakan URL baru ajax-view**
-            const url = `/superadmin/satker/ajax-view/${id}`;
-            console.log('Fetching from NEW URL:', url);
-            
-            fetch(url, {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                }
-            })
-            .then(response => {
-                console.log('Response status:', response.status);
-                console.log('Response URL:', response.url);
+            // Get the table row data
+            const row = document.querySelector(`tr[data-satker-id="${id}"]`);
+            if (row) {
+                const cells = row.cells;
+                const isActive = cells[3]?.querySelector('.status-active') !== null;
+                const satkerData = {
+                    id: id,
+                    kode_satker: cells[1]?.querySelector('strong')?.textContent.trim() || 'N/A',
+                    nama_satker: cells[2]?.querySelector('strong')?.textContent.trim() || 'N/A',
+                    status: isActive ? 'Aktif' : 'Tidak Aktif',
+                    alamat: cells[4]?.textContent.trim() || 'Belum diisi',
+                    telepon: cells[5]?.textContent.trim() || '-',
+                    users_count: parseInt(cells[6]?.querySelector('.badge')?.textContent) || 0,
+                    created_at: new Date().toISOString()
+                };
                 
-                if (!response.ok) {
-                    if (response.status === 404) {
-                        throw new Error(`Endpoint tidak ditemukan: ${url}. Periksa route.`);
-                    }
-                    return response.json().then(err => {
-                        throw new Error(err.message || `HTTP Error ${response.status}`);
-                    }).catch(() => {
-                        throw new Error(`HTTP ${response.status}`);
-                    });
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log('Response data:', data);
-                
-                if (data.success && data.data) {
-                    const satker = data.data;
-                    
-                    // Format tanggal
-                    const formatDate = (dateString) => {
-                        if (!dateString) return '-';
-                        try {
-                            const date = new Date(dateString);
-                            return date.toLocaleDateString('id-ID', {
-                                day: '2-digit',
-                                month: '2-digit',
-                                year: 'numeric'
-                            });
-                        } catch (e) {
-                            return dateString;
-                        }
-                    };
-                    
-                    document.getElementById('satkerDetail').innerHTML = `
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="card bg-light mb-3">
-                                    <div class="card-body text-center">
-                                        <div class="user-avatar mx-auto mb-3" style="width: 80px; height: 80px; background: linear-gradient(135deg, #3b82f6 0%, #1e3a8a 100%);">
-                                            <i class="bi bi-building" style="font-size: 2rem;"></i>
-                                        </div>
-                                        <h5 class="mb-1">${satker.nama_satker || 'N/A'}</h5>
-                                        <p class="text-muted mb-2">${satker.kode_satker || 'N/A'}</p>
-                                        ${satker.is_active ? 
-                                            '<span class="badge badge-active"><i class="bi bi-check-circle me-1"></i>Aktif</span>' : 
-                                            '<span class="badge badge-inactive"><i class="bi bi-x-circle me-1"></i>Non-Aktif</span>'
-                                        }
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-8">
-                                <div class="mb-3">
-                                    <h6>Informasi Satker</h6>
-                                    <hr class="mt-1">
-                                    <div class="row mb-2">
-                                        <div class="col-4"><strong>Kategori:</strong></div>
-                                        <div class="col-8">${satker.kategori || 'Satker Umum'}</div>
-                                    </div>
-                                    <div class="row mb-2">
-                                        <div class="col-4"><strong>Alamat:</strong></div>
-                                        <div class="col-8">${satker.alamat || 'Belum diisi'}</div>
-                                    </div>
-                                    <div class="row mb-2">
-                                        <div class="col-4"><strong>Telepon:</strong></div>
-                                        <div class="col-8">${satker.telepon || '-'}</div>
-                                    </div>
-                                    <div class="row mb-2">
-                                        <div class="col-4"><strong>Email:</strong></div>
-                                        <div class="col-8">${satker.email || '-'}</div>
-                                    </div>
-                                    ${satker.nama_kepala ? `
-                                    <div class="row mb-2">
-                                        <div class="col-4"><strong>Kepala Satker:</strong></div>
-                                        <div class="col-8">${satker.nama_kepala} ${satker.pangkat_kepala ? `(${satker.pangkat_kepala})` : ''}</div>
-                                    </div>` : ''}
-                                    ${satker.nrp_kepala ? `
-                                    <div class="row mb-2">
-                                        <div class="col-4"><strong>NRP Kepala:</strong></div>
-                                        <div class="col-8">${satker.nrp_kepala}</div>
-                                    </div>` : ''}
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <h6>Statistik</h6>
-                                    <hr class="mt-1">
-                                    <div class="row">
-                                        <div class="col-6">
-                                            <small class="text-muted">Total User</small>
-                                            <p class="mb-0"><strong>${satker.users_count || 0}</strong></p>
-                                        </div>
-                                        <div class="col-6">
-                                            <small class="text-muted">Total Permintaan</small>
-                                            <p class="mb-0"><strong>${satker.permintaans_count || 0}</strong></p>
-                                        </div>
-                                    </div>
-                                    <div class="row mt-2">
-                                        <div class="col-6">
-                                            <small class="text-muted">Tanggal Dibuat</small>
-                                            <p class="mb-0"><strong>${satker.created_at_formatted || formatDate(satker.created_at)}</strong></p>
-                                        </div>
-                                        <div class="col-6">
-                                            <small class="text-muted">Terakhir Diperbarui</small>
-                                            <p class="mb-0"><strong>${satker.updated_at_formatted || formatDate(satker.updated_at)}</strong></p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    document.getElementById('satkerDetail').innerHTML = `
-                        <div class="alert alert-danger">
-                            <i class="bi bi-exclamation-triangle me-2"></i>
-                            ${data.message || 'Gagal memuat data satker'}
-                        </div>
-                    `;
-                }
-            })
-            .catch(error => {
-                console.error('Fetch error details:', error);
+                displaySatkerDetail(satkerData);
+            } else {
+                displaySatkerDetail(null);
+            }
+        }
+        
+        // Helper function to display satker detail
+        function displaySatkerDetail(satker) {
+            if (!satker) {
                 document.getElementById('satkerDetail').innerHTML = `
-                    <div class="alert alert-danger">
+                    <div class="alert alert-warning">
                         <i class="bi bi-exclamation-triangle me-2"></i>
-                        Error: ${error.message}<br>
-                        <small>URL: ${url}</small><br>
-                        <small>Silakan coba lagi atau hubungi administrator.</small>
+                        Data satker tidak ditemukan
                     </div>
                 `;
-            });
+                return;
+            }
+            
+            // Format date
+            const formatDate = (dateString) => {
+                if (!dateString) return '-';
+                try {
+                    const date = new Date(dateString);
+                    return date.toLocaleDateString('id-ID', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric'
+                    });
+                } catch (e) {
+                    return dateString;
+                }
+            };
+            
+            document.getElementById('satkerDetail').innerHTML = `
+                <div class="row">
+                    <div class="col-md-4 mb-4">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <div class="user-avatar mb-3 mx-auto" style="width: 80px; height: 80px; background: linear-gradient(135deg, #3b82f6 0%, #1e3a8a 100%);">
+                                    <i class="bi bi-building" style="font-size: 2rem;"></i>
+                                </div>
+                                <h4>${satker.nama_satker}</h4>
+                                <p class="text-muted mb-1">${satker.kode_satker}</p>
+                                <span class="status-indicator ${satker.status === 'Aktif' ? 'status-active' : 'status-inactive'}">
+                                    <span class="status-dot ${satker.status === 'Aktif' ? 'status-dot-active' : 'status-dot-inactive'}"></span>
+                                    ${satker.status}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-8 mb-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title mb-3">Informasi Satker</h5>
+                                <table class="table table-borderless">
+                                    <tr>
+                                        <th width="30%">Kode Satker</th>
+                                        <td>${satker.kode_satker}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Status</th>
+                                        <td>
+                                            <span class="status-indicator ${satker.status === 'Aktif' ? 'status-active' : 'status-inactive'}">
+                                                <span class="status-dot ${satker.status === 'Aktif' ? 'status-dot-active' : 'status-dot-inactive'}"></span>
+                                                ${satker.status}
+                                            </span>
+                                            ${satker.users_count > 0 ? `(${satker.users_count} user)` : '(Belum ada user)'}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>Alamat</th>
+                                        <td>${satker.alamat}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Telepon</th>
+                                        <td>${satker.telepon}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Jumlah User</th>
+                                        <td>
+                                            <span class="badge ${satker.users_count > 0 ? 'badge-success' : 'badge-warning'}">
+                                                ${satker.users_count}
+                                            </span> user
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>Tanggal Dibuat</th>
+                                        <td>${formatDate(satker.created_at)}</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
         }
-        // ==================== END OF FIXED FUNCTION ====================
         
         // Helper function to show alerts
         function showAlert(type, message) {
@@ -1298,31 +1458,9 @@
             });
         }
         
-        // Filter functionality
-        function filterSatkers() {
-            const status = document.getElementById('statusFilter').value;
-            const rows = document.querySelectorAll('tbody tr');
-            
-            rows.forEach(row => {
-                if (row.querySelector('.empty-state')) return;
-                
-                const statusCell = row.querySelector('td:nth-child(7)').textContent.toLowerCase();
-                let showRow = true;
-                
-                if (status === 'active' && !statusCell.includes('aktif')) {
-                    showRow = false;
-                } else if (status === 'inactive' && !statusCell.includes('non-aktif')) {
-                    showRow = false;
-                }
-                
-                row.style.display = showRow ? '' : 'none';
-            });
-        }
-        
         // Reset filters
         function resetFilters() {
             document.getElementById('searchInput').value = '';
-            document.getElementById('statusFilter').value = '';
             
             const rows = document.querySelectorAll('tbody tr');
             rows.forEach(row => {
@@ -1330,13 +1468,62 @@
             });
         }
         
-        // Auto dismiss alerts
-        setTimeout(() => {
-            document.querySelectorAll('.alert').forEach(alert => {
-                const bsAlert = new bootstrap.Alert(alert);
-                bsAlert.close();
-            });
-        }, 5000);
+        // Print table
+        function printTable() {
+            const table = document.getElementById('satkerTable');
+            if (!table) {
+                showAlert('warning', 'Tabel tidak ditemukan');
+                return;
+            }
+            
+            const originalContents = document.body.innerHTML;
+            const printContents = table.outerHTML;
+            
+            document.body.innerHTML = `
+                <html>
+                <head>
+                    <title>Daftar Satker - SILOG Polres</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 20px; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                        th { background-color: #f2f2f2; font-weight: bold; }
+                        tr:nth-child(even) { background-color: #f9f9f9; }
+                        h2 { color: #333; }
+                        .badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; }
+                        .status-indicator { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 12px; font-size: 12px; }
+                        .status-active { background-color: #d1fae5; color: #065f46; }
+                        .status-inactive { background-color: #f1f5f9; color: #64748b; }
+                        .status-dot { width: 6px; height: 6px; border-radius: 50%; }
+                        .status-dot-active { background-color: #10b981; }
+                        .status-dot-inactive { background-color: #94a3b8; }
+                        @media print {
+                            @page { size: landscape; margin: 0.5cm; }
+                            body { margin: 0; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <h2>DAFTAR SATKER - SILOG POLRES</h2>
+                    <p><strong>Tanggal cetak:</strong> ${new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+                    <p><strong>Total satker:</strong> {{ $satkers->total() }}</p>
+                    <p><strong>Satker aktif:</strong> {{ $stats['satker_aktif'] ?? 0 }}</p>
+                    ${printContents}
+                </body>
+                </html>
+            `;
+            
+            window.print();
+            document.body.innerHTML = originalContents;
+            window.location.reload();
+        }
+        
+        // Change items per page
+        function changePerPage(perPage) {
+            const url = new URL(window.location.href);
+            url.searchParams.set('per_page', perPage);
+            window.location.href = url.toString();
+        }
         
         // Logout confirmation
         document.querySelector('form[action="{{ route("logout") }}"]').addEventListener('submit', function(e) {

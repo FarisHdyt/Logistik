@@ -315,6 +315,15 @@
             color: #6b7280;
         }
         
+        /* NRP Badge */
+        .badge-nrp {
+            background-color: #e0f2fe;
+            color: #0369a1;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+        }
+        
         /* Action Buttons in Table */
         .action-btns {
             display: flex;
@@ -414,6 +423,22 @@
         }
         
         /* Responsive */
+        @media (max-width: 992px) {
+            .table-responsive {
+                font-size: 0.9rem;
+            }
+            .table th, .table td {
+                padding: 0.75rem 0.5rem;
+            }
+            .action-btns {
+                flex-direction: column;
+            }
+            .btn-icon {
+                width: 28px;
+                height: 28px;
+            }
+        }
+        
         @media (max-width: 768px) {
             .sidebar {
                 width: 70px;
@@ -425,6 +450,7 @@
             
             .main-content {
                 margin-left: 70px;
+                padding: 1rem;
             }
             
             .nav-link {
@@ -440,8 +466,35 @@
                 margin-bottom: 1rem;
             }
             
-            .action-btns {
+            .table-responsive {
+                font-size: 0.85rem;
+            }
+            
+            .table th, .table td {
+                padding: 0.5rem;
+            }
+            
+            .badge {
+                font-size: 0.7rem;
+                padding: 0.3rem 0.5rem;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .page-header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .topbar h4 {
+                font-size: 1.2rem;
+            }
+            
+            .user-info {
                 flex-wrap: wrap;
+            }
+            
+            .table-responsive {
+                font-size: 0.8rem;
             }
         }
         
@@ -653,6 +706,22 @@
                     
                     <div class="col-md-6">
                         <div class="mb-3">
+                            <label for="nrp" class="form-label">NRP <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control @error('nrp') is-invalid @enderror" 
+                                   id="nrp" name="nrp" 
+                                   value="{{ old('nrp', $user->nrp ?? '') }}" 
+                                   placeholder="Masukkan NRP (8-10 digit)" 
+                                   pattern="\d{8,10}" 
+                                   maxlength="10" required>
+                            @error('nrp')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                            <small class="text-muted">Format: 8-10 digit angka</small>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="mb-3">
                             <label for="username" class="form-label">Username</label>
                             <input type="text" class="form-control @error('username') is-invalid @enderror" 
                                    id="username" name="username" 
@@ -681,9 +750,14 @@
                     <div class="col-md-6">
                         <div class="mb-3">
                             <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
-                            <input type="password" class="form-control @error('password') is-invalid @enderror" 
-                                   id="password" name="password" 
-                                   placeholder="Masukkan password" required>
+                            <div class="input-group">
+                                <input type="password" class="form-control @error('password') is-invalid @enderror" 
+                                       id="password" name="password" 
+                                       placeholder="Masukkan password" required>
+                                <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('password')">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
                             @error('password')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -693,9 +767,14 @@
                     <div class="col-md-6">
                         <div class="mb-3">
                             <label for="password_confirmation" class="form-label">Konfirmasi Password <span class="text-danger">*</span></label>
-                            <input type="password" class="form-control @error('password_confirmation') is-invalid @enderror" 
-                                   id="password_confirmation" name="password_confirmation" 
-                                   placeholder="Konfirmasi password" required>
+                            <div class="input-group">
+                                <input type="password" class="form-control @error('password_confirmation') is-invalid @enderror" 
+                                       id="password_confirmation" name="password_confirmation" 
+                                       placeholder="Konfirmasi password" required>
+                                <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('password_confirmation')">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
                             @error('password_confirmation')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -760,9 +839,14 @@
                     <div class="col-md-6">
                         <div class="mb-3">
                             <label for="password" class="form-label">Ubah Password (Opsional)</label>
-                            <input type="password" class="form-control @error('password') is-invalid @enderror" 
-                                   id="password" name="password" 
-                                   placeholder="Kosongkan jika tidak ingin mengubah">
+                            <div class="input-group">
+                                <input type="password" class="form-control @error('password') is-invalid @enderror" 
+                                       id="new_password" name="password" 
+                                       placeholder="Kosongkan jika tidak ingin mengubah">
+                                <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('new_password')">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
                             @error('password')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -772,9 +856,14 @@
                     <div class="col-md-6">
                         <div class="mb-3">
                             <label for="password_confirmation" class="form-label">Konfirmasi Password Baru</label>
-                            <input type="password" class="form-control @error('password_confirmation') is-invalid @enderror" 
-                                   id="password_confirmation" name="password_confirmation" 
-                                   placeholder="Konfirmasi password baru">
+                            <div class="input-group">
+                                <input type="password" class="form-control @error('password_confirmation') is-invalid @enderror" 
+                                       id="new_password_confirmation" name="password_confirmation" 
+                                       placeholder="Konfirmasi password baru">
+                                <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('new_password_confirmation')">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
                             @error('password_confirmation')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -811,7 +900,8 @@
                             {{ substr($user->name, 0, 1) }}
                         </div>
                         <h4>{{ $user->name }}</h4>
-                        <p class="text-muted mb-2">{{ $user->email }}</p>
+                        <p class="text-muted mb-1">{{ $user->email }}</p>
+                        <span class="badge badge-nrp mb-2">{{ $user->nrp }}</span><br>
                         <span class="badge {{ $user->is_active ? 'badge-active' : 'badge-inactive' }}">
                             {{ $user->is_active ? 'Aktif' : 'Non-Aktif' }}
                         </span>
@@ -825,7 +915,13 @@
                         <h5 class="card-title">Informasi Akun</h5>
                         <table class="table table-borderless">
                             <tr>
-                                <th width="30%">Username</th>
+                                <th width="30%">NRP</th>
+                                <td>
+                                    <span class="badge badge-nrp">{{ $user->nrp }}</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Username</th>
                                 <td>{{ $user->username ?? '-' }}</td>
                             </tr>
                             <tr>
@@ -842,7 +938,15 @@
                             </tr>
                             <tr>
                                 <th>Satker</th>
-                                <td>{{ $user->satker->nama_satker ?? '-' }}</td>
+                                <td>
+                                    @if($user->satker)
+                                        <span class="badge bg-light text-dark">
+                                            {{ $user->satker->nama_satker }}
+                                        </span>
+                                    @else
+                                        <span class="text-muted">-</span>
+                                    @endif
+                                </td>
                             </tr>
                             <tr>
                                 <th>Telepon</th>
@@ -855,6 +959,10 @@
                             <tr>
                                 <th>Terakhir Login</th>
                                 <td>{{ $user->last_login_at ? $user->last_login_at->format('d/m/Y H:i') : 'Belum login' }}</td>
+                            </tr>
+                            <tr>
+                                <th>Terakhir Diperbarui</th>
+                                <td>{{ $user->updated_at->format('d/m/Y H:i') }}</td>
                             </tr>
                         </table>
                     </div>
@@ -921,9 +1029,6 @@
             <a href="{{ route('superadmin.accounts.create') }}" class="btn btn-primary">
                 <i class="bi bi-person-plus me-2"></i> Tambah Akun Baru
             </a>
-            <button class="btn btn-outline-primary" onclick="exportToExcel()">
-                <i class="bi bi-file-earmark-excel me-2"></i> Export Excel
-            </button>
             <button class="btn btn-outline-primary" onclick="printTable()">
                 <i class="bi bi-printer me-2"></i> Print
             </button>
@@ -937,7 +1042,7 @@
                     <div class="col-md-3">
                         <label for="search" class="form-label">Cari Akun</label>
                         <input type="text" class="form-control" id="search" name="search" 
-                               value="{{ request('search') }}" placeholder="Nama, email, atau username...">
+                               value="{{ request('search') }}" placeholder="Nama, NRP, email...">
                     </div>
                     <div class="col-md-2">
                         <label for="role" class="form-label">Role</label>
@@ -997,7 +1102,7 @@
                         <tr>
                             <th>#</th>
                             <th>Akun</th>
-                            <th>Username</th>
+                            <th>NRP</th>
                             <th>Email</th>
                             <th>Role</th>
                             <th>Satker</th>
@@ -1021,7 +1126,9 @@
                                     </div>
                                 </div>
                             </td>
-                            <td>{{ $user->username ?? '-' }}</td>
+                            <td>
+                                <span class="badge badge-nrp">{{ $user->nrp }}</span>
+                            </td>
                             <td>{{ $user->email }}</td>
                             <td>
                                 @if($user->role == 'superadmin')
@@ -1238,7 +1345,6 @@
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
     <script>
         // Global variables
         let userToDelete = null;
@@ -1317,24 +1423,21 @@
             });
         }
         
-        // Export to Excel
-        function exportToExcel() {
-            const table = document.getElementById('usersTable');
-            if (!table) {
-                showAlert('Tabel tidak ditemukan', 'warning');
-                return;
+        // Toggle password visibility
+        function togglePassword(fieldId) {
+            const field = document.getElementById(fieldId);
+            const button = field.parentNode.querySelector('button');
+            const icon = button.querySelector('i');
+            
+            if (field.type === 'password') {
+                field.type = 'text';
+                icon.className = 'bi bi-eye-slash';
+                button.setAttribute('aria-label', 'Sembunyikan password');
+            } else {
+                field.type = 'password';
+                icon.className = 'bi bi-eye';
+                button.setAttribute('aria-label', 'Tampilkan password');
             }
-            
-            const ws = XLSX.utils.table_to_sheet(table);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, 'Akun');
-            
-            // Add header
-            const header = [['DAFTAR AKUN - SILOG POLRES', '', '', '', '', '', '', '', '']];
-            XLSX.utils.sheet_add_aoa(ws, header, { origin: 'A1' });
-            
-            // Save file
-            XLSX.writeFile(wb, `akun_export_${new Date().toISOString().split('T')[0]}.xlsx`);
         }
         
         // Print table
@@ -1353,19 +1456,27 @@
                 <head>
                     <title>Daftar Akun - SILOG Polres</title>
                     <style>
-                        body { font-family: Arial, sans-serif; }
-                        table { width: 100%; border-collapse: collapse; }
-                        th, td { border: 1px solid #ddd; padding: 8px; }
-                        th { background-color: #f2f2f2; }
+                        body { font-family: Arial, sans-serif; margin: 20px; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                        th { background-color: #f2f2f2; font-weight: bold; }
                         tr:nth-child(even) { background-color: #f9f9f9; }
+                        h2 { color: #333; }
+                        .badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; }
+                        .badge-nrp { background-color: #e0f2fe; color: #0369a1; }
+                        .badge-superadmin { background-color: #f3e8ff; color: #7c3aed; }
+                        .badge-admin { background-color: #e0e7ff; color: #4f46e5; }
+                        .badge-user { background-color: #dbeafe; color: #2563eb; }
                         @media print {
-                            @page { size: landscape; }
+                            @page { size: landscape; margin: 0.5cm; }
+                            body { margin: 0; }
                         }
                     </style>
                 </head>
                 <body>
                     <h2>DAFTAR AKUN - SILOG POLRES</h2>
-                    <p>Tanggal cetak: ${new Date().toLocaleDateString('id-ID')}</p>
+                    <p><strong>Tanggal cetak:</strong> ${new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+                    <p><strong>Total akun:</strong> {{ $users->total() }}</p>
                     ${printContents}
                 </body>
                 </html>
@@ -1421,6 +1532,18 @@
             }
         });
         
+        // NRP validation
+        function validateNRP(input) {
+            const nrp = input.value.replace(/\D/g, '');
+            if (nrp.length >= 8 && nrp.length <= 10) {
+                input.setCustomValidity('');
+                return true;
+            } else {
+                input.setCustomValidity('NRP harus 8-10 digit angka');
+                return false;
+            }
+        }
+        
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             // Select elements change event
@@ -1432,6 +1555,22 @@
                     }
                 });
             });
+            
+            // NRP validation on form submit
+            const nrpField = document.getElementById('nrp');
+            if (nrpField) {
+                nrpField.addEventListener('input', function() {
+                    validateNRP(this);
+                });
+                
+                // Format NRP as user types
+                nrpField.addEventListener('keyup', function() {
+                    let value = this.value.replace(/\D/g, '');
+                    if (value.length > 0) {
+                        this.value = value;
+                    }
+                });
+            }
             
             // Mobile sidebar toggle
             const sidebar = document.querySelector('.sidebar');
@@ -1458,7 +1597,7 @@
             const tableRows = document.querySelectorAll('#usersTable tbody tr');
             tableRows.forEach(row => {
                 row.addEventListener('click', function(e) {
-                    if (!e.target.closest('.action-btns')) {
+                    if (!e.target.closest('.action-btns') && !e.target.closest('.form-check-input')) {
                         const userId = this.querySelector('[data-user-id]')?.getAttribute('data-user-id');
                         if (userId) {
                             viewUser(userId);
@@ -1480,6 +1619,21 @@
                     }, 500);
                 });
             }
+            
+            // Sort NRP numbers naturally
+            const nrpCells = document.querySelectorAll('#usersTable tbody td:nth-child(3)');
+            nrpCells.forEach(cell => {
+                const nrpText = cell.textContent.trim();
+                if (nrpText && !isNaN(nrpText)) {
+                    cell.dataset.sortValue = nrpText.padStart(10, '0');
+                }
+            });
+            
+            // Tooltip initialization
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
         });
     </script>
 </body>

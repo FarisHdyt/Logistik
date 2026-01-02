@@ -28,8 +28,7 @@ class SatkerController extends Controller
         $stats = [
             'total_satker' => Satker::count(),
             'total_users' => User::count(),
-            'satker_dengan_user' => Satker::has('users')->count(),
-            'satker_tanpa_user' => Satker::doesntHave('users')->count(),
+            'satker_aktif' => Satker::has('users')->count(), // DIUBAH: dari 'satker_baru' menjadi 'satker_aktif'
             'total_permintaan' => class_exists(Permintaan::class) ? Permintaan::count() : 0,
         ];
         
@@ -407,7 +406,8 @@ class SatkerController extends Controller
         try {
             $satker = Satker::withCount(['users', 'permintaans'])->findOrFail($id);
             
-            $status = $satker->users_count > 0 ? 'Berisi User' : 'Kosong';
+            // Tentukan status berdasarkan jumlah user
+            $status = $satker->users_count > 0 ? 'Aktif' : 'Tidak Aktif';
             
             return response()->json([
                 'success' => true,
@@ -507,12 +507,12 @@ class SatkerController extends Controller
         
         try {
             $stats = [
-                'total' => Satker::count(),
-                'with_users' => Satker::has('users')->count(),
-                'without_users' => Satker::doesntHave('users')->count(),
-                'recent_added' => Satker::whereDate('created_at', today())->count(),
+                'total_satker' => Satker::count(),
+                'satker_aktif' => Satker::has('users')->count(), // DIUBAH: konsisten dengan index method
+                'satker_tanpa_user' => Satker::doesntHave('users')->count(),
                 'total_users' => User::count(),
-                'avg_users_per_satker' => Satker::has('users')->count() > 0 ? 
+                'total_permintaan' => class_exists(Permintaan::class) ? Permintaan::count() : 0,
+                'avg_users_per_satker_aktif' => Satker::has('users')->count() > 0 ? 
                     round(User::count() / Satker::has('users')->count(), 2) : 0,
             ];
             
@@ -550,7 +550,8 @@ class SatkerController extends Controller
             return response()->json([
                 'success' => true,
                 'has_users' => $hasUsers,
-                'users_count' => $satker->users()->count()
+                'users_count' => $satker->users()->count(),
+                'status' => $hasUsers ? 'Aktif' : 'Tidak Aktif' // DIUBAH: tambahkan status
             ]);
             
         } catch (\Exception $e) {

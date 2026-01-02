@@ -607,7 +607,7 @@
         <div class="filter-bar">
             <div class="search-box">
                 <i class="bi bi-search"></i>
-                <input type="text" class="form-control" placeholder="Cari log..." id="searchInput" value="{{ request('search') }}">
+                <input type="text" class="form-control" placeholder="Cari log berdasarkan user, aksi, atau deskripsi..." id="searchInput" value="{{ request('search') }}">
             </div>
             
             <div class="filter-controls">
@@ -629,9 +629,6 @@
                         </option>
                     @endforeach
                 </select>
-                
-                <input type="date" class="form-control" id="dateFrom" value="{{ request('date_from') }}" placeholder="Dari Tanggal">
-                <input type="date" class="form-control" id="dateTo" value="{{ request('date_to') }}" placeholder="Sampai Tanggal">
                 
                 <button class="btn btn-primary" onclick="applyFilters()">
                     <i class="bi bi-filter"></i> Filter
@@ -1037,15 +1034,11 @@
             const search = document.getElementById('searchInput').value;
             const action = document.getElementById('actionFilter').value;
             const userId = document.getElementById('userFilter').value;
-            const dateFrom = document.getElementById('dateFrom').value;
-            const dateTo = document.getElementById('dateTo').value;
             
             let url = '?';
             if (search) url += `search=${encodeURIComponent(search)}&`;
             if (action) url += `action=${action}&`;
             if (userId) url += `user_id=${userId}&`;
-            if (dateFrom) url += `date_from=${dateFrom}&`;
-            if (dateTo) url += `date_to=${dateTo}&`;
             
             // Remove trailing & if exists
             if (url.endsWith('&')) url = url.slice(0, -1);

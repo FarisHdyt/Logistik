@@ -960,29 +960,158 @@ class SettingController extends Controller
         return [
             'laravel_version' => app()->version(),
             'php_version' => phpversion(),
-            'database' => config('database.connections.mysql.database'),
+            'database' => config('database.default'),
             'app_name' => config('app.name', 'SILOG'),
             'environment' => config('app.env'),
         ];
     }
     
     /**
-     * Get server information
+     * Get server information - DIPERBAIKI
      */
     private function getServerInfo()
     {
+        // OS information
+        $os = php_uname('s') . ' ' . php_uname('r');
+        
+        // Web server
+        $webServer = $_SERVER['SERVER_SOFTWARE'] ?? 'Tidak diketahui';
+        
+        // Memory usage - DIPERBAIKI
+        $memoryUsage = memory_get_usage(true);
+        $memoryLimit = ini_get('memory_limit');
+        $memoryPercent = 0;
+        $memoryUsedFormatted = $this->formatBytes($memoryUsage);
+        
+        if ($memoryLimit != '-1') {
+            $memoryLimitBytes = $this->convertToBytes($memoryLimit);
+            $memoryPercent = $memoryLimitBytes > 0 ? round(($memoryUsage / $memoryLimitBytes) * 100, 1) : 0;
+        } else {
+            $memoryLimit = 'Unlimited';
+            $memoryPercent = 0;
+        }
+        
+        // Disk usage - DIPERBAIKI
+        $diskTotal = disk_total_space(base_path());
+        $diskFree = disk_free_space(base_path());
+        $diskUsed = $diskTotal - $diskFree;
+        $diskPercent = $diskTotal > 0 ? round(($diskUsed / $diskTotal) * 100, 1) : 0;
+        
+        // Uptime - DIPERBAIKI
+        $uptime = 'Tidak tersedia';
+        if (function_exists('shell_exec')) {
+            try {
+                // Coba beberapa command untuk mendapatkan uptime
+                $commands = [
+                    'uptime -p',
+                    'uptime',
+                    'cat /proc/uptime'
+                ];
+                
+                foreach ($commands as $command) {
+                    $output = @shell_exec($command);
+                    if ($output) {
+                        $uptime = trim($output);
+                        break;
+                    }
+                }
+                
+                // Format uptime jika perlu
+                if (strpos($uptime, 'up') !== false) {
+                    $uptime = preg_replace('/\s+/', ' ', $uptime);
+                } elseif (is_numeric($uptime)) {
+                    // Jika output berupa seconds (dari /proc/uptime)
+                    $seconds = (float)$uptime;
+                    $days = floor($seconds / 86400);
+                    $hours = floor(($seconds % 86400) / 3600);
+                    $minutes = floor(($seconds % 3600) / 60);
+                    
+                    $uptime = '';
+                    if ($days > 0) $uptime .= $days . ' hari ';
+                    if ($hours > 0) $uptime .= $hours . ' jam ';
+                    if ($minutes > 0) $uptime .= $minutes . ' menit';
+                    if (empty($uptime)) $uptime = 'Beberapa detik';
+                    $uptime = 'up ' . trim($uptime);
+                }
+            } catch (\Exception $e) {
+                $uptime = 'Tidak tersedia';
+            }
+        }
+        
+        // Load average
+        $loadAverage = 'Tidak tersedia';
+        if (function_exists('sys_getloadavg')) {
+            $load = sys_getloadavg();
+            $loadAverage = round($load[0], 2) . ' ' . round($load[1], 2) . ' ' . round($load[2], 2);
+        }
+        
         return [
-            'os' => PHP_OS,
-            'web_server' => $_SERVER['SERVER_SOFTWARE'] ?? 'Unknown',
-            'memory_usage' => round(memory_get_usage(true) / 1024 / 1024, 2) . ' MB',
-            'disk_usage' => $this->getDiskUsage() . '%',
-            'php_memory_limit' => ini_get('memory_limit'),
-            'max_execution_time' => ini_get('max_execution_time') . ' seconds',
+            'os' => $os,
+            'web_server' => $webServer,
+            'memory_usage' => $memoryPercent,
+            'memory_used_formatted' => $memoryUsedFormatted,
+            'memory_limit' => $memoryLimit,
+            'disk_usage' => $diskPercent,
+            'disk_used_formatted' => $this->formatBytes($diskUsed),
+            'disk_total_formatted' => $this->formatBytes($diskTotal),
+            'uptime' => $uptime,
+            'load_average' => $loadAverage,
         ];
     }
     
     /**
-     * Get disk usage percentage
+     * Convert memory limit string to bytes
+     */
+    private function convertToBytes($value)
+    {
+        $value = trim($value);
+        if (empty($value)) {
+            return 0;
+        }
+        
+        $last = strtolower($value[strlen($value) - 1]);
+        $number = substr($value, 0, -1);
+        
+        // Jika hanya angka tanpa suffix
+        if (is_numeric($value)) {
+            return (int)$value;
+        }
+        
+        // Jika ada suffix (K, M, G)
+        if (is_numeric($number)) {
+            switch ($last) {
+                case 'g':
+                    return (int)$number * 1024 * 1024 * 1024;
+                case 'm':
+                    return (int)$number * 1024 * 1024;
+                case 'k':
+                    return (int)$number * 1024;
+            }
+        }
+        
+        return 0;
+    }
+    
+    /**
+     * Format bytes to human readable format
+     */
+    private function formatBytes($bytes, $precision = 2)
+    {
+        if ($bytes <= 0) {
+            return '0 B';
+        }
+        
+        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+        $bytes = max($bytes, 0);
+        $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
+        $pow = min($pow, count($units) - 1);
+        $bytes /= pow(1024, $pow);
+        
+        return round($bytes, $precision) . ' ' . $units[$pow];
+    }
+    
+    /**
+     * Get disk usage percentage (old method - kept for compatibility)
      */
     private function getDiskUsage()
     {
@@ -994,19 +1123,5 @@ class SettingController extends Controller
         }
         
         return 0;
-    }
-    
-    /**
-     * Format bytes to readable size
-     */
-    private function formatBytes($bytes, $precision = 2)
-    {
-        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
-        $bytes = max($bytes, 0);
-        $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
-        $pow = min($pow, count($units) - 1);
-        $bytes /= pow(1024, $pow);
-        
-        return round($bytes, $precision) . ' ' . $units[$pow];
     }
 }

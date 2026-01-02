@@ -569,15 +569,14 @@
     <!-- Hero Section -->
     <section class="hero" id="home">
         <div class="container">
-            <h1>Sistem Manajemen Logistik Polres</h1>
+            <h1>Sistem Informasi Logistik Polres</h1>
             <p>Solusi terintegrasi untuk mengelola inventaris, distribusi, dan pemeliharaan aset logistik Polres secara efisien dan transparan.</p>
             <div class="hero-buttons">
                 @auth
-                    <a href="{{ route('dashboard') }}" class="btn-primary">Go to Dashboard</a>
+                    <a href="{{ route('dashboard') }}" class="btn-primary">Dashboard</a>
                     <a href="#features" class="btn-secondary">Pelajari Fitur</a>
                 @else
-                    <a href="{{ route('register') }}" class="btn-primary">Daftar Sekarang</a>
-                    <a href="{{ route('login') }}" class="btn-secondary">Masuk ke Akun</a>
+                    <a href="#contact" class="btn-secondary">Butuh Akses?</a>
                 @endauth
             </div>
         </div>
@@ -594,32 +593,32 @@
                 <div class="feature-card">
                     <div class="feature-icon">📦</div>
                     <h3>Manajemen Inventaris</h3>
-                    <p>Pantau dan kelola stok barang dengan sistem pencatatan yang akurat dan real-time.</p>
+                    <p>Pantau dan kelola stok barang dengan sistem pencatatan yang akurat dan real-time untuk semua aset Polres.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">🚚</div>
                     <h3>Distribusi Barang</h3>
-                    <p>Kelola proses distribusi logistik ke berbagai unit dengan sistem pelacakan yang terintegrasi.</p>
+                    <p>Kelola proses distribusi logistik ke berbagai unit dengan sistem pelacakan yang terintegrasi dan dapat dipertanggungjawabkan.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">🔧</div>
                     <h3>Pemeliharaan Aset</h3>
-                    <p>Jadwalkan dan lacak pemeliharaan rutin untuk semua aset logistik Polres.</p>
+                    <p>Jadwalkan dan lacak pemeliharaan rutin serta perbaikan untuk semua aset logistik Polres.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">📊</div>
                     <h3>Laporan & Analitik</h3>
-                    <p>Buat laporan komprehensif dan analisis data untuk pengambilan keputusan yang lebih baik.</p>
+                    <p>Buat laporan komprehensif dan analisis data untuk pengambilan keputusan strategis yang lebih baik.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">🔐</div>
                     <h3>Keamanan Data</h3>
-                    <p>Sistem keamanan berlapis untuk melindungi data sensitif logistik Polres.</p>
+                    <p>Sistem keamanan berlapis dengan akses terbatas untuk melindungi data sensitif logistik Polres.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">📱</div>
                     <h3>Akses Mobile</h3>
-                    <p>Akses sistem dari perangkat mobile untuk kemudahan operasional di lapangan.</p>
+                    <p>Akses sistem dari perangkat mobile untuk kemudahan operasional di lapangan dan kendali jarak jauh.</p>
                 </div>
             </div>
         </div>
@@ -629,29 +628,29 @@
     <section class="how-it-works" id="how-it-works">
         <div class="container">
             <div class="section-title">
-                <h2>Cara Kerja Sistem</h2>
-                <p>Proses sederhana untuk mengelola logistik Polres secara efektif</p>
+                <h2>Cara Menggunakan Sistem</h2>
+                <p>Alur kerja yang terstruktur untuk pengelolaan logistik Polres yang efektif</p>
             </div>
             <div class="steps">
                 <div class="step">
                     <div class="step-number">1</div>
-                    <h3>Registrasi & Login</h3>
-                    <p>Daftarkan unit Anda dan akses sistem dengan kredensial yang aman.</p>
+                    <h3>Masuk ke Sistem</h3>
+                    <p>Akses sistem dengan akun yang telah dibuatkan oleh Superadmin atau Admin Satker.</p>
                 </div>
                 <div class="step">
                     <div class="step-number">2</div>
                     <h3>Input Data Logistik</h3>
-                    <p>Masukkan data inventaris, permintaan, dan distribusi barang.</p>
+                    <p>Masukkan data inventaris, permintaan barang, dan proses distribusi sesuai kebutuhan unit.</p>
                 </div>
                 <div class="step">
                     <div class="step-number">3</div>
                     <h3>Kelola Proses</h3>
-                    <p>Pantau dan kelola seluruh proses logistik dari satu platform.</p>
+                    <p>Pantau dan kelola seluruh proses logistik melalui dashboard yang terintegrasi.</p>
                 </div>
                 <div class="step">
                     <div class="step-number">4</div>
-                    <h3>Analisis & Laporan</h3>
-                    <p>Buat laporan dan analisis untuk evaluasi dan perencanaan.</p>
+                    <h3>Monitoring & Evaluasi</h3>
+                    <p>Lakukan monitoring real-time dan evaluasi performa logistik untuk perbaikan berkelanjutan.</p>
                 </div>
             </div>
         </div>
@@ -661,37 +660,37 @@
     <section class="testimonials" id="testimonials">
         <div class="container">
             <div class="section-title">
-                <h2>Apa Kata Pengguna</h2>
-                <p>Testimoni dari berbagai Polres yang telah menggunakan sistem kami</p>
+                <h2>Testimoni Pengguna</h2>
+                <p>Umpan balik dari berbagai Polres yang telah menerapkan sistem SILOG</p>
             </div>
             <div class="testimonial-grid">
                 <div class="testimonial-card">
-                    <p class="testimonial-text">"Sistem ini sangat membantu dalam mengelola logistik kami. Proses distribusi menjadi lebih efisien dan transparan."</p>
+                    <p class="testimonial-text">"Sistem SILOG sangat membantu dalam mengelola logistik kami. Proses distribusi menjadi lebih efisien, transparan, dan dapat dipertanggungjawabkan."</p>
                     <div class="testimonial-author">
                         <div class="author-avatar">AK</div>
                         <div class="author-info">
                             <h4>Aiptu Budi Santoso</h4>
-                            <p>Polres Jakarta Selatan</p>
+                            <p>Bagian Logistik - Polres Jakarta Selatan</p>
                         </div>
                     </div>
                 </div>
                 <div class="testimonial-card">
-                    <p class="testimonial-text">"Dengan sistem ini, kami dapat memantau stok barang secara real-time dan mengurangi kesalahan dalam pencatatan."</p>
+                    <p class="testimonial-text">"Dengan sistem ini, kami dapat memantau stok barang secara real-time dan mengurangi kesalahan dalam pencatatan inventaris."</p>
                     <div class="testimonial-author">
                         <div class="author-avatar">IP</div>
                         <div class="author-info">
                             <h4>Ipda Sari Dewi</h4>
-                            <p>Polres Bandung</p>
+                            <p>Kasi Logistik - Polres Bandung</p>
                         </div>
                     </div>
                 </div>
                 <div class="testimonial-card">
-                    <p class="testimonial-text">"Laporan yang dihasilkan sangat membantu dalam evaluasi dan perencanaan anggaran logistik tahunan kami."</p>
+                    <p class="testimonial-text">"Laporan yang dihasilkan sangat membantu dalam evaluasi dan perencanaan anggaran logistik tahunan kami. Sistem yang sangat terstruktur."</p>
                     <div class="testimonial-author">
                         <div class="author-avatar">KO</div>
                         <div class="author-info">
                             <h4>Kompol Andi Wijaya</h4>
-                            <p>Polres Surabaya</p>
+                            <p>Kabag Logistik - Polres Surabaya</p>
                         </div>
                     </div>
                 </div>
@@ -700,15 +699,20 @@
     </section>
 
     <!-- CTA Section -->
-    <section class="cta-section">
+    <section class="cta-section" id="contact">
         <div class="container">
-            <h2>Siap Mengoptimalkan Manajemen Logistik Polres Anda?</h2>
-            <p>Daftar sekarang dan rasakan kemudahan mengelola logistik dengan sistem terintegrasi kami.</p>
-            @auth
-                <a href="{{ route('dashboard') }}" class="btn-primary">Buka Dashboard</a>
-            @else
-                <a href="{{ route('register') }}" class="btn-primary">Mulai Sekarang</a>
-            @endauth
+            <h2>Tingkatkan Efisiensi Logistik Polres Anda</h2>
+            <p>Sistem SILOG membantu mengoptimalkan pengelolaan logistik Polres. Untuk mendapatkan akses, silakan menghubungi Kepala Bagian Logistik Polres selaku Superadmin.</p>
+            <div class="hero-buttons">
+                @auth
+                    <a href="{{ route('dashboard') }}" class="btn-primary">Buka Dashboard</a>
+                    <a href="{{ route('logout') }}" class="btn-secondary" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                        Logout
+                    </a>
+                @else
+                    <a href="{{ route('login') }}" class="btn-primary">Login ke Sistem</a>
+                @endauth
+            </div>
         </div>
     </section>
 
@@ -718,7 +722,7 @@
             <div class="footer-content">
                 <div class="footer-column">
                     <h3>SILOG</h3>
-                    <p>Sistem Manajemen Logistik Polres yang terintegrasi dan efisien.</p>
+                    <p>Sistem Informasi Logistik Polres yang terintegrasi, efisien, dan aman.</p>
                 </div>
                 <div class="footer-column">
                     <h3>Tautan Cepat</h3>
@@ -727,46 +731,47 @@
                         <li><a href="#features">Fitur</a></li>
                         <li><a href="#how-it-works">Cara Kerja</a></li>
                         <li><a href="#testimonials">Testimoni</a></li>
+                        <li><a href="#contact">Kontak</a></li>
                         @auth
                             <li><a href="{{ route('dashboard') }}">Dashboard</a></li>
-                            <li>
-                                <form method="POST" action="{{ route('logout') }}" style="display: inline;">
-                                    @csrf
-                                    <button type="submit" style="background: none; border: none; color: #cbd5e1; cursor: pointer; padding: 0;">
-                                        Logout
-                                    </button>
-                                </form>
-                            </li>
                         @endauth
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Informasi Akses</h3>
+                    <ul class="footer-links">
+                        <li>• Akses terbatas untuk personil Polres</li>
+                        <li>• Akun dibuat oleh Superadmin</li>
+                        <li>• Sistem keamanan berlapis</li>
+                        <li>• Support 24/7 untuk user terdaftar</li>
                     </ul>
                 </div>
                 <div class="footer-column">
                     <h3>Kontak</h3>
                     <ul class="footer-links">
-                        <li>Email: info@silog-polres.id</li>
+                        <li>Email: support@silog-polres.id</li>
                         <li>Telepon: (021) 1234-5678</li>
-                        <li>Alamat: Jl. Sudirman No. 123, Jakarta</li>
-                    </ul>
-                </div>
-                <div class="footer-column">
-                    <h3>Legal</h3>
-                    <ul class="footer-links">
-                        <li><a href="#">Kebijakan Privasi</a></li>
-                        <li><a href="#">Syarat & Ketentuan</a></li>
-                        <li><a href="#">Kebijakan Keamanan</a></li>
+                        <li>Jam Operasional: Senin-Jumat 08:00-17:00</li>
                     </ul>
                 </div>
             </div>
             <div class="copyright">
-                <p>&copy; 2023 SILOG - Sistem Logistik Polres. Semua hak dilindungi.</p>
+                <p>&copy; 2023 SILOG - Sistem Informasi Logistik Polres. Semua hak dilindungi.</p>
                 @auth
                     <p style="font-size: 0.8rem; margin-top: 5px;">
-                        Login sebagai: {{ Auth::user()->name }} ({{ Auth::user()->role }})
+                        Login sebagai: {{ Auth::user()->name }} | Role: {{ Auth::user()->role }} | Satker: {{ Auth::user()->satker->nama_satker ?? 'Belum ditentukan' }}
                     </p>
                 @endauth
             </div>
         </div>
     </footer>
+
+    <!-- Hidden Logout Form -->
+    @guest
+    <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+        @csrf
+    </form>
+    @endguest
 
     <!-- Session Debug (Hidden) -->
     <div class="session-debug">
@@ -827,7 +832,7 @@
         
         // Logout confirmation
         document.getElementById('logoutForm')?.addEventListener('submit', function(e) {
-            if (!confirm('Apakah Anda yakin ingin logout?')) {
+            if (!confirm('Apakah Anda yakin ingin logout dari sistem SILOG?')) {
                 e.preventDefault();
             }
         });

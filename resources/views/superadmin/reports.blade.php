@@ -3,11 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laporan - Superadmin SILOG Polres</title>
+    <title>
+        @if(isset($is_pdf_export) && $is_pdf_export)
+            Laporan {{ ucfirst($reportType) }} - {{ $export_date ?? now()->format('d/m/Y H:i:s') }}
+        @elseif(isset($is_excel_export) && $is_excel_export)
+            Laporan {{ ucfirst($reportType) }}
+        @else
+            Laporan - Superadmin SILOG Polres
+        @endif
+    </title>
+    
+    {{-- Hanya load CSS/JS jika bukan ekspor --}}
+    @if(!isset($is_pdf_export) && !isset($is_excel_export))
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    @else
+    {{-- Minimal CSS untuk PDF/Excel --}}
+    <style>
+        body { font-family: Arial, sans-serif; font-size: 11pt; margin: 0; padding: 20px; }
+        .table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        .table th { background-color: #f8f9fa; font-weight: bold; padding: 8px; border: 1px solid #dee2e6; text-align: left; }
+        .table td { padding: 8px; border: 1px solid #dee2e6; }
+        .text-center { text-align: center; }
+        .badge { padding: 0.25em 0.4em; font-size: 75%; border-radius: 0.25rem; display: inline-block; }
+        .bg-success { background-color: #28a745; color: white; }
+        .bg-danger { background-color: #dc3545; color: white; }
+        .bg-warning { background-color: #ffc107; color: #212529; }
+        .bg-info { background-color: #17a2b8; color: white; }
+        .bg-primary { background-color: #007bff; color: white; }
+        .bg-secondary { background-color: #6c757d; color: white; }
+        .bg-purple { background-color: #8b5cf6; color: white; }
+        .header-report { border-bottom: 2px solid #333; padding-bottom: 15px; margin-bottom: 20px; }
+        .footer-report { border-top: 1px solid #ddd; padding-top: 10px; margin-top: 30px; font-size: 9pt; color: #666; }
+        .stats-grid { display: flex; justify-content: space-between; margin-bottom: 20px; }
+        .stat-card { flex: 1; margin: 0 10px; padding: 15px; border: 1px solid #dee2e6; border-radius: 5px; text-align: center; }
+        .stat-card h3 { margin: 0; font-size: 24px; font-weight: bold; }
+        .stat-card p { margin: 5px 0 0 0; color: #666; }
+    </style>
+    @endif
+    
+    {{-- CSS utama aplikasi (hanya untuk non-ekspor) --}}
+    @if(!isset($is_pdf_export) && !isset($is_excel_export))
     <style>
         :root {
             --primary: #1e3a8a;
@@ -161,40 +198,6 @@
             margin-bottom: 0;
         }
         
-        /* Report Filters */
-        .report-filters {
-            background: white;
-            border-radius: 10px;
-            padding: 1.5rem;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            margin-bottom: 1.5rem;
-        }
-        
-        .filter-group {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-bottom: 1rem;
-        }
-        
-        .form-label {
-            font-weight: 600;
-            color: var(--dark);
-            margin-bottom: 0.5rem;
-        }
-        
-        .form-control, .form-select {
-            border-radius: 8px;
-            border: 1px solid #d1d5db;
-            padding: 0.6rem 0.8rem;
-            transition: all 0.3s;
-        }
-        
-        .form-control:focus, .form-select:focus {
-            border-color: var(--superadmin-color);
-            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
-        }
-        
         /* Report Types */
         .report-types {
             display: grid;
@@ -248,22 +251,6 @@
             margin-bottom: 1rem;
         }
         
-        .report-type-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            margin-top: 1rem;
-        }
-        
-        .tag {
-            background: #f1f5f9;
-            color: #64748b;
-            padding: 0.2rem 0.6rem;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            font-weight: 500;
-        }
-        
         /* Report Preview */
         .report-preview {
             background: white;
@@ -296,24 +283,13 @@
             gap: 0.5rem;
         }
         
-        .btn-primary {
-            background: var(--superadmin-color);
+        .btn-warning {
+            background: var(--warning);
             color: white;
         }
         
-        .btn-primary:hover {
-            background: #7c3aed;
-        }
-        
-        .btn-outline-primary {
-            border: 1px solid var(--superadmin-color);
-            color: var(--superadmin-color);
-            background: white;
-        }
-        
-        .btn-outline-primary:hover {
-            background: var(--superadmin-color);
-            color: white;
+        .btn-warning:hover {
+            background: #e68900;
         }
         
         .btn-success {
@@ -323,15 +299,6 @@
         
         .btn-success:hover {
             background: #0da271;
-        }
-        
-        .btn-warning {
-            background: var(--warning);
-            color: white;
-        }
-        
-        .btn-warning:hover {
-            background: #e68900;
         }
         
         /* Tables */
@@ -498,64 +465,6 @@
             text-align: center;
         }
         
-        /* Pagination Styles */
-        .pagination-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 2rem;
-            padding-top: 1.5rem;
-            border-top: 1px solid #e2e8f0;
-        }
-        
-        .pagination-info {
-            color: #64748b;
-            font-size: 0.9rem;
-        }
-        
-        .pagination-custom {
-            display: flex;
-            gap: 0.5rem;
-            align-items: center;
-        }
-        
-        .page-link {
-            padding: 0.5rem 0.9rem;
-            border-radius: 6px;
-            border: 1px solid #d1d5db;
-            background: white;
-            color: var(--dark);
-            font-weight: 500;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 0.3rem;
-        }
-        
-        .page-link:hover {
-            background: var(--superadmin-color);
-            color: white;
-            border-color: var(--superadmin-color);
-            text-decoration: none;
-        }
-        
-        .page-link.active {
-            background: var(--superadmin-color);
-            color: white;
-            border-color: var(--superadmin-color);
-        }
-        
-        .page-link.disabled {
-            background: #f1f5f9;
-            color: #94a3b8;
-            border-color: #e2e8f0;
-            cursor: not-allowed;
-        }
-        
-        .page-link i {
-            font-size: 0.9rem;
-        }
-        
         /* Alert */
         .alert-container {
             position: fixed;
@@ -620,20 +529,10 @@
                 grid-template-columns: 1fr;
             }
             
-            .filter-group {
-                grid-template-columns: 1fr;
-            }
-            
             .preview-header {
                 flex-direction: column;
                 gap: 1rem;
                 align-items: flex-start;
-            }
-            
-            .pagination-container {
-                flex-direction: column;
-                gap: 1rem;
-                text-align: center;
             }
             
             .distribution-grid {
@@ -649,9 +548,224 @@
             }
         }
     </style>
+    @endif
 </head>
 <body>
-    <!-- Sidebar -->
+    {{-- Untuk PDF/Excel: tampilkan layout sederhana --}}
+    @if(isset($is_pdf_export) || isset($is_excel_export))
+    
+        <div class="header-report">
+            <h2 style="text-align: center; margin: 0;">SILOG - SISTEM LOGISTIK POLRES</h2>
+            <h3 style="text-align: center; margin: 10px 0 5px 0;">LAPORAN {{ strtoupper($reportType) }}</h3>
+            <p style="text-align: center; margin: 5px 0;">
+                Dicetak pada: {{ $export_date ?? now()->format('d/m/Y H:i:s') }}
+            </p>
+        </div>
+        
+        {{-- Ringkasan Statistik --}}
+        @if($reportType == 'user' || $reportType == 'system')
+        <div class="stats-grid mb-4">
+            @if($reportType == 'user')
+            <div class="stat-card">
+                <h3>{{ $totalUsers ?? 0 }}</h3>
+                <p>Total User</p>
+            </div>
+            <div class="stat-card">
+                <h3>{{ $activeUsers ?? 0 }}</h3>
+                <p>User Aktif</p>
+            </div>
+            <div class="stat-card">
+                <h3>{{ $totalAdmins ?? 0 }}</h3>
+                <p>Total Admin</p>
+            </div>
+            <div class="stat-card">
+                <h3>{{ $newUsersThisMonth ?? 0 }}</h3>
+                <p>User Baru (Bulan Ini)</p>
+            </div>
+            @elseif($reportType == 'system')
+            <div class="stat-card">
+                <h3>{{ $totalUsers ?? 0 }}</h3>
+                <p>Total User</p>
+            </div>
+            <div class="stat-card">
+                <h3>{{ $totalSatker ?? 0 }}</h3>
+                <p>Total Satker</p>
+            </div>
+            <div class="stat-card">
+                <h3>{{ $totalActivities ?? 0 }}</h3>
+                <p>Total Aktivitas</p>
+            </div>
+            <div class="stat-card">
+                <h3>{{ $newUsersFiltered ?? 0 }}</h3>
+                <p>User Baru (Periode)</p>
+            </div>
+            @endif
+        </div>
+        @endif
+        
+        {{-- Tabel Data Utama --}}
+        <div class="mb-3">
+            <h4 style="border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 15px;">
+                DATA {{ strtoupper($reportType == 'user' ? 'USER' : ($reportType == 'activity' ? 'AKTIVITAS' : ($reportType == 'satker' ? 'SATKER' : 'SISTEM'))) }}
+            </h4>
+            
+            @if($reportType == 'user' && isset($users) && $users->count() > 0)
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Nama</th>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Satker</th>
+                        <th>Status</th>
+                        <th>Terakhir Login</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($users as $user)
+                    <tr>
+                        <td class="text-center">{{ $loop->iteration }}</td>
+                        <td>{{ $user->name }}</td>
+                        <td>{{ $user->username }}</td>
+                        <td>{{ $user->email }}</td>
+                        <td>
+                            @if($user->role == 'superadmin')
+                                <span class="badge bg-purple">Superadmin</span>
+                            @elseif($user->role == 'admin')
+                                <span class="badge bg-primary">Admin</span>
+                            @else
+                                <span class="badge bg-info">User</span>
+                            @endif
+                        </td>
+                        <td>{{ $user->satker->nama_satker ?? '-' }}</td>
+                        <td class="text-center">
+                            @if($user->is_active)
+                                <span class="badge bg-success">Aktif</span>
+                            @else
+                                <span class="badge bg-secondary">Nonaktif</span>
+                            @endif
+                        </td>
+                        <td>{{ $user->last_login_at ? \Carbon\Carbon::parse($user->last_login_at)->format('d/m/Y H:i') : 'Belum login' }}</td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+            
+            @elseif($reportType == 'activity' && isset($activities) && $activities->count() > 0)
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>User</th>
+                        <th>Aksi</th>
+                        <th>Deskripsi</th>
+                        <th>IP Address</th>
+                        <th>Waktu</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($activities as $activity)
+                    <tr>
+                        <td class="text-center">{{ $loop->iteration }}</td>
+                        <td>{{ $activity->user->name ?? 'System' }}</td>
+                        <td>
+                            <span class="badge 
+                                @if($activity->action == 'login') bg-success
+                                @elseif($activity->action == 'logout') bg-secondary
+                                @elseif($activity->action == 'create') bg-primary
+                                @elseif($activity->action == 'update') bg-warning
+                                @elseif($activity->action == 'delete') bg-danger
+                                @else bg-info @endif">
+                                {{ ucfirst($activity->action) }}
+                            </span>
+                        </td>
+                        <td>{{ $activity->description ?? '-' }}</td>
+                        <td>{{ $activity->ip_address ?? '-' }}</td>
+                        <td>{{ \Carbon\Carbon::parse($activity->created_at)->format('d/m/Y H:i:s') ?? '-' }}</td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+            
+            @elseif($reportType == 'satker' && isset($satkers) && $satkers->count() > 0)
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Nama Satker</th>
+                        <th>Kode Satker</th>
+                        <th class="text-center">Jumlah User</th>
+                        <th>Tanggal Dibuat</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($satkers as $satker)
+                    <tr>
+                        <td class="text-center">{{ $loop->iteration }}</td>
+                        <td>{{ $satker->nama_satker }}</td>
+                        <td>{{ $satker->kode_satker ?? '-' }}</td>
+                        <td class="text-center">
+                            <span class="badge bg-primary">{{ $satker->users_count ?? 0 }}</span>
+                        </td>
+                        <td>{{ \Carbon\Carbon::parse($satker->created_at)->format('d/m/Y') }}</td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+            
+            @elseif($reportType == 'system')
+            <div style="display: flex; gap: 20px;">
+                <div style="flex: 1;">
+                    <table class="table">
+                        <tr><th colspan="2" class="text-center">STATISTIK SISTEM</th></tr>
+                        <tr><td>Total User</td><td class="text-right">{{ $totalUsers ?? 0 }}</td></tr>
+                        <tr><td>User Aktif</td><td class="text-right">{{ $activeUsers ?? 0 }}</td></tr>
+                        <tr><td>Total Satker</td><td class="text-right">{{ $totalSatker ?? 0 }}</td></tr>
+                        <tr><td>Total Aktivitas</td><td class="text-right">{{ $totalActivities ?? 0 }}</td></tr>
+                    </table>
+                </div>
+                <div style="flex: 1;">
+                    <table class="table">
+                        <tr><th colspan="2" class="text-center">INFORMASI SISTEM</th></tr>
+                        <tr><td>System Uptime</td><td class="text-right">{{ $systemUptime ?? '99.9%' }}</td></tr>
+                        <tr><td>Backup Terakhir</td><td class="text-right">{{ $lastBackup ?? '-' }}</td></tr>
+                        <tr><td>User Baru Hari Ini</td><td class="text-right">{{ $newUsersFiltered ?? 0 }}</td></tr>
+                        <tr><td>Versi Aplikasi</td><td class="text-right">v1.0.0</td></tr>
+                    </table>
+                </div>
+            </div>
+            @else
+            <div style="text-align: center; padding: 40px;">
+                <p style="color: #666; font-style: italic;">Tidak ada data yang ditemukan</p>
+            </div>
+            @endif
+        </div>
+        
+        <div class="footer-report">
+            <table width="100%">
+                <tr>
+                    <td width="60%">
+                        <small>
+                            Dicetak oleh: {{ $user->name ?? 'System' }}<br>
+                            Role: {{ $user->role ?? '-' }}
+                        </small>
+                    </td>
+                    <td width="40%" class="text-right">
+                        <small>
+                            {{ config('app.name', 'SILOG Polres') }}<br>
+                            Halaman 1 dari 1
+                        </small>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    
+    {{-- Untuk tampilan normal aplikasi --}}
+    @else
+    
+    <!-- Sidebar (hanya untuk tampilan web) -->
     <div class="sidebar">
         <div class="sidebar-brand">
             <h3>SILOG</h3>
@@ -770,11 +884,6 @@
                 <div class="report-type-content">
                     <h5>Laporan User</h5>
                     <p>Laporan detail mengenai pengguna sistem, termasuk data admin, user aktif, dan statistik registrasi.</p>
-                    <div class="report-type-tags">
-                        <span class="tag">PDF</span>
-                        <span class="tag">Excel</span>
-                        <span class="tag">User Data</span>
-                    </div>
                 </div>
             </div>
             
@@ -785,11 +894,6 @@
                 <div class="report-type-content">
                     <h5>Laporan Aktivitas</h5>
                     <p>Log aktivitas sistem termasuk login, logout, dan perubahan data oleh semua pengguna.</p>
-                    <div class="report-type-tags">
-                        <span class="tag">PDF</span>
-                        <span class="tag">CSV</span>
-                        <span class="tag">Audit Trail</span>
-                    </div>
                 </div>
             </div>
             
@@ -800,11 +904,6 @@
                 <div class="report-type-content">
                     <h5>Laporan Satker</h5>
                     <p>Data lengkap satuan kerja, distribusi user per satker, dan statistik penggunaan.</p>
-                    <div class="report-type-tags">
-                        <span class="tag">PDF</span>
-                        <span class="tag">Excel</span>
-                        <span class="tag">Organisasi</span>
-                    </div>
                 </div>
             </div>
             
@@ -815,61 +914,6 @@
                 <div class="report-type-content">
                     <h5>Laporan Sistem</h5>
                     <p>Statistik penggunaan sistem, performa, dan informasi teknis lainnya.</p>
-                    <div class="report-type-tags">
-                        <span class="tag">PDF</span>
-                        <span class="tag">Dashboard</span>
-                        <span class="tag">Performance</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Report Filters -->
-        <div class="report-filters">
-            <h5 class="mb-3">Filter Laporan</h5>
-            <div class="filter-group">
-                <div>
-                    <label class="form-label">Periode Tanggal</label>
-                    <div class="input-group">
-                        <input type="text" class="form-control date-range" id="dateRange" placeholder="Pilih periode"
-                               value="{{ $startDate && $endDate ? $startDate . ' to ' . $endDate : '' }}">
-                        <span class="input-group-text"><i class="bi bi-calendar"></i></span>
-                    </div>
-                </div>
-                
-                <div>
-                    <label class="form-label">Satuan Kerja</label>
-                    <select class="form-select" id="satkerFilter">
-                        <option value="">Semua Satker</option>
-                        @foreach($satkers as $satker)
-                            <option value="{{ $satker->id }}" {{ $selectedSatker == $satker->id ? 'selected' : '' }}>
-                                {{ $satker->nama_satker }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                
-                <div>
-                    <label class="form-label">Role User</label>
-                    <select class="form-select" id="roleFilter">
-                        <option value="">Semua Role</option>
-                        <option value="superadmin" {{ $selectedRole == 'superadmin' ? 'selected' : '' }}>Superadmin</option>
-                        <option value="admin" {{ $selectedRole == 'admin' ? 'selected' : '' }}>Admin</option>
-                        <option value="user" {{ $selectedRole == 'user' ? 'selected' : '' }}>User</option>
-                    </select>
-                </div>
-            </div>
-            
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <a href="{{ route('superadmin.reports.reset-filter') }}" class="btn btn-outline-primary" id="resetFilters">
-                        <i class="bi bi-arrow-counterclockwise"></i> Reset Filter
-                    </a>
-                </div>
-                <div>
-                    <button class="btn btn-primary" id="applyFilters">
-                        <i class="bi bi-funnel"></i> Terapkan Filter
-                    </button>
                 </div>
             </div>
         </div>
@@ -879,9 +923,6 @@
             <div class="preview-header">
                 <h4>{{ $title ?? 'Pratinjau Laporan' }}</h4>
                 <div class="preview-actions">
-                    <button class="btn btn-outline-primary" id="refreshPreview">
-                        <i class="bi bi-arrow-clockwise"></i> Refresh
-                    </button>
                     <button class="btn btn-warning" id="generateReport">
                         <i class="bi bi-file-earmark-pdf"></i> Generate PDF
                     </button>
@@ -989,8 +1030,8 @@
                     </div>
                     <div class="stat-card">
                         <div class="stat-content">
-                            <h3>{{ $newUsersToday ?? 0 }}</h3>
-                            <p>User Baru (Hari Ini)</p>
+                            <h3>{{ $newUsersFiltered ?? 0 }}</h3>
+                            <p>User Baru (Periode)</p>
                         </div>
                     </div>
                 @endif
@@ -1047,45 +1088,13 @@
                 <div class="chart-container">
                     <canvas id="reportChart"></canvas>
                 </div>
-                
-                @if($reportType == 'satker' && isset($chartData['labels']))
-                <div class="chart-legend">
-                    @foreach($chartData['labels'] as $index => $label)
-                    @php
-                        // Inline function untuk mendapatkan warna
-                        $colors = [
-                            '#8b5cf6', // Superadmin purple
-                            '#3b82f6', // Primary blue
-                            '#10b981', // Success green
-                            '#f59e0b', // Warning orange
-                            '#ef4444', // Danger red
-                            '#0ea5e9', // Info cyan
-                            '#a855f7', // Purple
-                            '#84cc16', // Lime green
-                            '#f97316', // Orange
-                            '#ec4899', // Pink
-                            '#06b6d4', // Cyan
-                            '#22c55e', // Green
-                            '#eab308', // Yellow
-                            '#6366f1', // Indigo
-                            '#14b8a6'  // Teal
-                        ];
-                        $color = $colors[$index % count($colors)] ?? '#8b5cf6';
-                    @endphp
-                    <div class="legend-item">
-                        <span class="legend-color" style="background-color: {{ $color }};"></span>
-                        <span>{{ $label }}</span>
-                    </div>
-                    @endforeach
-                </div>
-                @endif
             </div>
             @endif
             
             <!-- Tabel Data - Dinamis berdasarkan jenis laporan -->
             @if($reportType == 'user' && isset($users))
             <div class="table-card">
-                <h5>Data User</h5>
+                <h5>Data User <span class="badge bg-primary ms-2">{{ $users->count() }} data</span></h5>
                 <div class="table-responsive">
                     <table class="table table-hover">
                         <thead>
@@ -1103,7 +1112,7 @@
                         <tbody>
                             @forelse($users as $user)
                             <tr>
-                                <td>{{ $loop->iteration + (($users->currentPage() - 1) * $users->perPage()) }}</td>
+                                <td>{{ $loop->iteration }}</td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <div class="user-avatar me-2" style="width: 30px; height: 30px; font-size: 0.8rem;">
@@ -1131,7 +1140,7 @@
                                         <span class="badge bg-secondary">Nonaktif</span>
                                     @endif
                                 </td>
-                                <td>{{ $user->last_login_at ? $user->last_login_at->format('d/m/Y H:i') : 'Belum login' }}</td>
+                                <td>{{ $user->last_login_at ? \Carbon\Carbon::parse($user->last_login_at)->format('d/m/Y H:i') : 'Belum login' }}</td>
                             </tr>
                             @empty
                             <tr>
@@ -1144,52 +1153,11 @@
                         </tbody>
                     </table>
                 </div>
-                
-                <!-- Pagination untuk User -->
-                @if($users->hasPages())
-                <div class="pagination-container">
-                    <div class="pagination-info">
-                        Menampilkan {{ $users->firstItem() }} - {{ $users->lastItem() }} dari {{ $users->total() }} data
-                    </div>
-                    <div class="pagination-custom">
-                        <!-- Previous Page Link -->
-                        @if($users->onFirstPage())
-                            <span class="page-link disabled">
-                                <i class="bi bi-chevron-left"></i> Sebelumnya
-                            </span>
-                        @else
-                            <a href="{{ $users->previousPageUrl() }}&type={{ $reportType }}&start_date={{ $startDate }}&end_date={{ $endDate }}&satker_id={{ $selectedSatker }}&role={{ $selectedRole }}" class="page-link">
-                                <i class="bi bi-chevron-left"></i> Sebelumnya
-                            </a>
-                        @endif
-                        
-                        <!-- Page Numbers -->
-                        @foreach($users->links()->elements[0] as $page => $url)
-                            @if($page == $users->currentPage())
-                                <span class="page-link active">{{ $page }}</span>
-                            @else
-                                <a href="{{ $url }}&type={{ $reportType }}&start_date={{ $startDate }}&end_date={{ $endDate }}&satker_id={{ $selectedSatker }}&role={{ $selectedRole }}" class="page-link">{{ $page }}</a>
-                            @endif
-                        @endforeach
-                        
-                        <!-- Next Page Link -->
-                        @if($users->hasMorePages())
-                            <a href="{{ $users->nextPageUrl() }}&type={{ $reportType }}&start_date={{ $startDate }}&end_date={{ $endDate }}&satker_id={{ $selectedSatker }}&role={{ $selectedRole }}" class="page-link">
-                                Berikutnya <i class="bi bi-chevron-right"></i>
-                            </a>
-                        @else
-                            <span class="page-link disabled">
-                                Berikutnya <i class="bi bi-chevron-right"></i>
-                            </span>
-                        @endif
-                    </div>
-                </div>
-                @endif
             </div>
             
             @elseif($reportType == 'activity' && isset($activities))
             <div class="table-card">
-                <h5>Data Aktivitas</h5>
+                <h5>Data Aktivitas <span class="badge bg-primary ms-2">{{ $activities->count() }} data</span></h5>
                 <div class="table-responsive">
                     <table class="table table-hover">
                         <thead>
@@ -1205,7 +1173,7 @@
                         <tbody>
                             @forelse($activities as $activity)
                             <tr>
-                                <td>{{ $loop->iteration + (($activities->currentPage() - 1) * $activities->perPage()) }}</td>
+                                <td>{{ $loop->iteration }}</td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <div class="user-avatar me-2" style="width: 30px; height: 30px; font-size: 0.8rem;">
@@ -1231,7 +1199,7 @@
                                 </td>
                                 <td>{{ $activity->description ?? '-' }}</td>
                                 <td><code>{{ $activity->ip_address ?? '-' }}</code></td>
-                                <td>{{ $activity->created_at->format('d/m/Y H:i:s') ?? '-' }}</td>
+                                <td>{{ \Carbon\Carbon::parse($activity->created_at)->format('d/m/Y H:i:s') ?? '-' }}</td>
                             </tr>
                             @empty
                             <tr>
@@ -1244,52 +1212,11 @@
                         </tbody>
                     </table>
                 </div>
-                
-                <!-- Pagination untuk Aktivitas -->
-                @if($activities->hasPages())
-                <div class="pagination-container">
-                    <div class="pagination-info">
-                        Menampilkan {{ $activities->firstItem() }} - {{ $activities->lastItem() }} dari {{ $activities->total() }} data
-                    </div>
-                    <div class="pagination-custom">
-                        <!-- Previous Page Link -->
-                        @if($activities->onFirstPage())
-                            <span class="page-link disabled">
-                                <i class="bi bi-chevron-left"></i> Sebelumnya
-                            </span>
-                        @else
-                            <a href="{{ $activities->previousPageUrl() }}&type={{ $reportType }}&start_date={{ $startDate }}&end_date={{ $endDate }}&satker_id={{ $selectedSatker }}&role={{ $selectedRole }}" class="page-link">
-                                <i class="bi bi-chevron-left"></i> Sebelumnya
-                            </a>
-                        @endif
-                        
-                        <!-- Page Numbers -->
-                        @foreach($activities->links()->elements[0] as $page => $url)
-                            @if($page == $activities->currentPage())
-                                <span class="page-link active">{{ $page }}</span>
-                            @else
-                                <a href="{{ $url }}&type={{ $reportType }}&start_date={{ $startDate }}&end_date={{ $endDate }}&satker_id={{ $selectedSatker }}&role={{ $selectedRole }}" class="page-link">{{ $page }}</a>
-                            @endif
-                        @endforeach
-                        
-                        <!-- Next Page Link -->
-                        @if($activities->hasMorePages())
-                            <a href="{{ $activities->nextPageUrl() }}&type={{ $reportType }}&start_date={{ $startDate }}&end_date={{ $endDate }}&satker_id={{ $selectedSatker }}&role={{ $selectedRole }}" class="page-link">
-                                Berikutnya <i class="bi bi-chevron-right"></i>
-                            </a>
-                        @else
-                            <span class="page-link disabled">
-                                Berikutnya <i class="bi bi-chevron-right"></i>
-                            </span>
-                        @endif
-                    </div>
-                </div>
-                @endif
             </div>
             
             @elseif($reportType == 'satker' && isset($satkers))
             <div class="table-card">
-                <h5>Data Satker</h5>
+                <h5>Data Satker <span class="badge bg-primary ms-2">{{ $satkers->count() }} data</span></h5>
                 <div class="table-responsive">
                     <table class="table table-hover">
                         <thead>
@@ -1304,7 +1231,7 @@
                         <tbody>
                             @forelse($satkers as $satker)
                             <tr>
-                                <td>{{ $loop->iteration + (($satkers->currentPage() - 1) * $satkers->perPage()) }}</td>
+                                <td>{{ $loop->iteration }}</td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <div class="user-avatar me-2" style="width: 30px; height: 30px; font-size: 0.8rem; background: #10b981;">
@@ -1317,7 +1244,7 @@
                                 <td>
                                     <span class="badge bg-primary">{{ $satker->users_count ?? 0 }}</span>
                                 </td>
-                                <td>{{ $satker->created_at->format('d/m/Y') }}</td>
+                                <td>{{ \Carbon\Carbon::parse($satker->created_at)->format('d/m/Y') }}</td>
                             </tr>
                             @empty
                             <tr>
@@ -1330,47 +1257,6 @@
                         </tbody>
                     </table>
                 </div>
-                
-                <!-- Pagination untuk Satker -->
-                @if($satkers->hasPages())
-                <div class="pagination-container">
-                    <div class="pagination-info">
-                        Menampilkan {{ $satkers->firstItem() }} - {{ $satkers->lastItem() }} dari {{ $satkers->total() }} data
-                    </div>
-                    <div class="pagination-custom">
-                        <!-- Previous Page Link -->
-                        @if($satkers->onFirstPage())
-                            <span class="page-link disabled">
-                                <i class="bi bi-chevron-left"></i> Sebelumnya
-                            </span>
-                        @else
-                            <a href="{{ $satkers->previousPageUrl() }}&type={{ $reportType }}&start_date={{ $startDate }}&end_date={{ $endDate }}&satker_id={{ $selectedSatker }}&role={{ $selectedRole }}" class="page-link">
-                                <i class="bi bi-chevron-left"></i> Sebelumnya
-                            </a>
-                        @endif
-                        
-                        <!-- Page Numbers -->
-                        @foreach($satkers->links()->elements[0] as $page => $url)
-                            @if($page == $satkers->currentPage())
-                                <span class="page-link active">{{ $page }}</span>
-                            @else
-                                <a href="{{ $url }}&type={{ $reportType }}&start_date={{ $startDate }}&end_date={{ $endDate }}&satker_id={{ $selectedSatker }}&role={{ $selectedRole }}" class="page-link">{{ $page }}</a>
-                            @endif
-                        @endforeach
-                        
-                        <!-- Next Page Link -->
-                        @if($satkers->hasMorePages())
-                            <a href="{{ $satkers->nextPageUrl() }}&type={{ $reportType }}&start_date={{ $startDate }}&end_date={{ $endDate }}&satker_id={{ $selectedSatker }}&role={{ $selectedRole }}" class="page-link">
-                                Berikutnya <i class="bi bi-chevron-right"></i>
-                            </a>
-                        @else
-                            <span class="page-link disabled">
-                                Berikutnya <i class="bi bi-chevron-right"></i>
-                            </span>
-                        @endif
-                    </div>
-                </div>
-                @endif
             </div>
             
             @elseif($reportType == 'system')
@@ -1433,7 +1319,7 @@
                                     </div>
                                     <div class="flex-grow-1 ms-3">
                                         <small>User Baru Hari Ini</small>
-                                        <p class="mb-0"><strong>{{ $newUsersToday ?? 0 }}</strong></p>
+                                        <p class="mb-0"><strong>{{ $newUsersFiltered ?? 0 }}</strong></p>
                                     </div>
                                 </div>
                             </div>
@@ -1445,20 +1331,12 @@
         </div>
     </div>
     
+    @endif {{-- End of non-export view --}}
+    
+    {{-- JavaScript hanya untuk tampilan web --}}
+    @if(!isset($is_pdf_export) && !isset($is_excel_export))
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/id.js"></script>
     <script>
-        // Initialize date picker
-        flatpickr("#dateRange", {
-            mode: "range",
-            dateFormat: "Y-m-d",
-            locale: "id",
-            @if($startDate && $endDate)
-            defaultDate: ["{{ $startDate }}", "{{ $endDate }}"]
-            @endif
-        });
-        
         // Report type selection
         document.querySelectorAll('.report-type-card').forEach(card => {
             card.addEventListener('click', function() {
@@ -1472,42 +1350,9 @@
                 
                 // Refresh data
                 const reportType = this.dataset.reportType;
-                refreshReportData(reportType);
+                window.location.href = '{{ route("superadmin.reports") }}?type=' + reportType;
             });
         });
-        
-        // Apply filters
-        document.getElementById('applyFilters').addEventListener('click', function() {
-            const reportType = document.querySelector('.report-type-card.active')?.dataset.reportType || 'user';
-            refreshReportData(reportType);
-        });
-        
-        // Function to refresh report data
-        function refreshReportData(reportType) {
-            const dateRange = document.getElementById('dateRange').value;
-            const satkerFilter = document.getElementById('satkerFilter').value;
-            const roleFilter = document.getElementById('roleFilter').value;
-            
-            // Build URL with parameters
-            let url = '{{ route("superadmin.reports") }}?type=' + reportType;
-            
-            if (dateRange) {
-                const dates = dateRange.split(' to ');
-                if (dates[0]) url += '&start_date=' + dates[0];
-                if (dates[1]) url += '&end_date=' + dates[1];
-            }
-            
-            if (satkerFilter) {
-                url += '&satker_id=' + satkerFilter;
-            }
-            
-            if (roleFilter) {
-                url += '&role=' + roleFilter;
-            }
-            
-            // Redirect to filtered page
-            window.location.href = url;
-        }
         
         // Generate PDF
         document.getElementById('generateReport').addEventListener('click', function() {
@@ -1517,28 +1362,11 @@
             btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span> Generating...';
             btn.disabled = true;
             
-            // Get filter values
+            // Get report type
             const reportType = document.querySelector('.report-type-card.active')?.dataset.reportType || 'user';
-            const dateRange = document.getElementById('dateRange').value;
-            const satkerFilter = document.getElementById('satkerFilter').value;
-            const roleFilter = document.getElementById('roleFilter').value;
             
             // Build URL
             let url = '{{ route("superadmin.reports.generate-pdf") }}?type=' + reportType;
-            
-            if (dateRange) {
-                const dates = dateRange.split(' to ');
-                if (dates[0]) url += '&start_date=' + dates[0];
-                if (dates[1]) url += '&end_date=' + dates[1];
-            }
-            
-            if (satkerFilter) {
-                url += '&satker_id=' + satkerFilter;
-            }
-            
-            if (roleFilter) {
-                url += '&role=' + roleFilter;
-            }
             
             // Open in new window for PDF download
             window.open(url, '_blank');
@@ -1558,28 +1386,11 @@
             btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span> Exporting...';
             btn.disabled = true;
             
-            // Get filter values
+            // Get report type
             const reportType = document.querySelector('.report-type-card.active')?.dataset.reportType || 'user';
-            const dateRange = document.getElementById('dateRange').value;
-            const satkerFilter = document.getElementById('satkerFilter').value;
-            const roleFilter = document.getElementById('roleFilter').value;
             
             // Build URL
             let url = '{{ route("superadmin.reports.export-excel") }}?type=' + reportType;
-            
-            if (dateRange) {
-                const dates = dateRange.split(' to ');
-                if (dates[0]) url += '&start_date=' + dates[0];
-                if (dates[1]) url += '&end_date=' + dates[1];
-            }
-            
-            if (satkerFilter) {
-                url += '&satker_id=' + satkerFilter;
-            }
-            
-            if (roleFilter) {
-                url += '&role=' + roleFilter;
-            }
             
             // Open in new window for Excel download
             window.open(url, '_blank');
@@ -1589,18 +1400,6 @@
                 btn.innerHTML = originalText;
                 btn.disabled = false;
             }, 2000);
-        });
-        
-        // Refresh preview
-        document.getElementById('refreshPreview').addEventListener('click', function() {
-            const btn = this;
-            const originalText = btn.innerHTML;
-            
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span> Refreshing...';
-            btn.disabled = true;
-            
-            const reportType = document.querySelector('.report-type-card.active')?.dataset.reportType || 'user';
-            refreshReportData(reportType);
         });
         
         // Initialize chart based on report type
@@ -1631,7 +1430,7 @@
                         maintainAspectRatio: false,
                         plugins: {
                             legend: {
-                                display: false, // Hide default legend, using custom legend instead
+                                display: false,
                                 position: 'right',
                                 labels: {
                                     boxWidth: 12,
@@ -1660,7 +1459,7 @@
                                 }
                             }
                         },
-                        cutout: '65%', // Make the hole smaller for better visibility
+                        cutout: '65%',
                         animation: {
                             animateScale: true,
                             animateRotate: true
@@ -1727,34 +1526,19 @@
         // Generate distinct colors for doughnut chart segments
         function generateDistinctColors(count) {
             const baseColors = [
-                '#8b5cf6', // Superadmin purple
-                '#3b82f6', // Primary blue
-                '#10b981', // Success green
-                '#f59e0b', // Warning orange
-                '#ef4444', // Danger red
-                '#0ea5e9', // Info cyan
-                '#a855f7', // Purple
-                '#84cc16', // Lime green
-                '#f97316', // Orange
-                '#ec4899', // Pink
-                '#06b6d4', // Cyan
-                '#22c55e', // Green
-                '#eab308', // Yellow
-                '#6366f1', // Indigo
-                '#14b8a6'  // Teal
+                '#8b5cf6', '#3b82f6', '#10b981', '#f59e0b', '#ef4444',
+                '#0ea5e9', '#a855f7', '#84cc16', '#f97316', '#ec4899',
+                '#06b6d4', '#22c55e', '#eab308', '#6366f1', '#14b8a6'
             ];
             
-            // If we need more colors than available, generate variations
             if (count <= baseColors.length) {
                 return baseColors.slice(0, count);
             }
             
-            // Generate additional colors by modifying base colors
             const colors = [...baseColors];
             for (let i = baseColors.length; i < count; i++) {
-                // Create variations of base colors
                 const baseColor = baseColors[i % baseColors.length];
-                const variation = i * 20; // Vary the color
+                const variation = i * 20;
                 colors.push(lightenDarkenColor(baseColor, variation));
             }
             
@@ -1838,5 +1622,6 @@
             initChart();
         });
     </script>
+    @endif
 </body>
 </html>
