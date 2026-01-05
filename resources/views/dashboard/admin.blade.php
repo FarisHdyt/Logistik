@@ -558,7 +558,6 @@
                             <th>Satker</th>
                             <th>Status</th>
                             <th>Tanggal</th>
-                            <th>Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -587,11 +586,6 @@
                                 @endif
                             </td>
                             <td>{{ $request->created_at->format('d/m/Y') ?? '-' }}</td>
-                            <td>
-                                <button class="btn btn-sm btn-outline-primary" onclick="viewRequest({{ $request->id }})">
-                                    <i class="bi bi-eye"></i>
-                                </button>
-                            </td>
                         </tr>
                         @empty
                         <tr>

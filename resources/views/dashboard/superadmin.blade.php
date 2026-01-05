@@ -585,7 +585,6 @@
                             <th>Satker</th>
                             <th>Status</th>
                             <th>Tanggal Dibuat</th>
-                            <th>Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -625,20 +624,10 @@
                                 @endif
                             </td>
                             <td>{{ $user->created_at->format('d/m/Y') ?? '-' }}</td>
-                            <td>
-                                <div class="btn-group" role="group">
-                                    <button class="btn btn-sm btn-outline-primary" onclick="viewUser({{ $user->id }})" title="Lihat">
-                                        <i class="bi bi-eye"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-warning" onclick="editUser({{ $user->id }})" title="Edit">
-                                        <i class="bi bi-pencil"></i>
-                                    </button>
-                                </div>
-                            </td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="9" class="text-center py-4">
+                            <td colspan="8" class="text-center py-4">
                                 <i class="bi bi-people" style="font-size: 2rem; color: #cbd5e1;"></i>
                                 <p class="mt-2 text-muted">Belum ada user terdaftar</p>
                             </td>
@@ -994,15 +983,6 @@
             container.className = 'alert-container';
             document.body.appendChild(container);
             return container;
-        }
-        
-        // User Management Functions
-        function viewUser(userId) {
-            window.location.href = `/superadmin/users/${userId}`;
-        }
-        
-        function editUser(userId) {
-            window.location.href = `/superadmin/users/${userId}/edit`;
         }
         
         // Logout confirmation
