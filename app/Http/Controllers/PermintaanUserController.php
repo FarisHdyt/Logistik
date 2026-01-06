@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Permintaan;
+use App\Models\PermintaanDetail;
 use App\Models\Barang;
 use App\Models\Satker;
 use Illuminate\Http\Request;
@@ -40,7 +41,7 @@ class PermintaanUserController extends Controller
         
         // Query untuk permintaan user yang sedang login
         $query = Permintaan::where('user_id', $user->id)
-            ->with(['barang', 'satker'])
+            ->with(['details.barang', 'barang', 'satker'])
             ->latest();
         
         // Filter berdasarkan status
@@ -116,63 +117,92 @@ class PermintaanUserController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
-    {
-        // Validasi input sesuai dengan struktur tabel
-        $validated = $request->validate([
-            'barang_id' => 'required|exists:barangs,id',
-            'satker_id' => 'required|exists:satkers,id',
-            'jumlah' => 'required|integer|min:1',
-            'keterangan' => 'nullable|string|max:500',
-            'tanggal_dibutuhkan' => 'required|date|after_or_equal:today',
-        ]);
+{
+    // Validasi input untuk multi barang
+    $validated = $request->validate([
+        'satker_id' => 'required|exists:satkers,id',
+        'keterangan' => 'nullable|string|max:500',
+        'tanggal_dibutuhkan' => 'required|date|after_or_equal:today',
+        'barang_items' => 'required|array|min:1',
+        'barang_items.*.barang_id' => 'required|exists:barangs,id',
+        'barang_items.*.jumlah' => 'required|integer|min:1',
+    ]);
+    
+    try {
+        DB::beginTransaction();
         
-        try {
-            // Cek stok barang
-            $barang = Barang::findOrFail($validated['barang_id']);
+        // Generate kode permintaan
+        $kodePermintaan = 'PM-' . date('Ymd') . '-' . Str::random(6);
+        
+        $totalJumlah = 0;
+        $totalHarga = 0;
+        
+        // Hitung total dulu
+        foreach ($validated['barang_items'] as $item) {
+            $barang = Barang::findOrFail($item['barang_id']);
             
-            if ($barang->stok < $validated['jumlah']) {
-                return back()->with('error', 'Stok barang tidak mencukupi. Stok tersedia: ' . $barang->stok);
+            // Cek stok barang
+            if ($barang->stok < $item['jumlah']) {
+                DB::rollBack();
+                return back()->with('error', 'Stok barang "' . $barang->nama_barang . '" tidak mencukupi. Stok tersedia: ' . $barang->stok);
             }
             
-            DB::beginTransaction();
-            
-            // Generate kode permintaan
-            $kodePermintaan = 'PM-' . date('Ymd') . '-' . Str::random(6);
-            
-            // Simpan permintaan sesuai struktur tabel
-            $permintaan = Permintaan::create([
-                'kode_permintaan' => $kodePermintaan,
-                'user_id' => auth()->id(),
-                'barang_id' => $validated['barang_id'],
-                'satker_id' => $validated['satker_id'],
-                'jumlah' => $validated['jumlah'],
-                'keterangan' => $validated['keterangan'] ?? null,
-                'tanggal_dibutuhkan' => $validated['tanggal_dibutuhkan'],
-                'status' => 'pending',
-            ]);
-            
-            // Log aktivitas pengajuan permintaan baru
-            $logData = [
-                'permintaan_id' => $permintaan->id,
-                'kode_permintaan' => $kodePermintaan,
-                'barang' => $barang->nama_barang,
-                'jumlah' => $validated['jumlah'],
-                'satker' => Satker::find($validated['satker_id'])->nama_satker ?? 'Tidak diketahui',
-                'tanggal_dibutuhkan' => $validated['tanggal_dibutuhkan'],
-            ];
-            ActivityLogController::logAction('create_request', 'Mengajukan permintaan baru: ' . $kodePermintaan, $logData);
-            
-            DB::commit();
-            
-            return redirect()->route('user.permintaan')
-                ->with('success', 'Permintaan berhasil diajukan dengan kode: ' . $kodePermintaan);
-                
-        } catch (\Exception $e) {
-            DB::rollBack();
-            
-            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+            $harga = $barang->harga ?? 0;
+            $totalJumlah += $item['jumlah'];
+            $totalHarga += ($harga * $item['jumlah']);
         }
+        
+        // Simpan permintaan header
+        $permintaan = Permintaan::create([
+            'kode_permintaan' => $kodePermintaan,
+            'user_id' => auth()->id(),
+            'barang_id' => $validated['barang_items'][0]['barang_id'], // Simpan barang pertama untuk kompatibilitas
+            'satker_id' => $validated['satker_id'],
+            'jumlah' => $totalJumlah,
+            'total_items' => count($validated['barang_items']),
+            'total_harga' => $totalHarga,
+            'keterangan' => $validated['keterangan'] ?? null,
+            'tanggal_dibutuhkan' => $validated['tanggal_dibutuhkan'],
+            'status' => 'pending',
+        ]);
+        
+        // Simpan detail permintaan
+        foreach ($validated['barang_items'] as $item) {
+            $barang = Barang::findOrFail($item['barang_id']);
+            $harga = $barang->harga ?? 0;
+            
+            PermintaanDetail::create([
+                'permintaan_id' => $permintaan->id,
+                'barang_id' => $item['barang_id'],
+                'jumlah' => $item['jumlah'],
+                'harga_satuan' => $harga,
+                'subtotal' => $harga * $item['jumlah'],
+            ]);
+        }
+        
+        // Log aktivitas pengajuan permintaan baru
+        $logData = [
+            'permintaan_id' => $permintaan->id,
+            'kode_permintaan' => $kodePermintaan,
+            'jumlah_barang' => count($validated['barang_items']),
+            'total_jumlah' => $totalJumlah,
+            'total_harga' => $totalHarga,
+            'satker' => Satker::find($validated['satker_id'])->nama_satker ?? 'Tidak diketahui',
+            'tanggal_dibutuhkan' => $validated['tanggal_dibutuhkan'],
+        ];
+        ActivityLogController::logAction('create_request', 'Mengajukan permintaan baru: ' . $kodePermintaan, $logData);
+        
+        DB::commit();
+        
+        return redirect()->route('user.permintaan')
+            ->with('success', 'Permintaan berhasil diajukan dengan kode: ' . $kodePermintaan);
+            
+    } catch (\Exception $e) {
+        DB::rollBack();
+        
+        return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
     }
+}
 
     /**
      * Display the specified resource.
@@ -182,7 +212,7 @@ class PermintaanUserController extends Controller
         $user = auth()->user();
         
         $permintaan = Permintaan::where('user_id', $user->id)
-            ->with(['barang', 'satker', 'approver'])
+            ->with(['details.barang.satuan', 'details.barang.kategori', 'barang.satuan', 'barang.kategori', 'satker', 'approver'])
             ->findOrFail($id);
         
         return view('user.permintaan', [
@@ -201,7 +231,7 @@ class PermintaanUserController extends Controller
         // Hanya bisa edit permintaan yang masih pending
         $permintaan = Permintaan::where('user_id', $user->id)
             ->where('status', 'pending')
-            ->with(['barang', 'satker'])
+            ->with(['details.barang', 'barang', 'satker'])
             ->findOrFail($id);
         
         $barang = Barang::where('stok', '>', 0)
@@ -223,13 +253,14 @@ class PermintaanUserController extends Controller
      */
     public function update(Request $request, $id)
     {
-        // Validasi input sesuai struktur tabel
+        // Validasi input untuk multi barang
         $validated = $request->validate([
-            'barang_id' => 'required|exists:barangs,id',
             'satker_id' => 'required|exists:satkers,id',
-            'jumlah' => 'required|integer|min:1',
             'keterangan' => 'nullable|string|max:500',
             'tanggal_dibutuhkan' => 'required|date|after_or_equal:today',
+            'barang_items' => 'required|array|min:1',
+            'barang_items.*.barang_id' => 'required|exists:barangs,id',
+            'barang_items.*.jumlah' => 'required|integer|min:1',
         ]);
         
         try {
@@ -240,43 +271,51 @@ class PermintaanUserController extends Controller
                 ->where('status', 'pending')
                 ->findOrFail($id);
             
-            // Simpan data lama untuk logging
-            $oldData = [
-                'barang_id' => $permintaan->barang_id,
-                'satker_id' => $permintaan->satker_id,
-                'jumlah' => $permintaan->jumlah,
-                'keterangan' => $permintaan->keterangan,
-                'tanggal_dibutuhkan' => $permintaan->tanggal_dibutuhkan,
-            ];
-            
-            // Cek stok barang
-            $barang = Barang::findOrFail($validated['barang_id']);
-            
-            // Jika ganti barang atau jumlah berubah, cek stok
-            if ($permintaan->barang_id != $validated['barang_id'] || $permintaan->jumlah != $validated['jumlah']) {
-                if ($barang->stok < $validated['jumlah']) {
-                    return back()->with('error', 'Stok barang tidak mencukupi. Stok tersedia: ' . $barang->stok);
-                }
-            }
-            
             DB::beginTransaction();
             
-            // Update permintaan sesuai struktur tabel
+            // Update permintaan header
             $permintaan->update([
-                'barang_id' => $validated['barang_id'],
                 'satker_id' => $validated['satker_id'],
-                'jumlah' => $validated['jumlah'],
                 'keterangan' => $validated['keterangan'] ?? null,
                 'tanggal_dibutuhkan' => $validated['tanggal_dibutuhkan'],
+                'total_items' => count($validated['barang_items']),
             ]);
+            
+            // Hapus detail lama
+            $permintaan->details()->delete();
+            
+            $totalJumlah = 0;
+            
+            // Simpan detail baru
+            foreach ($validated['barang_items'] as $item) {
+                $barang = Barang::findOrFail($item['barang_id']);
+                
+                // Cek stok barang
+                if ($barang->stok < $item['jumlah']) {
+                    DB::rollBack();
+                    return back()->with('error', 'Stok barang "' . $barang->nama_barang . '" tidak mencukupi. Stok tersedia: ' . $barang->stok);
+                }
+                
+                PermintaanDetail::create([
+                    'permintaan_id' => $permintaan->id,
+                    'barang_id' => $item['barang_id'],
+                    'jumlah' => $item['jumlah'],
+                    'harga_satuan' => $barang->harga ?? 0,
+                    'subtotal' => ($barang->harga ?? 0) * $item['jumlah'],
+                ]);
+                
+                $totalJumlah += $item['jumlah'];
+            }
+            
+            // Update total jumlah di header
+            $permintaan->update(['jumlah' => $totalJumlah]);
             
             // Log aktivitas edit permintaan
             $logData = [
                 'permintaan_id' => $permintaan->id,
                 'kode_permintaan' => $permintaan->kode_permintaan,
-                'old_data' => $oldData,
-                'new_data' => $validated,
-                'barang' => $barang->nama_barang,
+                'jumlah_barang' => count($validated['barang_items']),
+                'total_jumlah' => $totalJumlah,
             ];
             ActivityLogController::logAction('update_request', 'Mengubah permintaan: ' . $permintaan->kode_permintaan, $logData);
             
@@ -303,14 +342,14 @@ class PermintaanUserController extends Controller
             // Hanya bisa hapus permintaan sendiri yang masih pending
             $permintaan = Permintaan::where('user_id', $user->id)
                 ->where('status', 'pending')
+                ->with(['details'])
                 ->findOrFail($id);
             
             // Simpan data untuk logging sebelum dihapus
             $logData = [
                 'permintaan_id' => $permintaan->id,
                 'kode_permintaan' => $permintaan->kode_permintaan,
-                'barang' => $permintaan->barang->nama_barang ?? 'Tidak diketahui',
-                'jumlah' => $permintaan->jumlah,
+                'jumlah_barang' => $permintaan->details->count(),
                 'satker' => $permintaan->satker->nama_satker ?? 'Tidak diketahui',
             ];
             
@@ -328,7 +367,7 @@ class PermintaanUserController extends Controller
     }
 
     /**
-     * Track request status
+     * Track request status - FIXED VERSION
      */
     public function track($kode_permintaan)
     {
@@ -336,47 +375,133 @@ class PermintaanUserController extends Controller
         
         $permintaan = Permintaan::where('user_id', $user->id)
             ->where('kode_permintaan', $kode_permintaan)
-            ->with(['barang', 'satker', 'approver'])
+            ->with(['details.barang', 'barang', 'satker', 'approver'])
             ->firstOrFail();
         
-        // Status timeline
-        $timeline = [
-            [
-                'status' => 'Diajukan',
-                'date' => $permintaan->created_at->format('d/m/Y H:i'),
-                'description' => 'Permintaan diajukan oleh ' . $user->name . ' dari ' . ($permintaan->satker->nama_satker ?? ''),
-                'completed' => true,
-            ]
+        // Bangun timeline berdasarkan status yang sebenarnya
+        $timeline = [];
+        
+        // 1. STATUS: DIUSULKAN (selalu ada)
+        $timeline[] = [
+            'status' => 'Diusulkan',
+            'date' => $permintaan->created_at->format('d/m/Y H:i'),
+            'description' => 'Permintaan diajukan oleh ' . $user->name . ' dari ' . ($permintaan->satker->nama_satker ?? 'SATUAN TEKNOLOGI INFORMASI'),
+            'completed' => true,
         ];
         
-        if ($permintaan->approved_at) {
-            $timeline[] = [
-                'status' => 'Diproses',
-                'date' => $permintaan->approved_at->format('d/m/Y H:i'),
-                'description' => $permintaan->status == 'approved' ? 
-                    'Disetujui oleh ' . ($permintaan->approver->name ?? 'Admin') : 
-                    'Ditolak oleh ' . ($permintaan->approver->name ?? 'Admin'),
-                'completed' => true,
-            ];
-            
-            if ($permintaan->status == 'approved' && $permintaan->alasan_penolakan) {
+        // 2. LOGIKA BERDASARKAN STATUS AKTUAL
+        switch ($permintaan->status) {
+            case 'pending':
+                // Status masih menunggu persetujuan
                 $timeline[] = [
-                    'status' => 'Alasan',
-                    'date' => $permintaan->approved_at->format('d/m/Y H:i'),
-                    'description' => 'Alasan: ' . $permintaan->alasan_penolakan,
+                    'status' => 'Diproses',
+                    'date' => '-',
+                    'description' => 'Menunggu persetujuan administrator',
+                    'completed' => false,
+                ];
+                
+                $timeline[] = [
+                    'status' => 'Dikirim',
+                    'date' => '-',
+                    'description' => 'Belum dapat dikirim',
+                    'completed' => false,
+                ];
+                break;
+                
+            case 'rejected':
+                // Status ditolak - timeline harus konsisten dengan penolakan
+                $date = $permintaan->approved_at 
+                    ? $permintaan->approved_at->format('d/m/Y H:i') 
+                    : ($permintaan->updated_at->format('d/m/Y H:i'));
+                
+                $description = 'Ditolak oleh ' . ($permintaan->approver->name ?? 'Administrator');
+                if ($permintaan->alasan_penolakan) {
+                    $description .= ': ' . $permintaan->alasan_penolakan;
+                }
+                
+                $timeline[] = [
+                    'status' => 'Diproses',
+                    'date' => $date,
+                    'description' => $description,
                     'completed' => true,
                 ];
-            }
+                
+                // Tidak ada timeline Dikirim karena sudah ditolak
+                $timeline[] = [
+                    'status' => 'Dikirim',
+                    'date' => '-',
+                    'description' => 'Tidak dapat dikirim karena permintaan ditolak',
+                    'completed' => false,
+                ];
+                break;
+                
+            case 'approved':
+                // Status disetujui - timeline: disetujui, menunggu pengiriman
+                $date = $permintaan->approved_at 
+                    ? $permintaan->approved_at->format('d/m/Y H:i') 
+                    : $permintaan->updated_at->format('d/m/Y H:i');
+                
+                $timeline[] = [
+                    'status' => 'Diproses',
+                    'date' => $date,
+                    'description' => 'Disetujui oleh ' . ($permintaan->approver->name ?? 'Administrator'),
+                    'completed' => true,
+                ];
+                
+                $timeline[] = [
+                    'status' => 'Dikirim',
+                    'date' => '-',
+                    'description' => 'Dalam proses pengiriman',
+                    'completed' => false,
+                ];
+                break;
+                
+            case 'delivered':
+                // Status delivered - timeline: disetujui, dikirim
+                // Pertama, status diproses/disetujui
+                $approvedDate = $permintaan->approved_at 
+                    ? $permintaan->approved_at->format('d/m/Y H:i') 
+                    : $permintaan->updated_at->format('d/m/Y H:i');
+                
+                // PASTIKAN tidak menampilkan "Ditolak" jika status delivered
+                // Cek apakah ada alasan penolakan di database
+                if ($permintaan->alasan_penolakan) {
+                    // Jika ada alasan penolakan tapi status delivered, ini data tidak konsisten
+                    // Tampilkan sebagai disetujui saja (karena akhirnya dikirim)
+                    $timeline[] = [
+                        'status' => 'Diproses',
+                        'date' => $approvedDate,
+                        'description' => 'Disetujui oleh Administrator (setelah revisi)',
+                        'completed' => true,
+                    ];
+                } else {
+                    // Normal case: approved lalu delivered
+                    $timeline[] = [
+                        'status' => 'Diproses',
+                        'date' => $approvedDate,
+                        'description' => 'Disetujui oleh ' . ($permintaan->approver->name ?? 'Administrator'),
+                        'completed' => true,
+                    ];
+                }
+                
+                // Kedua, status dikirim
+                $timeline[] = [
+                    'status' => 'Dikirim',
+                    'date' => $permintaan->updated_at->format('d/m/Y H:i'),
+                    'description' => 'Barang sudah dikirim ke ' . ($permintaan->satker->nama_satker ?? 'SATUAN TEKNOLOGI INFORMASI'),
+                    'completed' => true,
+                ];
+                break;
         }
         
-        if ($permintaan->status == 'delivered') {
-            $timeline[] = [
-                'status' => 'Dikirim',
-                'date' => $permintaan->updated_at->format('d/m/Y H:i'),
-                'description' => 'Barang sudah dikirim ke ' . ($permintaan->satker->nama_satker ?? ''),
-                'completed' => true,
-            ];
-        }
+        // Log untuk debugging
+        \Log::info('Tracking Permintaan - MULTI BARANG', [
+            'kode_permintaan' => $permintaan->kode_permintaan,
+            'status_db' => $permintaan->status,
+            'alasan_penolakan_db' => $permintaan->alasan_penolakan,
+            'approved_at_db' => $permintaan->approved_at,
+            'timeline_items' => count($timeline)
+        ]);
         
         return view('user.permintaan', [
             'permintaanTrack' => $permintaan,
@@ -393,7 +518,7 @@ class PermintaanUserController extends Controller
         $user = auth()->user();
         
         $query = Permintaan::where('user_id', $user->id)
-            ->with(['barang', 'satker']);
+            ->with(['details.barang', 'barang', 'satker']);
         
         if ($request->has('status') && $request->status != '') {
             $query->where('status', $request->status);

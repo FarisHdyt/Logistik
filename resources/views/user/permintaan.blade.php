@@ -157,6 +157,33 @@
             height: 36px;
         }
         
+        /* Cart Specific Styles */
+        .cart-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+        
+        .cart-table td {
+            vertical-align: middle;
+        }
+        
+        .cart-quantity-control {
+            width: 120px;
+        }
+        
+        .cart-quantity-control .input-group {
+            width: 100%;
+        }
+        
+        .cart-quantity-control input {
+            text-align: center;
+        }
+        
+        .quick-preview {
+            border-left: 4px solid #3b82f6;
+            background-color: #f8f9fa;
+        }
+        
         /* Responsive */
         @media (max-width: 768px) {
             .sidebar {
@@ -171,6 +198,14 @@
             
             .sidebar-footer {
                 position: relative;
+            }
+            
+            .cart-table {
+                font-size: 0.875rem;
+            }
+            
+            .cart-quantity-control {
+                width: 100px;
             }
         }
     </style>
@@ -266,7 +301,7 @@
                 </div>
             @endif
             
-            <!-- Form Create -->
+            <!-- Form Create - MULTI BARANG -->
             @if(isset($isCreate))
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
@@ -279,21 +314,22 @@
                     <form action="{{ route('user.permintaan.store') }}" method="POST" id="permintaanForm">
                         @csrf
                         
-                        <!-- Bagian Pencarian Barang -->
+                        <!-- Bagian Pencarian Barang (SISTEM KASIR) -->
                         <div class="row mb-4">
-                            <div class="col-md-12">
+                            <div class="col-md-10">
                                 <label for="barang_search" class="form-label">
-                                    Cari Barang
+                                    Cari Barang untuk Ditambahkan
                                     <span class="text-danger">*</span>
                                 </label>
-                                <select class="form-select select2-barang-search" id="barang_search" name="barang_id" 
-                                        style="width: 100%;" required>
+                                <select class="form-select select2-barang-search" id="barang_search" 
+                                        style="width: 100%;">
                                     <option value="">-- Pilih Barang --</option>
                                     @if(isset($barang) && $barang->count() > 0)
                                         @foreach($barang as $item)
                                         <option value="{{ $item->id }}" 
                                                 data-stok="{{ $item->stok }}"
                                                 data-kode="{{ $item->kode_barang }}"
+                                                data-nama="{{ $item->nama_barang }}"
                                                 data-satuan="{{ $item->satuan->nama_satuan ?? 'unit' }}"
                                                 data-kategori="{{ $item->kategori->nama_kategori ?? '-' }}">
                                             {{ $item->kode_barang }} - {{ $item->nama_barang }} (Stok: {{ $item->stok }})
@@ -303,56 +339,87 @@
                                 </select>
                                 <div class="form-text">Ketik untuk mencari barang yang tersedia</div>
                             </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button type="button" class="btn btn-primary w-100" id="btnTambahBarang" disabled>
+                                    <i class="bi bi-plus-circle me-1"></i>Tambah
+                                </button>
+                            </div>
                         </div>
                         
-                        <!-- Bagian Informasi Barang -->
-                        <div class="card mb-4" id="barangInfoCard" style="display: none;">
-                            <div class="card-header bg-light">
-                                <h6 class="mb-0">Informasi Barang yang Dipilih</h6>
+                        <!-- Quick Preview Barang yang Dipilih -->
+                        <div class="alert alert-info quick-preview mb-3" id="quickPreview" style="display: none;">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <strong>Kode:</strong> <span id="previewKode">-</span>
+                                </div>
+                                <div class="col-md-4">
+                                    <strong>Nama:</strong> <span id="previewNama">-</span>
+                                </div>
+                                <div class="col-md-3">
+                                    <strong>Stok:</strong> <span id="previewStok">-</span>
+                                </div>
+                                <div class="col-md-2">
+                                    <strong>Satuan:</strong> <span id="previewSatuan">-</span>
+                                </div>
                             </div>
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-md-4">
-                                        <p class="mb-1"><strong>Kode Barang:</strong></p>
-                                        <p id="info_kode_barang">-</p>
+                        </div>
+                        
+                        <!-- Tombol Aksi Daftar -->
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <button type="button" class="btn btn-outline-danger btn-sm" id="btnKosongkanDaftar">
+                                    <i class="bi bi-trash me-1"></i>Kosongkan Semua
+                                </button>
+                                <span class="ms-3 text-muted">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Tambahkan minimal 1 barang untuk dapat mengajukan permintaan
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <!-- Daftar Barang yang Dipilih (CART) -->
+                        <div class="card mb-4" id="cartCard" style="display: none;">
+                            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0">
+                                    <i class="bi bi-cart me-2"></i>Daftar Barang yang Diminta
+                                </h6>
+                                <span class="badge bg-primary" id="cartCount">0 item</span>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0 cart-table" id="cartTable">
+                                        <thead>
+                                            <tr>
+                                                <th width="5%">#</th>
+                                                <th width="15%">Kode Barang</th>
+                                                <th width="25%">Nama Barang</th>
+                                                <th width="15%">Kategori</th>
+                                                <th width="15%">Satuan</th>
+                                                <th width="15%">Jumlah</th>
+                                                <th width="10%">Stok</th>
+                                                <th width="5%">Aksi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="cartItems">
+                                            <!-- Items akan ditambahkan dinamis -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-light">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>Total Barang: <span id="totalItems">0</span> jenis</strong>
                                     </div>
-                                    <div class="col-md-4">
-                                        <p class="mb-1"><strong>Nama Barang:</strong></p>
-                                        <p id="info_nama_barang">-</p>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <p class="mb-1"><strong>Kategori:</strong></p>
-                                        <p id="info_kategori">-</p>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <p class="mb-1"><strong>Stok Tersedia:</strong></p>
-                                        <p id="info_stok">- <span id="info_satuan">unit</span></p>
+                                    <div>
+                                        <strong>Total Jumlah: <span id="totalQuantity">0</span> unit</strong>
                                     </div>
                                 </div>
                             </div>
                         </div>
                         
-                        <!-- Detail Permintaan -->
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label for="jumlah" class="form-label">
-                                    Jumlah yang Diminta
-                                    <span class="text-danger">*</span>
-                                </label>
-                                <div class="input-group">
-                                    <input type="number" 
-                                           name="jumlah" 
-                                           class="form-control" 
-                                           id="jumlah"
-                                           min="1" 
-                                           required
-                                           disabled>
-                                    <span class="input-group-text" id="satuan_label">unit</span>
-                                </div>
-                                <div class="form-text">Stok tersedia: <span id="stok_tersedia">0</span></div>
-                                <div class="invalid-feedback" id="jumlah_error"></div>
-                            </div>
-                            
+                        <!-- Informasi Satker dan Tanggal -->
+                        <div class="row g-3 mt-4">
                             <div class="col-md-6">
                                 <label for="satker_id" class="form-label">
                                     Satuan Kerja
@@ -384,7 +451,7 @@
                             
                             <div class="col-12">
                                 <label for="keterangan" class="form-label">
-                                    Keterangan
+                                    Keterangan / Alasan Permintaan
                                     <span class="text-danger">*</span>
                                 </label>
                                 <textarea class="form-control" id="keterangan" name="keterangan" 
@@ -392,6 +459,11 @@
                                           required></textarea>
                                 <div class="form-text">Contoh: Untuk keperluan rapat rutin, penggantian alat rusak, dll.</div>
                             </div>
+                        </div>
+                        
+                        <!-- Hidden input untuk data barang -->
+                        <div id="barangDataContainer">
+                            <!-- Data barang akan disimpan sebagai input hidden -->
                         </div>
                         
                         <!-- Informasi Pengaju -->
@@ -419,7 +491,7 @@
                 </div>
             </div>
             
-            <!-- Form Edit -->
+            <!-- Form Edit - MASIH SATU BARANG (sementara) -->
             @elseif(isset($isEdit))
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
@@ -536,14 +608,19 @@
                 </div>
             </div>
             
-            <!-- Show Detail -->
+            <!-- Show Detail - DIUPDATE untuk multi barang -->
             @elseif(isset($isShow))
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Detail Permintaan</h5>
-                    <a href="{{ route('user.permintaan') }}" class="btn btn-secondary btn-sm">
-                        <i class="bi bi-arrow-left me-1"></i>Kembali ke Daftar
-                    </a>
+                    <div>
+                        <a href="{{ route('user.permintaan.track', $permintaan->kode_permintaan) }}" class="btn btn-sm btn-secondary me-2">
+                            <i class="bi bi-geo-alt me-1"></i>Track
+                        </a>
+                        <a href="{{ route('user.permintaan') }}" class="btn btn-sm btn-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>Kembali ke Daftar
+                        </a>
+                    </div>
                 </div>
                 <div class="card-body">
                     <div class="row mb-4">
@@ -569,7 +646,7 @@
                                 @if($permintaan->alasan_penolakan)
                                 <tr>
                                     <td><strong>Alasan Penolakan:</strong></td>
-                                    <td>{{ $permintaan->alasan_penolakan }}</td>
+                                    <td class="text-danger">{{ $permintaan->alasan_penolakan }}</td>
                                 </tr>
                                 @endif
                             </table>
@@ -596,28 +673,69 @@
                         </div>
                     </div>
                     
+                    <!-- Daftar Barang (Multi Barang) -->
                     <div class="card mb-4">
-                        <div class="card-header bg-light">
-                            <h6 class="mb-0">Informasi Barang</h6>
+                        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0">
+                                <i class="bi bi-box-seam me-2"></i>Daftar Barang yang Diminta
+                            </h6>
+                            <span class="badge bg-primary">
+                                {{ $permintaan->details->count() ?? 1 }} jenis barang
+                            </span>
                         </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-4">
-                                    <p class="mb-1"><strong>Kode Barang:</strong></p>
-                                    <p>{{ $permintaan->barang->kode_barang ?? '-' }}</p>
-                                </div>
-                                <div class="col-md-4">
-                                    <p class="mb-1"><strong>Nama Barang:</strong></p>
-                                    <p>{{ $permintaan->barang->nama_barang ?? '-' }}</p>
-                                </div>
-                                <div class="col-md-4">
-                                    <p class="mb-1"><strong>Kategori:</strong></p>
-                                    <p>{{ $permintaan->barang->kategori->nama_kategori ?? '-' }}</p>
-                                </div>
-                                <div class="col-md-4">
-                                    <p class="mb-1"><strong>Jumlah Diminta:</strong></p>
-                                    <p>{{ $permintaan->jumlah }} {{ $permintaan->barang->satuan->nama_satuan ?? 'unit' }}</p>
-                                </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Kode Barang</th>
+                                            <th>Nama Barang</th>
+                                            <th>Kategori</th>
+                                            <th>Satuan</th>
+                                            <th>Jumlah</th>
+                                            <th>Stok Tersedia</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @php
+                                            $items = isset($permintaan->details) && $permintaan->details->count() > 0 ? $permintaan->details : collect([$permintaan]);
+                                        @endphp
+                                        
+                                        @foreach($items as $index => $item)
+                                        @php
+                                            $detail = isset($item->barang) ? $item : null;
+                                            $barang = $detail ? $detail->barang : $permintaan->barang;
+                                            $jumlah = $detail ? $detail->jumlah : $permintaan->jumlah;
+                                        @endphp
+                                        <tr>
+                                            <td>{{ $loop->iteration }}</td>
+                                            <td>{{ $barang->kode_barang ?? '-' }}</td>
+                                            <td>
+                                                <strong>{{ $barang->nama_barang ?? 'N/A' }}</strong>
+                                            </td>
+                                            <td>{{ $barang->kategori->nama_kategori ?? '-' }}</td>
+                                            <td>{{ $barang->satuan->nama_satuan ?? 'unit' }}</td>
+                                            <td>
+                                                <span class="badge bg-primary">{{ $jumlah }}</span>
+                                            </td>
+                                            <td>
+                                                <span class="badge {{ ($barang->stok ?? 0) >= $jumlah ? 'bg-success' : 'bg-warning' }}">
+                                                    {{ $barang->stok ?? 0 }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        @endforeach
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <td colspan="5" class="text-end"><strong>Total Jumlah:</strong></td>
+                                            <td colspan="2">
+                                                <strong>{{ $items->sum('jumlah') }} unit</strong>
+                                            </td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
                             </div>
                         </div>
                     </div>
@@ -655,11 +773,23 @@
                                 </tr>
                                 <tr>
                                     <td><strong>Barang:</strong></td>
-                                    <td>{{ $permintaanTrack->barang->nama_barang ?? '-' }}</td>
+                                    <td>
+                                        @if(isset($permintaanTrack->details) && $permintaanTrack->details->count() > 0)
+                                            {{ $permintaanTrack->details->count() }} jenis barang
+                                        @else
+                                            {{ $permintaanTrack->barang->nama_barang ?? '-' }}
+                                        @endif
+                                    </td>
                                 </tr>
                                 <tr>
-                                    <td><strong>Jumlah:</strong></td>
-                                    <td>{{ $permintaanTrack->jumlah }} {{ $permintaanTrack->barang->satuan->nama_satuan ?? 'unit' }}</td>
+                                    <td><strong>Jumlah Total:</strong></td>
+                                    <td>
+                                        @if(isset($permintaanTrack->details) && $permintaanTrack->details->count() > 0)
+                                            {{ $permintaanTrack->details->sum('jumlah') }} unit
+                                        @else
+                                            {{ $permintaanTrack->jumlah }} {{ $permintaanTrack->barang->satuan->nama_satuan ?? 'unit' }}
+                                        @endif
+                                    </td>
                                 </tr>
                                 <tr>
                                     <td><strong>Satuan Kerja:</strong></td>
@@ -824,10 +954,29 @@
                                         <span class="badge bg-light text-dark">{{ $item->kode_permintaan }}</span>
                                     </td>
                                     <td>
-                                        <strong>{{ $item->barang->nama_barang ?? 'N/A' }}</strong><br>
-                                        <small class="text-muted">{{ $item->barang->kode_barang ?? '' }}</small>
+                                        @if(isset($item->details) && $item->details->count() > 0)
+                                            <strong>{{ $item->details->count() }} jenis barang</strong><br>
+                                            <small class="text-muted">
+                                                @foreach($item->details->take(2) as $detail)
+                                                    {{ $detail->barang->nama_barang ?? 'N/A' }},
+                                                @endforeach
+                                                @if($item->details->count() > 2)
+                                                    dan {{ $item->details->count() - 2 }} lainnya
+                                                @endif
+                                            </small>
+                                        @else
+                                            <strong>{{ $item->barang->nama_barang ?? 'N/A' }}</strong><br>
+                                            <small class="text-muted">{{ $item->barang->kode_barang ?? '' }}</small>
+                                        @endif
                                     </td>
-                                    <td>{{ $item->jumlah }} {{ $item->barang->satuan->nama_satuan ?? 'unit' }}</td>
+                                    <td>
+                                        @if(isset($item->details) && $item->details->count() > 0)
+                                            {{ $item->details->sum('jumlah') }} unit<br>
+                                            <small class="text-muted">{{ $item->details->count() }} jenis</small>
+                                        @else
+                                            {{ $item->jumlah }} {{ $item->barang->satuan->nama_satuan ?? 'unit' }}
+                                        @endif
+                                    </td>
                                     <td>{{ $item->satker->nama_satker ?? '-' }}</td>
                                     <td>{{ $item->created_at->format('d/m/Y') }}</td>
                                     <td>{{ $item->tanggal_dibutuhkan ? \Carbon\Carbon::parse($item->tanggal_dibutuhkan)->format('d/m/Y') : '-' }}</td>
@@ -909,185 +1058,363 @@
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
-        $(document).ready(function() {
-            // Auto dismiss alerts
-            setTimeout(() => {
-                $('.alert').alert('close');
-            }, 5000);
+    $(document).ready(function() {
+        // Auto dismiss alerts
+        setTimeout(() => {
+            $('.alert').alert('close');
+        }, 5000);
+        
+        // Filter date validation
+        const startDate = $('input[name="start_date"]');
+        const endDate = $('input[name="end_date"]');
+        
+        if (startDate.length && endDate.length) {
+            startDate.on('change', function() {
+                endDate.attr('min', $(this).val());
+            });
             
-            // Filter date validation
-            const startDate = $('input[name="start_date"]');
-            const endDate = $('input[name="end_date"]');
-            
-            if (startDate.length && endDate.length) {
-                startDate.on('change', function() {
-                    endDate.attr('min', $(this).val());
-                });
-                
-                endDate.on('change', function() {
-                    startDate.attr('max', $(this).val());
-                });
-            }
+            endDate.on('change', function() {
+                startDate.attr('max', $(this).val());
+            });
+        }
+        
+        // ==============================================
+        // SISTEM KASIR UNTUK MULTI BARANG (CREATE FORM)
+        // ==============================================
+        if ($('#barang_search').length) {
+            // Inisialisasi variabel
+            let cartItems = [];
+            let selectedBarang = null;
             
             // Initialize Select2 for barang search
-            if ($('#barang_search').length) {
-                $('#barang_search').select2({
-                    placeholder: "Ketik untuk mencari barang...",
-                    allowClear: true,
-                    width: '100%',
-                    templateResult: formatBarangResult,
-                    templateSelection: formatBarangSelection
-                });
+            $('#barang_search').select2({
+                placeholder: "Ketik untuk mencari barang...",
+                allowClear: true,
+                width: '100%',
+                templateResult: formatBarangResult,
+                templateSelection: formatBarangSelection
+            });
+            
+            // Event when barang is selected
+            $('#barang_search').on('change', function() {
+                const selectedOption = $(this).find('option:selected');
+                const barangId = selectedOption.val();
                 
-                // Event when barang is selected
-                $('#barang_search').on('change', function() {
-                    const selectedOption = $(this).find('option:selected');
-                    const barangId = selectedOption.val();
+                if (barangId) {
+                    // Get data from data attributes
+                    const stok = parseInt(selectedOption.data('stok')) || 0;
+                    const kode = selectedOption.data('kode');
+                    const nama = selectedOption.data('nama');
+                    const satuan = selectedOption.data('satuan');
+                    const kategori = selectedOption.data('kategori');
                     
-                    if (barangId) {
-                        // Get data from data attributes
-                        const stok = selectedOption.data('stok');
-                        const kode = selectedOption.data('kode');
-                        const satuan = selectedOption.data('satuan');
-                        const kategori = selectedOption.data('kategori');
-                        const namaBarang = selectedOption.text().split(' - ')[1]?.split(' (Stok:')[0];
-                        
-                        // Show barang info
-                        $('#info_kode_barang').text(kode);
-                        $('#info_nama_barang').text(namaBarang);
-                        $('#info_kategori').text(kategori);
-                        $('#info_stok').text(stok);
-                        $('#info_satuan').text(satuan);
-                        
-                        // Update form inputs
-                        $('#jumlah').prop('disabled', false);
-                        $('#jumlah').attr('max', stok);
-                        $('#satuan_label').text(satuan);
-                        $('#stok_tersedia').text(stok + ' ' + satuan);
-                        
-                        // Show barang info card
-                        $('#barangInfoCard').show();
-                        
-                        // Enable submit button
-                        $('#submitBtn').prop('disabled', false);
-                        
-                        // Validate jumlah
-                        validateJumlah();
-                    } else {
-                        // Reset form if no barang selected
-                        resetForm();
-                    }
-                });
-                
-                // Validate jumlah input
-                $('#jumlah').on('input', validateJumlah);
-                
-                function validateJumlah() {
-                    const jumlah = parseInt($('#jumlah').val()) || 0;
-                    const maxStok = parseInt($('#jumlah').attr('max')) || 0;
+                    // Simpan data barang yang dipilih
+                    selectedBarang = {
+                        id: barangId,
+                        kode: kode,
+                        nama: nama,
+                        stok: stok,
+                        satuan: satuan,
+                        kategori: kategori,
+                        jumlah: 1 // Default jumlah 1
+                    };
                     
-                    if (jumlah > maxStok) {
-                        $('#jumlah').addClass('is-invalid');
-                        $('#jumlah_error').text('Jumlah melebihi stok tersedia (' + maxStok + ')');
-                        $('#submitBtn').prop('disabled', true);
-                    } else if (jumlah < 1) {
-                        $('#jumlah').addClass('is-invalid');
-                        $('#jumlah_error').text('Jumlah minimal 1');
-                        $('#submitBtn').prop('disabled', true);
+                    // Tampilkan quick preview
+                    $('#previewKode').text(kode);
+                    $('#previewNama').text(nama);
+                    $('#previewStok').text(stok);
+                    $('#previewSatuan').text(satuan);
+                    $('#quickPreview').show();
+                    
+                    // Enable tombol tambah
+                    $('#btnTambahBarang').prop('disabled', false);
+                } else {
+                    selectedBarang = null;
+                    $('#btnTambahBarang').prop('disabled', true);
+                    $('#quickPreview').hide();
+                }
+            });
+            
+            // Tombol Tambah Barang ke Cart
+            $('#btnTambahBarang').click(function() {
+                if (!selectedBarang) return;
+                
+                // Cek apakah barang sudah ada di cart
+                const existingIndex = cartItems.findIndex(item => item.id === selectedBarang.id);
+                
+                if (existingIndex !== -1) {
+                    // Jika sudah ada, tambah jumlah
+                    if (cartItems[existingIndex].jumlah < selectedBarang.stok) {
+                        cartItems[existingIndex].jumlah += 1;
                     } else {
-                        $('#jumlah').removeClass('is-invalid');
-                        $('#submitBtn').prop('disabled', false);
+                        alert('Jumlah melebihi stok tersedia (' + selectedBarang.stok + ' ' + selectedBarang.satuan + ')!');
+                        return;
                     }
+                } else {
+                    // Jika belum ada, tambah baru
+                    cartItems.push({
+                        ...selectedBarang,
+                        jumlah: 1
+                    });
                 }
                 
-                function resetForm() {
-                    $('#barangInfoCard').hide();
-                    $('#jumlah').val('').prop('disabled', true);
-                    $('#submitBtn').prop('disabled', true);
-                    $('#stok_tersedia').text('0');
-                    $('#jumlah').removeClass('is-invalid');
+                // Refresh tampilan cart
+                refreshCart();
+                
+                // Reset select
+                $('#barang_search').val(null).trigger('change');
+                selectedBarang = null;
+                $('#btnTambahBarang').prop('disabled', true);
+                $('#quickPreview').hide();
+            });
+            
+            // Tombol Kosongkan Daftar
+            $('#btnKosongkanDaftar').click(function() {
+                if (cartItems.length === 0) {
+                    alert('Daftar barang sudah kosong!');
+                    return;
                 }
                 
-                // Set minimum date for tanggal dibutuhkan
-                const today = new Date().toISOString().split('T')[0];
-                $('#tanggal_dibutuhkan').attr('min', today);
-                $('#tanggal_dibutuhkan').val(today);
+                if (confirm('Apakah Anda yakin ingin mengosongkan semua barang dari daftar?')) {
+                    cartItems = [];
+                    refreshCart();
+                }
+            });
+            
+            // Fungsi refresh cart
+            function refreshCart() {
+                const cartTable = $('#cartItems');
+                const cartCount = $('#cartCount');
+                const totalItems = $('#totalItems');
+                const totalQuantity = $('#totalQuantity');
+                const cartCard = $('#cartCard');
+                const submitBtn = $('#submitBtn');
                 
-                // Form submit validation
-                $('#permintaanForm').submit(function(e) {
-                    const barangId = $('#barang_search').val();
-                    const jumlah = parseInt($('#jumlah').val()) || 0;
-                    const maxStok = parseInt($('#jumlah').attr('max')) || 0;
-                    const keterangan = $('#keterangan').val().trim();
-                    const tanggalDibutuhkan = $('#tanggal_dibutuhkan').val();
-                    const satkerId = $('#satker_id').val();
+                // Kosongkan tabel
+                cartTable.empty();
+                
+                // Hitung total
+                const totalJenis = cartItems.length;
+                const totalJumlah = cartItems.reduce((sum, item) => sum + item.jumlah, 0);
+                
+                // Update totals
+                totalItems.text(totalJenis);
+                totalQuantity.text(totalJumlah);
+                
+                if (cartItems.length > 0) {
+                    // Tampilkan cart card
+                    cartCard.show();
+                    cartCount.text(totalJenis + ' item');
                     
-                    // Validate tanggal
-                    if (tanggalDibutuhkan < today) {
-                        e.preventDefault();
-                        alert('Tanggal dibutuhkan tidak boleh kurang dari hari ini');
-                        return false;
+                    // Enable submit button jika ada minimal 1 barang
+                    submitBtn.prop('disabled', false);
+                    
+                    // Tambah setiap item ke tabel
+                    cartItems.forEach((item, index) => {
+                        const row = `
+                            <tr data-id="${item.id}" data-index="${index}">
+                                <td>${index + 1}</td>
+                                <td>${item.kode}</td>
+                                <td>
+                                    <strong>${item.nama}</strong>
+                                </td>
+                                <td>${item.kategori}</td>
+                                <td>${item.satuan}</td>
+                                <td>
+                                    <div class="input-group input-group-sm cart-quantity-control">
+                                        <button class="btn btn-outline-secondary btn-minus" type="button" 
+                                                data-id="${item.id}" data-index="${index}">
+                                            <i class="bi bi-dash"></i>
+                                        </button>
+                                        <input type="number" class="form-control text-center jumlah-input" 
+                                               value="${item.jumlah}" min="1" max="${item.stok}" 
+                                               data-id="${item.id}" data-index="${index}">
+                                        <button class="btn btn-outline-secondary btn-plus" type="button" 
+                                                data-id="${item.id}" data-index="${index}">
+                                            <i class="bi bi-plus"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge ${item.stok > 10 ? 'bg-success' : item.stok > 0 ? 'bg-warning' : 'bg-danger'}">
+                                        ${item.stok} ${item.satuan}
+                                    </span>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-danger btn-hapus" 
+                                            data-id="${item.id}" data-index="${index}" title="Hapus">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                        cartTable.append(row);
+                    });
+                    
+                    // Update hidden inputs untuk form submission
+                    updateHiddenInputs();
+                } else {
+                    // Sembunyikan cart card
+                    cartCard.hide();
+                    cartCount.text('0 item');
+                    
+                    // Disable submit button
+                    submitBtn.prop('disabled', true);
+                }
+            }
+            
+            // Event delegation untuk button di cart
+            $(document).on('click', '.btn-plus', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const id = $(this).data('id');
+                const index = $(this).data('index');
+                
+                console.log('Plus clicked:', { id, index, cartItems });
+                
+                if (index !== undefined && cartItems[index]) {
+                    const item = cartItems[index];
+                    
+                    if (item.jumlah < item.stok) {
+                        item.jumlah++;
+                        refreshCart();
+                    } else {
+                        alert('Jumlah melebihi stok tersedia (' + item.stok + ' ' + item.satuan + ')!');
                     }
+                }
+            });
+            
+            $(document).on('click', '.btn-minus', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const id = $(this).data('id');
+                const index = $(this).data('index');
+                
+                console.log('Minus clicked:', { id, index, cartItems });
+                
+                if (index !== undefined && cartItems[index]) {
+                    const item = cartItems[index];
                     
-                    if (!barangId || jumlah < 1 || jumlah > maxStok) {
-                        e.preventDefault();
-                        alert('Harap pilih barang dan isi jumlah dengan benar');
-                        return false;
+                    if (item.jumlah > 1) {
+                        item.jumlah--;
+                        refreshCart();
                     }
+                }
+            });
+            
+            $(document).on('input', '.jumlah-input', function() {
+                const id = $(this).data('id');
+                const index = $(this).data('index');
+                const newJumlah = parseInt($(this).val()) || 1;
+                
+                console.log('Input changed:', { id, index, newJumlah, cartItems });
+                
+                if (index !== undefined && cartItems[index]) {
+                    const item = cartItems[index];
                     
-                    if (!satkerId) {
-                        e.preventDefault();
-                        alert('Harap pilih satuan kerja');
-                        return false;
+                    if (newJumlah > item.stok) {
+                        alert('Jumlah melebihi stok tersedia (' + item.stok + ' ' + item.satuan + ')!');
+                        $(this).val(item.jumlah);
+                    } else if (newJumlah < 1) {
+                        $(this).val(1);
+                        item.jumlah = 1;
+                        refreshCart();
+                    } else {
+                        item.jumlah = newJumlah;
+                        refreshCart();
                     }
-                    
-                    if (!keterangan) {
-                        e.preventDefault();
-                        alert('Harap isi keterangan kebutuhan barang');
-                        return false;
+                }
+            });
+            
+            $(document).on('click', '.btn-hapus', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const id = $(this).data('id');
+                const index = $(this).data('index');
+                
+                console.log('Delete clicked:', { id, index, cartItems });
+                
+                if (index !== undefined && cartItems[index]) {
+                    // Konfirmasi sebelum menghapus
+                    if (confirm('Apakah Anda yakin ingin menghapus barang ini dari daftar?')) {
+                        cartItems.splice(index, 1);
+                        refreshCart();
                     }
-                    
-                    // Show loading state
-                    $('#submitBtn').prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Mengajukan...');
+                }
+            });
+            
+            // Fungsi update hidden inputs
+            function updateHiddenInputs() {
+                const container = $('#barangDataContainer');
+                container.empty();
+                
+                cartItems.forEach((item, index) => {
+                    container.append(`
+                        <input type="hidden" name="barang_items[${index}][barang_id]" value="${item.id}">
+                        <input type="hidden" name="barang_items[${index}][jumlah]" value="${item.jumlah}">
+                    `);
                 });
             }
             
-            // For edit form validation
-            if ($('#editPermintaanForm').length) {
-                const today = new Date().toISOString().split('T')[0];
-                $('#edit_tanggal_dibutuhkan').attr('min', today);
+            // Form validation before submit
+            $('#permintaanForm').submit(function(e) {
+                if (cartItems.length === 0) {
+                    e.preventDefault();
+                    alert('Harap tambahkan minimal 1 barang ke daftar permintaan');
+                    return false;
+                }
                 
-                $('#editPermintaanForm').submit(function(e) {
-                    const jumlah = parseInt($('#edit_jumlah').val()) || 0;
-                    const keterangan = $('#edit_keterangan').val().trim();
-                    const tanggalDibutuhkan = $('#edit_tanggal_dibutuhkan').val();
-                    const satkerId = $('#edit_satker_id').val();
-                    
-                    if (tanggalDibutuhkan < today) {
-                        e.preventDefault();
-                        alert('Tanggal dibutuhkan tidak boleh kurang dari hari ini');
-                        return false;
-                    }
-                    
-                    if (jumlah < 1) {
-                        e.preventDefault();
-                        alert('Jumlah minimal 1');
-                        return false;
-                    }
-                    
-                    if (!satkerId) {
-                        e.preventDefault();
-                        alert('Harap pilih satuan kerja');
-                        return false;
-                    }
-                    
-                    if (!keterangan) {
-                        e.preventDefault();
-                        alert('Harap isi keterangan kebutuhan barang');
-                        return false;
+                const satkerId = $('#satker_id').val();
+                const keterangan = $('#keterangan').val().trim();
+                const tanggalDibutuhkan = $('#tanggal_dibutuhkan').val();
+                const today = new Date().toISOString().split('T')[0];
+                
+                if (tanggalDibutuhkan < today) {
+                    e.preventDefault();
+                    alert('Tanggal dibutuhkan tidak boleh kurang dari hari ini');
+                    return false;
+                }
+                
+                if (!satkerId) {
+                    e.preventDefault();
+                    alert('Harap pilih satuan kerja');
+                    return false;
+                }
+                
+                if (!keterangan) {
+                    e.preventDefault();
+                    alert('Harap isi keterangan kebutuhan barang');
+                    return false;
+                }
+                
+                // Validasi stok untuk setiap barang
+                let isValid = true;
+                let errorMessage = '';
+                
+                cartItems.forEach((item, index) => {
+                    if (item.jumlah > item.stok) {
+                        isValid = false;
+                        errorMessage = `Jumlah barang "${item.nama}" melebihi stok tersedia (${item.stok} ${item.satuan})`;
                     }
                 });
-            }
+                
+                if (!isValid) {
+                    e.preventDefault();
+                    alert(errorMessage);
+                    return false;
+                }
+                
+                // Show loading state
+                $('#submitBtn').prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Mengajukan...');
+            });
+            
+            // Set minimum date for tanggal dibutuhkan
+            const today = new Date().toISOString().split('T')[0];
+            $('#tanggal_dibutuhkan').attr('min', today);
+            $('#tanggal_dibutuhkan').val(today);
             
             // Format functions for Select2
             function formatBarangResult(barang) {
@@ -1134,7 +1461,47 @@
                 
                 return barang.text;
             }
-        });
-    </script>
+        }
+        
+        // ==============================================
+        // VALIDASI UNTUK EDIT FORM (MASIH SATU BARANG)
+        // ==============================================
+        if ($('#editPermintaanForm').length) {
+            const today = new Date().toISOString().split('T')[0];
+            $('#edit_tanggal_dibutuhkan').attr('min', today);
+            
+            $('#editPermintaanForm').submit(function(e) {
+                const jumlah = parseInt($('#edit_jumlah').val()) || 0;
+                const keterangan = $('#edit_keterangan').val().trim();
+                const tanggalDibutuhkan = $('#edit_tanggal_dibutuhkan').val();
+                const satkerId = $('#edit_satker_id').val();
+                
+                if (tanggalDibutuhkan < today) {
+                    e.preventDefault();
+                    alert('Tanggal dibutuhkan tidak boleh kurang dari hari ini');
+                    return false;
+                }
+                
+                if (jumlah < 1) {
+                    e.preventDefault();
+                    alert('Jumlah minimal 1');
+                    return false;
+                }
+                
+                if (!satkerId) {
+                    e.preventDefault();
+                    alert('Harap pilih satuan kerja');
+                    return false;
+                }
+                
+                if (!keterangan) {
+                    e.preventDefault();
+                    alert('Harap isi keterangan kebutuhan barang');
+                    return false;
+                }
+            });
+        }
+    });
+</script>
 </body>
 </html>

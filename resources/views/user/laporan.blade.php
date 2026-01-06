@@ -280,7 +280,7 @@
                 <div class="col-md-2 col-6 mb-3">
                     <div class="stat-card items text-center">
                         <h5>{{ $stats['total_items'] ?? 0 }}</h5>
-                        <small>Jenis Barang</small>
+                        <small>Total Barang</small>
                     </div>
                 </div>
             </div>
@@ -377,16 +377,43 @@
                             </thead>
                             <tbody>
                                 @foreach($permintaan as $item)
+                                @php
+                                    // Cek apakah ini multi barang atau single barang
+                                    $isMultiBarang = isset($item->details) && $item->details->count() > 0;
+                                    $totalJumlah = $isMultiBarang ? $item->details->sum('jumlah') : $item->jumlah;
+                                    $barangCount = $isMultiBarang ? $item->details->count() : 1;
+                                    $firstBarang = $isMultiBarang ? $item->details->first()->barang : $item->barang;
+                                @endphp
                                 <tr>
                                     <td>{{ $loop->iteration + (($permintaan->currentPage() - 1) * $permintaan->perPage()) }}</td>
                                     <td>
                                         <span class="badge bg-light text-dark">{{ $item->kode_permintaan }}</span>
                                     </td>
                                     <td>
-                                        <strong>{{ $item->barang->nama_barang ?? 'N/A' }}</strong><br>
-                                        <small class="text-muted">{{ $item->barang->kode_barang ?? '' }}</small>
+                                        @if($isMultiBarang)
+                                            <!-- Tampilkan seperti single barang untuk keseragaman -->
+                                            <strong>{{ $item->details->count() }} jenis barang</strong><br>
+                                            <small class="text-muted">
+                                                {{ $firstBarang->nama_barang ?? 'N/A' }} 
+                                                @if($item->details->count() > 1)
+                                                    +{{ $item->details->count() - 1 }} lainnya
+                                                @endif
+                                            </small>
+                                        @else
+                                            <strong>{{ $item->barang->nama_barang ?? 'N/A' }}</strong><br>
+                                            <small class="text-muted">{{ $item->barang->kode_barang ?? '' }}</small>
+                                        @endif
                                     </td>
-                                    <td>{{ $item->jumlah }} {{ $item->barang->satuan->nama_satuan ?? 'unit' }}</td>
+                                    <td>
+                                        @if($isMultiBarang)
+                                            {{ $totalJumlah }} unit
+                                            @if($item->details->count() > 1)
+                                            <br><small class="text-muted">{{ $item->details->count() }} jenis</small>
+                                            @endif
+                                        @else
+                                            {{ $item->jumlah }} {{ $item->barang->satuan->nama_satuan ?? 'unit' }}
+                                        @endif
+                                    </td>
                                     <td>{{ $item->satker->nama_satker ?? '-' }}</td>
                                     <td>{{ $item->created_at->format('d/m/Y H:i') }}</td>
                                     <td>{{ $item->tanggal_dibutuhkan ? \Carbon\Carbon::parse($item->tanggal_dibutuhkan)->format('d/m/Y') : '-' }}</td>
@@ -407,6 +434,13 @@
                                             <span class="badge bg-info status-badge">
                                                 <i class="bi bi-truck me-1"></i>Dikirim
                                             </span>
+                                        @endif
+                                        
+                                        @if($item->alasan_penolakan && $item->status == 'rejected')
+                                        <div class="mt-1 small text-danger">
+                                            <i class="bi bi-exclamation-triangle"></i>
+                                            {{ Str::limit($item->alasan_penolakan, 30) }}
+                                        </div>
                                         @endif
                                     </td>
                                     <td>{{ Str::limit($item->keterangan, 50) }}</td>
@@ -451,6 +485,10 @@
                                     <td>{{ $stats['total'] ?? 0 }}</td>
                                 </tr>
                                 <tr>
+                                    <td><strong>Total Barang (Jenis):</strong></td>
+                                    <td>{{ $stats['total_items'] ?? 0 }}</td>
+                                </tr>
+                                <tr>
                                     <td><strong>Permintaan Pending:</strong></td>
                                     <td>{{ $stats['pending'] ?? 0 }}</td>
                                 </tr>
@@ -483,8 +521,30 @@
                                     <td>{{ Auth::user()->name }}</td>
                                 </tr>
                                 <tr>
-                                    <td><strong>Jumlah Jenis Barang:</strong></td>
-                                    <td>{{ $stats['total_items'] ?? 0 }}</td>
+                                    <td><strong>Jumlah Total Barang:</strong></td>
+                                    <td>
+                                        @php
+                                            $totalQuantity = 0;
+                                            foreach ($permintaan as $item) {
+                                                if (isset($item->details) && $item->details->count() > 0) {
+                                                    $totalQuantity += $item->details->sum('jumlah');
+                                                } else {
+                                                    $totalQuantity += $item->jumlah;
+                                                }
+                                            }
+                                        @endphp
+                                        {{ $totalQuantity }} unit
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Rata-rata Barang/Request:</strong></td>
+                                    <td>
+                                        @if(($stats['total'] ?? 0) > 0 && $totalQuantity > 0)
+                                            {{ round($totalQuantity / $stats['total'], 1) }} unit
+                                        @else
+                                            0 unit
+                                        @endif
+                                    </td>
                                 </tr>
                                 <tr>
                                     <td><strong>Status Laporan:</strong></td>

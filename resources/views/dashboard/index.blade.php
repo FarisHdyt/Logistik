@@ -96,6 +96,12 @@
             background: rgba(0, 0, 0, 0.1);
         }
         
+        /* Status Badge */
+        .status-badge {
+            padding: 0.35em 0.65em;
+            font-size: 0.875em;
+        }
+        
         /* Responsive */
         @media (max-width: 768px) {
             .sidebar {
@@ -258,8 +264,11 @@
             <!-- Recent Requests -->
             @if(isset($data['recent_requests']) && $data['recent_requests']->count() > 0)
             <div class="card mt-4">
-                <div class="card-header">
-                    <h5>Permintaan Terbaru</h5>
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Permintaan Terbaru</h5>
+                    <a href="{{ route('user.permintaan') }}" class="btn btn-primary btn-sm">
+                        <i class="bi bi-eye me-1"></i>Lihat Semua
+                    </a>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
@@ -267,38 +276,91 @@
                             <thead>
                                 <tr>
                                     <th>#</th>
+                                    <th>Kode Permintaan</th>
                                     <th>Barang</th>
                                     <th>Jumlah</th>
+                                    <th>Satuan Kerja</th>
+                                    <th>Tanggal Permintaan</th>
                                     <th>Status</th>
-                                    <th>Tanggal</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($data['recent_requests'] as $request)
                                 <tr>
                                     <td>{{ $loop->iteration }}</td>
-                                    <td>{{ $request->barang->nama_barang ?? 'N/A' }}</td>
-                                    <td>{{ $request->jumlah }}</td>
+                                    <td>
+                                        <span class="badge bg-light text-dark">{{ $request->kode_permintaan }}</span>
+                                    </td>
+                                    <td>
+                                        @if(isset($request->details) && $request->details->count() > 0)
+                                            <strong>{{ $request->details->count() }} jenis barang</strong><br>
+                                            <small class="text-muted">
+                                                @foreach($request->details->take(2) as $detail)
+                                                    {{ $detail->barang->nama_barang ?? 'N/A' }},
+                                                @endforeach
+                                                @if($request->details->count() > 2)
+                                                    dan {{ $request->details->count() - 2 }} lainnya
+                                                @endif
+                                            </small>
+                                        @else
+                                            <strong>{{ $request->barang->nama_barang ?? 'N/A' }}</strong><br>
+                                            <small class="text-muted">{{ $request->barang->kode_barang ?? '' }}</small>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if(isset($request->details) && $request->details->count() > 0)
+                                            {{ $request->details->sum('jumlah') }} unit<br>
+                                            <small class="text-muted">{{ $request->details->count() }} jenis</small>
+                                        @else
+                                            {{ $request->jumlah }} {{ $request->barang->satuan->nama_satuan ?? 'unit' }}
+                                        @endif
+                                    </td>
+                                    <td>{{ $request->satker->nama_satker ?? '-' }}</td>
+                                    <td>{{ $request->created_at->format('d/m/Y') }}</td>
                                     <td>
                                         @if($request->status == 'pending')
-                                            <span class="badge bg-warning">
+                                            <span class="badge bg-warning status-badge">
                                                 <i class="bi bi-clock-history me-1"></i>Pending
                                             </span>
                                         @elseif($request->status == 'approved')
-                                            <span class="badge bg-success">
+                                            <span class="badge bg-success status-badge">
                                                 <i class="bi bi-check-circle me-1"></i>Disetujui
                                             </span>
-                                        @else
-                                            <span class="badge bg-danger">
+                                        @elseif($request->status == 'rejected')
+                                            <span class="badge bg-danger status-badge">
                                                 <i class="bi bi-x-circle me-1"></i>Ditolak
+                                            </span>
+                                        @elseif($request->status == 'delivered')
+                                            <span class="badge bg-info status-badge">
+                                                <i class="bi bi-truck me-1"></i>Dikirim
                                             </span>
                                         @endif
                                     </td>
-                                    <td>{{ $request->created_at->format('d/m/Y') }}</td>
                                 </tr>
                                 @endforeach
                             </tbody>
                         </table>
+                    </div>
+                </div>
+                <div class="card-footer text-center">
+                    <small class="text-muted">
+                        Menampilkan {{ $data['recent_requests']->count() }} permintaan terbaru
+                    </small>
+                </div>
+            </div>
+            @else
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Permintaan Terbaru</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center py-4">
+                        <i class="bi bi-clipboard-x display-1 text-muted"></i>
+                        <h5 class="mt-3">Belum ada permintaan</h5>
+                        <p class="text-muted">Anda belum mengajukan permintaan barang</p>
+                        <a href="{{ route('user.permintaan.create') }}" class="btn btn-primary mt-2">
+                            <i class="bi bi-plus-circle me-1"></i>Ajukan Permintaan
+                        </a>
                     </div>
                 </div>
             </div>
