@@ -184,6 +184,43 @@
             background-color: #f8f9fa;
         }
         
+        /* Validasi input tanggal */
+        .is-valid {
+            border-color: #28a745;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%2328a745' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right calc(0.375em + 0.1875rem) center;
+            background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+        }
+
+        .is-valid:focus {
+            border-color: #28a745;
+            box-shadow: 0 0 0 0.25rem rgba(40, 167, 69, 0.25);
+        }
+
+        .is-invalid {
+            border-color: #dc3545;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right calc(0.375em + 0.1875rem) center;
+            background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+        }
+
+        .is-invalid:focus {
+            border-color: #dc3545;
+            box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
+        }
+
+        /* Placeholder untuk input date */
+        input[type="date"]:not(:valid):not(:focus) {
+            color: #6c757d;
+        }
+
+        /* Helper text styling */
+        #tanggal-helper, #edit-tanggal-helper {
+            transition: all 0.3s ease;
+        }
+        
         /* Responsive */
         @media (max-width: 768px) {
             .sidebar {
@@ -438,15 +475,25 @@
                             
                             <div class="col-md-6">
                                 <label for="tanggal_dibutuhkan" class="form-label">
-                                    Tanggal Dibutuhkan
+                                    <i class="bi bi-calendar-date"></i> Tanggal Dibutuhkan
                                     <span class="text-danger">*</span>
                                 </label>
                                 <input type="date" 
                                        name="tanggal_dibutuhkan" 
                                        class="form-control" 
                                        id="tanggal_dibutuhkan"
-                                       required>
-                                <div class="form-text">Tanggal paling lambat barang dibutuhkan</div>
+                                       min="<?php echo date('Y-m-d', strtotime('+1 day')); ?>"
+                                       required
+                                       oninvalid="setCustomValidity('Pilih tanggal paling lambat barang dibutuhkan (minimal besok)')"
+                                       onchange="try{setCustomValidity('')}catch(e){}">
+                                
+                                <div class="form-text d-flex align-items-start">
+                                    <i class="bi bi-info-circle me-2 mt-1"></i>
+                                    <div>
+                                        <strong>Kapan barang akan digunakan?</strong><br>
+                                        Pilih tanggal kebutuhan barang. 
+                                    </div>
+                                </div>
                             </div>
                             
                             <div class="col-12">
@@ -607,104 +654,104 @@
                                             </tr>
                                         </thead>
                                         <tbody id="edit_cartItems">
-    <!-- Items akan diisi oleh JavaScript -->
-    @if(isset($permintaan->details) && $permintaan->details->count() > 0)
-        @foreach($permintaan->details as $index => $detail)
-        @php
-            $barang = $detail->barang;
-        @endphp
-        <tr data-id="{{ $barang->id }}" data-index="{{ $index }}">
-            <td>{{ $loop->iteration }}</td>
-            <td>{{ $barang->kode_barang }}</td>
-            <td>
-                <strong>{{ $barang->nama_barang }}</strong>
-            </td>
-            <td>{{ $barang->kategori->nama_kategori ?? '-' }}</td>
-            <td>{{ $barang->satuan->nama_satuan ?? 'unit' }}</td>
-            <td>
-                <div class="input-group input-group-sm cart-quantity-control">
-                    <button class="btn btn-outline-secondary btn-minus" type="button" 
-                            data-id="{{ $barang->id }}" data-index="{{ $index }}">
-                        <i class="bi bi-dash"></i>
-                    </button>
-                    <input type="number" class="form-control text-center jumlah-input" 
-                           value="{{ $detail->jumlah }}" min="1" 
-                           data-id="{{ $barang->id }}" data-index="{{ $index }}"
-                           data-stok="{{ $barang->stok }}">
-                    <button class="btn btn-outline-secondary btn-plus" type="button" 
-                            data-id="{{ $barang->id }}" data-index="{{ $index }}">
-                        <i class="bi bi-plus"></i>
-                    </button>
-                </div>
-            </td>
-            <td>
-                @php
-                    $stok = $barang->stok ?? 0;
-                    $badgeClass = ($stok > 10) ? 'bg-success' : (($stok > 0) ? 'bg-warning' : 'bg-danger');
-                @endphp
-                <span class="badge {{ $badgeClass }} stok-badge" 
-                      data-id="{{ $barang->id }}" 
-                      data-satuan="{{ $barang->satuan->nama_satuan ?? 'unit' }}">
-                    {{ $stok }} {{ $barang->satuan->nama_satuan ?? 'unit' }}
-                </span>
-            </td>
-            <td>
-                <button class="btn btn-sm btn-danger btn-hapus" 
-                        data-id="{{ $barang->id }}" data-index="{{ $index }}" title="Hapus">
-                    <i class="bi bi-trash"></i>
-                </button>
-            </td>
-        </tr>
-        @endforeach
-    @else
-        <!-- Fallback untuk permintaan lama (single barang) -->
-        @php
-            $barang = $permintaan->barang;
-        @endphp
-        <tr data-id="{{ $barang->id }}" data-index="0">
-            <td>1</td>
-            <td>{{ $barang->kode_barang }}</td>
-            <td>
-                <strong>{{ $barang->nama_barang }}</strong>
-            </td>
-            <td>{{ $barang->kategori->nama_kategori ?? '-' }}</td>
-            <td>{{ $barang->satuan->nama_satuan ?? 'unit' }}</td>
-            <td>
-                <div class="input-group input-group-sm cart-quantity-control">
-                    <button class="btn btn-outline-secondary btn-minus" type="button" 
-                            data-id="{{ $barang->id }}" data-index="0">
-                        <i class="bi bi-dash"></i>
-                    </button>
-                    <input type="number" class="form-control text-center jumlah-input" 
-                           value="{{ $permintaan->jumlah }}" min="1" 
-                           data-id="{{ $barang->id }}" data-index="0"
-                           data-stok="{{ $barang->stok }}">
-                    <button class="btn btn-outline-secondary btn-plus" type="button" 
-                            data-id="{{ $barang->id }}" data-index="0">
-                        <i class="bi bi-plus"></i>
-                    </button>
-                </div>
-            </td>
-            <td>
-                @php
-                    $stok = $barang->stok ?? 0;
-                    $badgeClass = ($stok > 10) ? 'bg-success' : (($stok > 0) ? 'bg-warning' : 'bg-danger');
-                @endphp
-                <span class="badge {{ $badgeClass }} stok-badge" 
-                      data-id="{{ $barang->id }}" 
-                      data-satuan="{{ $barang->satuan->nama_satuan ?? 'unit' }}">
-                    {{ $stok }} {{ $barang->satuan->nama_satuan ?? 'unit' }}
-                </span>
-            </td>
-            <td>
-                <button class="btn btn-sm btn-danger btn-hapus" 
-                        data-id="{{ $barang->id }}" data-index="0" title="Hapus">
-                    <i class="bi bi-trash"></i>
-                </button>
-            </td>
-        </tr>
-    @endif
-</tbody>   
+                                            <!-- Items akan diisi oleh JavaScript -->
+                                            @if(isset($permintaan->details) && $permintaan->details->count() > 0)
+                                                @foreach($permintaan->details as $index => $detail)
+                                                @php
+                                                    $barang = $detail->barang;
+                                                @endphp
+                                                <tr data-id="{{ $barang->id }}" data-index="{{ $index }}">
+                                                    <td>{{ $loop->iteration }}</td>
+                                                    <td>{{ $barang->kode_barang }}</td>
+                                                    <td>
+                                                        <strong>{{ $barang->nama_barang }}</strong>
+                                                    </td>
+                                                    <td>{{ $barang->kategori->nama_kategori ?? '-' }}</td>
+                                                    <td>{{ $barang->satuan->nama_satuan ?? 'unit' }}</td>
+                                                    <td>
+                                                        <div class="input-group input-group-sm cart-quantity-control">
+                                                            <button class="btn btn-outline-secondary btn-minus" type="button" 
+                                                                    data-id="{{ $barang->id }}" data-index="{{ $index }}">
+                                                                <i class="bi bi-dash"></i>
+                                                            </button>
+                                                            <input type="number" class="form-control text-center jumlah-input" 
+                                                                   value="{{ $detail->jumlah }}" min="1" 
+                                                                   data-id="{{ $barang->id }}" data-index="{{ $index }}"
+                                                                   data-stok="{{ $barang->stok }}">
+                                                            <button class="btn btn-outline-secondary btn-plus" type="button" 
+                                                                    data-id="{{ $barang->id }}" data-index="{{ $index }}">
+                                                                <i class="bi bi-plus"></i>
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        @php
+                                                            $stok = $barang->stok ?? 0;
+                                                            $badgeClass = ($stok > 10) ? 'bg-success' : (($stok > 0) ? 'bg-warning' : 'bg-danger');
+                                                        @endphp
+                                                        <span class="badge {{ $badgeClass }} stok-badge" 
+                                                              data-id="{{ $barang->id }}" 
+                                                              data-satuan="{{ $barang->satuan->nama_satuan ?? 'unit' }}">
+                                                            {{ $stok }} {{ $barang->satuan->nama_satuan ?? 'unit' }}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <button class="btn btn-sm btn-danger btn-hapus" 
+                                                                data-id="{{ $barang->id }}" data-index="{{ $index }}" title="Hapus">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                                @endforeach
+                                            @else
+                                                <!-- Fallback untuk permintaan lama (single barang) -->
+                                                @php
+                                                    $barang = $permintaan->barang;
+                                                @endphp
+                                                <tr data-id="{{ $barang->id }}" data-index="0">
+                                                    <td>1</td>
+                                                    <td>{{ $barang->kode_barang }}</td>
+                                                    <td>
+                                                        <strong>{{ $barang->nama_barang }}</strong>
+                                                    </td>
+                                                    <td>{{ $barang->kategori->nama_kategori ?? '-' }}</td>
+                                                    <td>{{ $barang->satuan->nama_satuan ?? 'unit' }}</td>
+                                                    <td>
+                                                        <div class="input-group input-group-sm cart-quantity-control">
+                                                            <button class="btn btn-outline-secondary btn-minus" type="button" 
+                                                                    data-id="{{ $barang->id }}" data-index="0">
+                                                                <i class="bi bi-dash"></i>
+                                                            </button>
+                                                            <input type="number" class="form-control text-center jumlah-input" 
+                                                                   value="{{ $permintaan->jumlah }}" min="1" 
+                                                                   data-id="{{ $barang->id }}" data-index="0"
+                                                                   data-stok="{{ $barang->stok }}">
+                                                            <button class="btn btn-outline-secondary btn-plus" type="button" 
+                                                                    data-id="{{ $barang->id }}" data-index="0">
+                                                                <i class="bi bi-plus"></i>
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        @php
+                                                            $stok = $barang->stok ?? 0;
+                                                            $badgeClass = ($stok > 10) ? 'bg-success' : (($stok > 0) ? 'bg-warning' : 'bg-danger');
+                                                        @endphp
+                                                        <span class="badge {{ $badgeClass }} stok-badge" 
+                                                              data-id="{{ $barang->id }}" 
+                                                              data-satuan="{{ $barang->satuan->nama_satuan ?? 'unit' }}">
+                                                            {{ $stok }} {{ $barang->satuan->nama_satuan ?? 'unit' }}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <button class="btn btn-sm btn-danger btn-hapus" 
+                                                                data-id="{{ $barang->id }}" data-index="0" title="Hapus">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            @endif
+                                        </tbody>   
                                     </table>
                                 </div>
                             </div>
@@ -742,16 +789,26 @@
                             
                             <div class="col-md-6">
                                 <label for="edit_tanggal_dibutuhkan" class="form-label">
-                                    Tanggal Dibutuhkan
+                                    <i class="bi bi-calendar-date"></i> Tanggal Dibutuhkan
                                     <span class="text-danger">*</span>
                                 </label>
                                 <input type="date" 
                                        name="tanggal_dibutuhkan" 
                                        class="form-control" 
                                        id="edit_tanggal_dibutuhkan"
-                                       value="{{ $permintaan->tanggal_dibutuhkan ? \Carbon\Carbon::parse($permintaan->tanggal_dibutuhkan)->format('Y-m-d') : date('Y-m-d') }}"
-                                       required>
-                                <div class="form-text">Tanggal paling lambat barang dibutuhkan</div>
+                                       value="{{ $permintaan->tanggal_dibutuhkan ? \Carbon\Carbon::parse($permintaan->tanggal_dibutuhkan)->format('Y-m-d') : '' }}"
+                                       min="<?php echo date('Y-m-d', strtotime('+1 day')); ?>"
+                                       required
+                                       oninvalid="setCustomValidity('Pilih tanggal paling lambat barang dibutuhkan (minimal besok)')"
+                                       onchange="try{setCustomValidity('')}catch(e){}">
+                                
+                                <div class="form-text d-flex align-items-start">
+                                    <i class="bi bi-info-circle me-2 mt-1"></i>
+                                    <div>
+                                        <strong>Kapan barang akan digunakan?</strong><br>
+                                        Pilih tanggal kebutuhan barang. 
+                                    </div>
+                                </div>
                             </div>
                             
                             <div class="col-12">
@@ -1249,6 +1306,13 @@
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
     $(document).ready(function() {
+        console.log('Document ready - Permintaan page loaded');
+        
+        // Debug: Cek apakah form ada
+        if ($('#permintaanForm').length) {
+            console.log('Form permintaan ditemukan');
+        }
+        
         // Auto dismiss alerts
         setTimeout(() => {
             $('.alert').alert('close');
@@ -1265,6 +1329,187 @@
             
             endDate.on('change', function() {
                 startDate.attr('max', $(this).val());
+            });
+        }
+        
+        // ==============================================
+        // VALIDASI TANGGAL DIBUTUHKAN - REAL-TIME
+        // ==============================================
+        
+        // Fungsi untuk format tanggal Indonesia
+        function formatTanggalIndonesia(date) {
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            return date.toLocaleDateString('id-ID', options);
+        }
+        
+        // Set min date ke besok untuk semua form
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const tomorrowStr = tomorrow.toISOString().split('T')[0];
+        const tomorrowDisplay = formatTanggalIndonesia(tomorrow);
+        
+        // Untuk form CREATE
+        if ($('#tanggal_dibutuhkan').length) {
+            // Set minimum date ke besok
+            $('#tanggal_dibutuhkan').attr('min', tomorrowStr);
+            
+            // Tambahkan helper text dinamis
+            setTimeout(() => {
+                $('#tanggal_dibutuhkan').after(`
+                    <div class="text-info small mt-1" id="tanggal-helper">
+                        <i class="bi bi-lightbulb"></i> 
+                        Contoh: ${tomorrowDisplay} atau setelahnya
+                    </div>
+                `);
+            }, 100);
+            
+            // Event untuk validasi real-time
+            $('#tanggal_dibutuhkan').on('change', function() {
+                validateTanggalDibutuhkan($(this), 'create');
+            });
+        }
+        
+        // Untuk form EDIT
+        if ($('#edit_tanggal_dibutuhkan').length) {
+            // Set minimum date ke besok
+            $('#edit_tanggal_dibutuhkan').attr('min', tomorrowStr);
+            
+            // Validasi tanggal yang sudah ada
+            const editDate = $('#edit_tanggal_dibutuhkan').val();
+            if (editDate) {
+                const editDateObj = new Date(editDate);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                
+                // Jika tanggal edit lebih kecil dari besok, set ke besok
+                if (editDateObj < tomorrow) {
+                    $('#edit_tanggal_dibutuhkan').val(tomorrowStr);
+                }
+            }
+            
+            // Tambahkan helper text dinamis
+            setTimeout(() => {
+                $('#edit_tanggal_dibutuhkan').after(`
+                    <div class="text-info small mt-1" id="edit-tanggal-helper">
+                        <i class="bi bi-lightbulb"></i> 
+                        Contoh: ${tomorrowDisplay} atau setelahnya
+                    </div>
+                `);
+            }, 100);
+            
+            // Event untuk validasi real-time
+            $('#edit_tanggal_dibutuhkan').on('change', function() {
+                validateTanggalDibutuhkan($(this), 'edit');
+            });
+        }
+        
+        // Fungsi validasi tanggal
+        function validateTanggalDibutuhkan(input, formType) {
+            const value = input.val();
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            if (value) {
+                const selectedDate = new Date(value);
+                selectedDate.setHours(0, 0, 0, 0);
+                
+                // Cek apakah tanggal setelah hari ini
+                if (selectedDate <= today) {
+                    // Tampilkan error
+                    input.addClass('is-invalid');
+                    input.removeClass('is-valid');
+                    
+                    // Update helper text dengan error
+                    const helperId = formType === 'create' ? '#tanggal-helper' : '#edit-tanggal-helper';
+                    $(helperId).html(`
+                        <i class="bi bi-exclamation-triangle text-danger"></i> 
+                        <span class="text-danger">Pilih tanggal setelah hari ini</span>
+                    `);
+                    
+                    return false;
+                } else {
+                    // Valid
+                    input.removeClass('is-invalid');
+                    input.addClass('is-valid');
+                    
+                    // Update helper text dengan sukses
+                    const helperId = formType === 'create' ? '#tanggal-helper' : '#edit-tanggal-helper';
+                    const selectedDisplay = formatTanggalIndonesia(selectedDate);
+                    $(helperId).html(`
+                        <i class="bi bi-check-circle text-success"></i> 
+                        <span class="text-success">Barang dibutuhkan: ${selectedDisplay}</span>
+                    `);
+                    
+                    return true;
+                }
+            } else {
+                // Kosong
+                input.removeClass('is-invalid is-valid');
+                return null;
+            }
+        }
+        
+        // ==============================================
+        // VALIDASI FORM SUBMIT UNTUK TANGGAL
+        // ==============================================
+        
+        // Untuk form CREATE
+        if ($('#permintaanForm').length) {
+            $('#permintaanForm').on('submit', function(e) {
+                // Validasi tanggal dibutuhkan
+                const tanggalInput = $('#tanggal_dibutuhkan');
+                const tanggalValue = tanggalInput.val();
+                
+                if (!tanggalValue) {
+                    e.preventDefault();
+                    alert('Harap pilih tanggal dibutuhkan');
+                    tanggalInput.focus();
+                    return false;
+                }
+                
+                const selectedDate = new Date(tanggalValue);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                
+                if (selectedDate <= today) {
+                    e.preventDefault();
+                    alert('Tanggal dibutuhkan harus setelah hari ini (minimal besok)');
+                    tanggalInput.focus();
+                    return false;
+                }
+                
+                // Jika semua valid, submit form
+                return true;
+            });
+        }
+        
+        // Untuk form EDIT
+        if ($('#editPermintaanForm').length) {
+            $('#editPermintaanForm').on('submit', function(e) {
+                // Validasi tanggal dibutuhkan
+                const tanggalInput = $('#edit_tanggal_dibutuhkan');
+                const tanggalValue = tanggalInput.val();
+                
+                if (!tanggalValue) {
+                    e.preventDefault();
+                    alert('Harap pilih tanggal dibutuhkan');
+                    tanggalInput.focus();
+                    return false;
+                }
+                
+                const selectedDate = new Date(tanggalValue);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                
+                if (selectedDate <= today) {
+                    e.preventDefault();
+                    alert('Tanggal dibutuhkan harus setelah hari ini (minimal besok)');
+                    tanggalInput.focus();
+                    return false;
+                }
+                
+                // Jika semua valid, submit form
+                return true;
             });
         }
         
@@ -1326,7 +1571,10 @@
             });
             
             // Tombol Tambah Barang ke Cart
-            $('#btnTambahBarang').click(function() {
+            $('#btnTambahBarang').on('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
                 if (!selectedBarang) return;
                 
                 // Cek apakah barang sudah ada di cart
@@ -1359,7 +1607,9 @@
             });
             
             // Tombol Kosongkan Daftar
-            $('#btnKosongkanDaftar').click(function() {
+            $('#btnKosongkanDaftar').on('click', function(e) {
+                e.preventDefault();
+                
                 if (cartItems.length === 0) {
                     alert('Daftar barang sudah kosong!');
                     return;
@@ -1464,7 +1714,7 @@
             }
             
             // Event delegation untuk button di cart
-            $(document).on('click', '.btn-plus', function(e) {
+            $(document).on('click', '#cartItems .btn-plus', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
                 
@@ -1483,7 +1733,7 @@
                 }
             });
             
-            $(document).on('click', '.btn-minus', function(e) {
+            $(document).on('click', '#cartItems .btn-minus', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
                 
@@ -1500,7 +1750,7 @@
                 }
             });
             
-            $(document).on('input', '.jumlah-input', function() {
+            $(document).on('input', '#cartItems .jumlah-input', function() {
                 const id = $(this).data('id');
                 const index = $(this).data('index');
                 const newJumlah = parseInt($(this).val()) || 1;
@@ -1522,7 +1772,7 @@
                 }
             });
             
-            $(document).on('click', '.btn-hapus', function(e) {
+            $(document).on('click', '#cartItems .btn-hapus', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
                 
@@ -1552,9 +1802,12 @@
             }
             
             // Form validation before submit
-            $('#permintaanForm').submit(function(e) {
+            $('#permintaanForm').on('submit', function(e) {
+                e.preventDefault();
+                
+                console.log('Form submit dipanggil');
+                
                 if (cartItems.length === 0) {
-                    e.preventDefault();
                     alert('Harap tambahkan minimal 1 barang ke daftar permintaan');
                     return false;
                 }
@@ -1562,22 +1815,27 @@
                 const satkerId = $('#satker_id').val();
                 const keterangan = $('#keterangan').val().trim();
                 const tanggalDibutuhkan = $('#tanggal_dibutuhkan').val();
-                const today = new Date().toISOString().split('T')[0];
                 
-                if (tanggalDibutuhkan < today) {
-                    e.preventDefault();
-                    alert('Tanggal dibutuhkan tidak boleh kurang dari hari ini');
+                if (!tanggalDibutuhkan) {
+                    alert('Harap pilih tanggal dibutuhkan');
+                    return false;
+                }
+                
+                const selectedDate = new Date(tanggalDibutuhkan);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                
+                if (selectedDate <= today) {
+                    alert('Tanggal dibutuhkan harus setelah hari ini (minimal besok)');
                     return false;
                 }
                 
                 if (!satkerId) {
-                    e.preventDefault();
                     alert('Harap pilih satuan kerja');
                     return false;
                 }
                 
                 if (!keterangan) {
-                    e.preventDefault();
                     alert('Harap isi keterangan kebutuhan barang');
                     return false;
                 }
@@ -1594,19 +1852,19 @@
                 });
                 
                 if (!isValid) {
-                    e.preventDefault();
                     alert(errorMessage);
                     return false;
                 }
                 
                 // Show loading state
                 $('#submitBtn').prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Mengajukan...');
+                
+                // Submit form dengan timeout untuk memastikan UI update
+                setTimeout(() => {
+                    console.log('Form benar-benar disubmit');
+                    $(this).off('submit').submit();
+                }, 100);
             });
-            
-            // Set minimum date for tanggal dibutuhkan
-            const today = new Date().toISOString().split('T')[0];
-            $('#tanggal_dibutuhkan').attr('min', today);
-            $('#tanggal_dibutuhkan').val(today);
             
             // Format functions for Select2
             function formatBarangResult(barang) {
@@ -1656,581 +1914,993 @@
         }
         
         // ==============================================
-// SISTEM KASIR UNTUK EDIT MULTI BARANG (DENGAN STOK REAL-TIME)
-// ==============================================
-if ($('#edit_barang_search').length) {
-    // Inisialisasi variabel dengan data dari server
-    let editCartItems = [];
-    let editSelectedBarang = null;
-    
-    // Initialize Select2 for barang search
-    $('#edit_barang_search').select2({
-        placeholder: "Ketik untuk mencari barang...",
-        allowClear: true,
-        width: '100%',
-        templateResult: formatBarangResult,
-        templateSelection: formatBarangSelection
-    });
-    
-    // Fungsi untuk update stok dari server
-     function updateStokFromServer(barangId) {
-        return new Promise((resolve, reject) => {
-            // Perbaiki URL dengan cara yang benar
-            const url = '{{ route("user.permintaan.barang.stok", ":id") }}'.replace(':id', barangId);
+        // SISTEM KASIR UNTUK EDIT MULTI BARANG (DENGAN STOK REAL-TIME)
+        // ==============================================
+        if ($('#edit_barang_search').length) {
+            // Inisialisasi variabel dengan data dari server
+            let editCartItems = [];
+            let editSelectedBarang = null;
             
-            $.ajax({
-                url: url,
-                type: 'GET',
-                dataType: 'json',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                success: function(response) {
-                    if (response.success) {
-                        resolve(response);
-                    } else {
-                        reject(response.message);
+            // Initialize Select2 for barang search
+            $('#edit_barang_search').select2({
+                placeholder: "Ketik untuk mencari barang...",
+                allowClear: true,
+                width: '100%',
+                templateResult: formatBarangResult,
+                templateSelection: formatBarangSelection
+            });
+            
+            // Fungsi untuk update stok dari server
+             function updateStokFromServer(barangId) {
+                return new Promise((resolve, reject) => {
+                    // Perbaiki URL dengan cara yang benar
+                    const url = '{{ route("user.permintaan.barang.stok", ":id") }}'.replace(':id', barangId);
+                    
+                    $.ajax({
+                        url: url,
+                        type: 'GET',
+                        dataType: 'json',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                resolve(response);
+                            } else {
+                                reject(response.message);
+                            }
+                        },
+                        error: function(xhr) {
+                            console.error('Error fetching stock:', xhr);
+                            reject('Gagal mengambil data stok dari server');
+                        }
+                    });
+                });
+            }
+            
+            // Load existing items from table to cart array
+            $('#edit_cartItems tr').each(function(index) {
+                const row = $(this);
+                const barangId = row.data('id');
+                const barangKode = row.find('td:eq(1)').text();
+                const barangNama = row.find('td:eq(2) strong').text();
+                const barangKategori = row.find('td:eq(3)').text();
+                const barangSatuan = row.find('td:eq(4)').text();
+                const barangJumlah = parseInt(row.find('.jumlah-input').val()) || 1;
+                
+                // Get initial stok from data attribute
+                const barangStok = parseInt(row.find('.stok-badge').text().split(' ')[0]) || 0;
+                
+                editCartItems.push({
+                    id: barangId,
+                    kode: barangKode,
+                    nama: barangNama,
+                    kategori: barangKategori,
+                    satuan: barangSatuan,
+                    stok: barangStok,
+                    jumlah: barangJumlah
+                });
+            });
+            
+            // Event when barang is selected
+            $('#edit_barang_search').on('change', function() {
+                const selectedOption = $(this).find('option:selected');
+                const barangId = selectedOption.val();
+                
+                if (barangId) {
+                    // Cek apakah barang sudah ada di cart
+                    const existingItem = editCartItems.find(item => item.id == barangId);
+                    if (existingItem) {
+                        alert('Barang ini sudah ada di daftar permintaan!');
+                        $(this).val(null).trigger('change');
+                        return;
                     }
-                },
-                error: function(xhr) {
-                    console.error('Error fetching stock:', xhr);
-                    reject('Gagal mengambil data stok dari server');
+                    
+                    // Get data from data attributes
+                    const stok = parseInt(selectedOption.data('stok')) || 0;
+                    const kode = selectedOption.data('kode');
+                    const nama = selectedOption.data('nama');
+                    const satuan = selectedOption.data('satuan');
+                    const kategori = selectedOption.data('kategori');
+                    
+                    // Simpan data barang yang dipilih
+                    editSelectedBarang = {
+                        id: barangId,
+                        kode: kode,
+                        nama: nama,
+                        stok: stok,
+                        satuan: satuan,
+                        kategori: kategori,
+                        jumlah: 1 // Default jumlah 1
+                    };
+                    
+                    // Ambil stok real-time dari server
+                    updateStokFromServer(barangId)
+                        .then(response => {
+                            editSelectedBarang.stok = response.stok;
+                            
+                            // Tampilkan quick preview dengan stok terbaru
+                            $('#edit_previewKode').text(kode);
+                            $('#edit_previewNama').text(nama);
+                            $('#edit_previewStok').text(response.stok);
+                            $('#edit_previewSatuan').text(response.satuan);
+                            $('#edit_quickPreview').show();
+                            
+                            // Enable tombol tambah
+                            $('#edit_btnTambahBarang').prop('disabled', false);
+                        })
+                        .catch(error => {
+                            console.error('Error fetching stock:', error);
+                            // Fallback ke stok dari data attribute
+                            $('#edit_previewKode').text(kode);
+                            $('#edit_previewNama').text(nama);
+                            $('#edit_previewStok').text(stok);
+                            $('#edit_previewSatuan').text(satuan);
+                            $('#edit_quickPreview').show();
+                            $('#edit_btnTambahBarang').prop('disabled', false);
+                        });
+                } else {
+                    editSelectedBarang = null;
+                    $('#edit_btnTambahBarang').prop('disabled', true);
+                    $('#edit_quickPreview').hide();
                 }
             });
-        });
-    }
-    
-    // Initialize Select2 for barang search
-    $('#edit_barang_search').select2({
-        placeholder: "Ketik untuk mencari barang...",
-        allowClear: true,
-        width: '100%',
-        templateResult: formatBarangResult,
-        templateSelection: formatBarangSelection
-    });
-    
-    // ... kode lainnya TETAP DI SINI ...
-    // Load existing items from table to cart array
-    $('#edit_cartItems tr').each(function(index) {
-        // ... kode load existing items ...
-    });
-    
-    // Fungsi untuk update badge stok
-    function updateStokBadge(barangId, newStok, satuan) {
-        const badge = $(`.stok-badge[data-id="${barangId}"]`);
-        const input = $(`input[data-id="${barangId}"]`);
-        
-        if (badge.length) {
-            // Update badge
-            let badgeClass = 'bg-success';
-            if (newStok <= 0) {
-                badgeClass = 'bg-danger';
-            } else if (newStok <= 5) {
-                badgeClass = 'bg-warning';
-            }
             
-            badge.removeClass('bg-success bg-warning bg-danger').addClass(badgeClass);
-            badge.text(newStok + ' ' + satuan);
-            
-            // Update max attribute pada input
-            if (input.length) {
-                input.attr('max', newStok);
-            }
-            
-            // Update stok di cartItems array
-            const itemIndex = editCartItems.findIndex(item => item.id == barangId);
-            if (itemIndex !== -1) {
-                editCartItems[itemIndex].stok = newStok;
-            }
-        }
-        
-        return newStok;
-    }
-    
-    // Load existing items from table to cart array
-    $('#edit_cartItems tr').each(function(index) {
-        const row = $(this);
-        const barangId = row.data('id');
-        const barangKode = row.find('td:eq(1)').text();
-        const barangNama = row.find('td:eq(2) strong').text();
-        const barangKategori = row.find('td:eq(3)').text();
-        const barangSatuan = row.find('td:eq(4)').text();
-        const barangJumlah = parseInt(row.find('.jumlah-input').val()) || 1;
-        
-        // Get initial stok from data attribute
-        const barangStok = parseInt(row.find('.stok-badge').text().split(' ')[0]) || 0;
-        
-        editCartItems.push({
-            id: barangId,
-            kode: barangKode,
-            nama: barangNama,
-            kategori: barangKategori,
-            satuan: barangSatuan,
-            stok: barangStok,
-            jumlah: barangJumlah
-        });
-    });
-    
-    // Event when barang is selected
-    $('#edit_barang_search').on('change', function() {
-        const selectedOption = $(this).find('option:selected');
-        const barangId = selectedOption.val();
-        
-        if (barangId) {
-            // Cek apakah barang sudah ada di cart
-            const existingItem = editCartItems.find(item => item.id == barangId);
-            if (existingItem) {
-                alert('Barang ini sudah ada di daftar permintaan!');
-                $(this).val(null).trigger('change');
-                return;
-            }
-            
-            // Get data from data attributes
-            const stok = parseInt(selectedOption.data('stok')) || 0;
-            const kode = selectedOption.data('kode');
-            const nama = selectedOption.data('nama');
-            const satuan = selectedOption.data('satuan');
-            const kategori = selectedOption.data('kategori');
-            
-            // Simpan data barang yang dipilih
-            editSelectedBarang = {
-                id: barangId,
-                kode: kode,
-                nama: nama,
-                stok: stok,
-                satuan: satuan,
-                kategori: kategori,
-                jumlah: 1 // Default jumlah 1
-            };
-            
-            // Ambil stok real-time dari server
-            updateStokFromServer(barangId)
-                .then(response => {
-                    editSelectedBarang.stok = response.stok;
-                    
-                    // Tampilkan quick preview dengan stok terbaru
-                    $('#edit_previewKode').text(kode);
-                    $('#edit_previewNama').text(nama);
-                    $('#edit_previewStok').text(response.stok);
-                    $('#edit_previewSatuan').text(response.satuan);
-                    $('#edit_quickPreview').show();
-                    
-                    // Enable tombol tambah
-                    $('#edit_btnTambahBarang').prop('disabled', false);
-                })
-                .catch(error => {
-                    console.error('Error fetching stock:', error);
-                    // Fallback ke stok dari data attribute
-                    $('#edit_previewKode').text(kode);
-                    $('#edit_previewNama').text(nama);
-                    $('#edit_previewStok').text(stok);
-                    $('#edit_previewSatuan').text(satuan);
-                    $('#edit_quickPreview').show();
-                    $('#edit_btnTambahBarang').prop('disabled', false);
-                });
-        } else {
-            editSelectedBarang = null;
-            $('#edit_btnTambahBarang').prop('disabled', true);
-            $('#edit_quickPreview').hide();
-        }
-    });
-    
-    // Tombol Tambah Barang ke Cart
-    $('#edit_btnTambahBarang').click(function() {
-        if (!editSelectedBarang) return;
-        
-        // Cek apakah barang sudah ada di cart
-        const existingIndex = editCartItems.findIndex(item => item.id === editSelectedBarang.id);
-        
-        if (existingIndex !== -1) {
-            // Jika sudah ada, tambah jumlah
-            if (editCartItems[existingIndex].jumlah < editSelectedBarang.stok) {
-                editCartItems[existingIndex].jumlah += 1;
-            } else {
-                alert('Jumlah melebihi stok tersedia (' + editSelectedBarang.stok + ' ' + editSelectedBarang.satuan + ')!');
-                return;
-            }
-        } else {
-            // Jika belum ada, tambah baru
-            editCartItems.push({
-                ...editSelectedBarang,
-                jumlah: 1
+            // Tombol Tambah Barang ke Cart
+            $('#edit_btnTambahBarang').on('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                if (!editSelectedBarang) return;
+                
+                // Cek apakah barang sudah ada di cart
+                const existingIndex = editCartItems.findIndex(item => item.id === editSelectedBarang.id);
+                
+                if (existingIndex !== -1) {
+                    // Jika sudah ada, tambah jumlah
+                    if (editCartItems[existingIndex].jumlah < editSelectedBarang.stok) {
+                        editCartItems[existingIndex].jumlah += 1;
+                    } else {
+                        alert('Jumlah melebihi stok tersedia (' + editSelectedBarang.stok + ' ' + editSelectedBarang.satuan + ')!');
+                        return;
+                    }
+                } else {
+                    // Jika belum ada, tambah baru
+                    editCartItems.push({
+                        ...editSelectedBarang,
+                        jumlah: 1
+                    });
+                }
+                
+                // Refresh tampilan cart
+                refreshEditCart();
+                
+                // Reset select
+                $('#edit_barang_search').val(null).trigger('change');
+                editSelectedBarang = null;
+                $('#edit_btnTambahBarang').prop('disabled', true);
+                $('#edit_quickPreview').hide();
             });
-        }
-        
-        // Refresh tampilan cart
-        refreshEditCart();
-        
-        // Reset select
-        $('#edit_barang_search').val(null).trigger('change');
-        editSelectedBarang = null;
-        $('#edit_btnTambahBarang').prop('disabled', true);
-        $('#edit_quickPreview').hide();
-    });
-    
-    // Tombol Kosongkan Daftar
-    $('#edit_btnKosongkanDaftar').click(function() {
-        if (editCartItems.length === 0) {
-            alert('Daftar barang sudah kosong!');
-            return;
-        }
-        
-        if (confirm('Apakah Anda yakin ingin mengosongkan semua barang dari daftar?')) {
-            editCartItems = [];
-            refreshEditCart();
-        }
-    });
-    
-    // Fungsi refresh cart edit
-    function refreshEditCart() {
-        const cartTable = $('#edit_cartItems');
-        const cartCount = $('#edit_cartCount');
-        const totalItems = $('#edit_totalItems');
-        const totalQuantity = $('#edit_totalQuantity');
-        const cartCard = $('#edit_cartCard');
-        const container = $('#edit_barangDataContainer');
-        
-        // Kosongkan tabel
-        cartTable.empty();
-        
-        // Hitung total
-        const totalJenis = editCartItems.length;
-        const totalJumlah = editCartItems.reduce((sum, item) => sum + item.jumlah, 0);
-        
-        // Update totals
-        totalItems.text(totalJenis);
-        totalQuantity.text(totalJumlah);
-        
-        if (editCartItems.length > 0) {
-            // Tampilkan cart card
-            cartCard.show();
-            cartCount.text(totalJenis + ' item');
             
-            // Update hidden inputs
-            container.empty();
+            // Tombol Kosongkan Daftar
+            $('#edit_btnKosongkanDaftar').on('click', function(e) {
+                e.preventDefault();
+                
+                if (editCartItems.length === 0) {
+                    alert('Daftar barang sudah kosong!');
+                    return;
+                }
+                
+                if (confirm('Apakah Anda yakin ingin mengosongkan semua barang dari daftar?')) {
+                    editCartItems = [];
+                    refreshEditCart();
+                }
+            });
             
-            // Update stok semua barang dari server sebelum menampilkan
-            const updatePromises = editCartItems.map((item, index) => {
-                return updateStokFromServer(item.id)
-                    .then(response => {
-                        // Update stok di item
-                        editCartItems[index].stok = response.stok;
-                        editCartItems[index].satuan = response.satuan;
-                        
-                        // Tentukan badge class berdasarkan stok
-                        let badgeClass;
-                        if (response.stok > 10) {
-                            badgeClass = 'bg-success';
-                        } else if (response.stok > 0) {
-                            badgeClass = 'bg-warning';
-                        } else {
-                            badgeClass = 'bg-danger';
-                        }
-                        
-                        // Buat row untuk item
-                        const row = `
-                            <tr data-id="${item.id}" data-index="${index}">
-                                <td>${index + 1}</td>
-                                <td>${item.kode}</td>
-                                <td>
-                                    <strong>${item.nama}</strong>
-                                </td>
-                                <td>${item.kategori}</td>
-                                <td>${response.satuan}</td>
-                                <td>
-                                    <div class="input-group input-group-sm cart-quantity-control">
-                                        <button class="btn btn-outline-secondary btn-minus" type="button" 
-                                                data-id="${item.id}" data-index="${index}">
-                                            <i class="bi bi-dash"></i>
-                                        </button>
-                                        <input type="number" class="form-control text-center jumlah-input" 
-                                               value="${item.jumlah}" min="1" max="${response.stok}" 
-                                               data-id="${item.id}" data-index="${index}"
-                                               data-stok="${response.stok}">
-                                        <button class="btn btn-outline-secondary btn-plus" type="button" 
-                                                data-id="${item.id}" data-index="${index}">
-                                            <i class="bi bi-plus"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                                <td>
-                                    <span class="badge ${badgeClass} stok-badge" 
-                                          data-id="${item.id}" 
-                                          data-satuan="${response.satuan}">
-                                        ${response.stok} ${response.satuan}
-                                    </span>
-                                </td>
-                                <td>
-                                    <button class="btn btn-sm btn-danger btn-hapus" 
-                                            data-id="${item.id}" data-index="${index}" title="Hapus">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        `;
-                        cartTable.append(row);
-                        
-                        // Tambah hidden input
-                        container.append(`
-                            <input type="hidden" name="barang_items[${index}][barang_id]" value="${item.id}">
-                            <input type="hidden" name="barang_items[${index}][jumlah]" value="${item.jumlah}">
-                        `);
+            // Fungsi refresh cart edit
+            function refreshEditCart() {
+                const cartTable = $('#edit_cartItems');
+                const cartCount = $('#edit_cartCount');
+                const totalItems = $('#edit_totalItems');
+                const totalQuantity = $('#edit_totalQuantity');
+                const cartCard = $('#edit_cartCard');
+                const container = $('#edit_barangDataContainer');
+                
+                // Kosongkan tabel
+                cartTable.empty();
+                
+                // Hitung total
+                const totalJenis = editCartItems.length;
+                const totalJumlah = editCartItems.reduce((sum, item) => sum + item.jumlah, 0);
+                
+                // Update totals
+                totalItems.text(totalJenis);
+                totalQuantity.text(totalJumlah);
+                
+                if (editCartItems.length > 0) {
+                    // Tampilkan cart card
+                    cartCard.show();
+                    cartCount.text(totalJenis + ' item');
+                    
+                    // Update hidden inputs
+                    container.empty();
+                    
+                    // Update stok semua barang dari server sebelum menampilkan
+                    const updatePromises = editCartItems.map((item, index) => {
+                        return updateStokFromServer(item.id)
+                            .then(response => {
+                                // Update stok di item
+                                editCartItems[index].stok = response.stok;
+                                editCartItems[index].satuan = response.satuan;
+                                
+                                // Tentukan badge class berdasarkan stok
+                                let badgeClass;
+                                if (response.stok > 10) {
+                                    badgeClass = 'bg-success';
+                                } else if (response.stok > 0) {
+                                    badgeClass = 'bg-warning';
+                                } else {
+                                    badgeClass = 'bg-danger';
+                                }
+                                
+                                // Buat row untuk item
+                                const row = `
+                                    <tr data-id="${item.id}" data-index="${index}">
+                                        <td>${index + 1}</td>
+                                        <td>${item.kode}</td>
+                                        <td>
+                                            <strong>${item.nama}</strong>
+                                        </td>
+                                        <td>${item.kategori}</td>
+                                        <td>${response.satuan}</td>
+                                        <td>
+                                            <div class="input-group input-group-sm cart-quantity-control">
+                                                <button class="btn btn-outline-secondary btn-minus" type="button" 
+                                                        data-id="${item.id}" data-index="${index}">
+                                                    <i class="bi bi-dash"></i>
+                                                </button>
+                                                <input type="number" class="form-control text-center jumlah-input" 
+                                                       value="${item.jumlah}" min="1" max="${response.stok}" 
+                                                       data-id="${item.id}" data-index="${index}"
+                                                       data-stok="${response.stok}">
+                                                <button class="btn btn-outline-secondary btn-plus" type="button" 
+                                                        data-id="${item.id}" data-index="${index}">
+                                                    <i class="bi bi-plus"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge ${badgeClass} stok-badge" 
+                                                  data-id="${item.id}" 
+                                                  data-satuan="${response.satuan}">
+                                                ${response.stok} ${response.satuan}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-sm btn-danger btn-hapus" 
+                                                    data-id="${item.id}" data-index="${index}" title="Hapus">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                `;
+                                cartTable.append(row);
+                                
+                                // Tambah hidden input
+                                container.append(`
+                                    <input type="hidden" name="barang_items[${index}][barang_id]" value="${item.id}">
+                                    <input type="hidden" name="barang_items[${index}][jumlah]" value="${item.jumlah}">
+                                `);
+                            })
+                            .catch(error => {
+                                console.error(`Error updating stock for item ${item.id}:`, error);
+                                // Fallback ke stok lama
+                                let badgeClass;
+                                if (item.stok > 10) {
+                                    badgeClass = 'bg-success';
+                                } else if (item.stok > 0) {
+                                    badgeClass = 'bg-warning';
+                                } else {
+                                    badgeClass = 'bg-danger';
+                                }
+                                
+                                const row = `
+                                    <tr data-id="${item.id}" data-index="${index}">
+                                        <td>${index + 1}</td>
+                                        <td>${item.kode}</td>
+                                        <td>
+                                            <strong>${item.nama}</strong>
+                                        </td>
+                                        <td>${item.kategori}</td>
+                                        <td>${item.satuan}</td>
+                                        <td>
+                                            <div class="input-group input-group-sm cart-quantity-control">
+                                                <button class="btn btn-outline-secondary btn-minus" type="button" 
+                                                        data-id="${item.id}" data-index="${index}">
+                                                    <i class="bi bi-dash"></i>
+                                                </button>
+                                                <input type="number" class="form-control text-center jumlah-input" 
+                                                       value="${item.jumlah}" min="1" max="${item.stok}" 
+                                                       data-id="${item.id}" data-index="${index}"
+                                                       data-stok="${item.stok}">
+                                                <button class="btn btn-outline-secondary btn-plus" type="button" 
+                                                        data-id="${item.id}" data-index="${index}">
+                                                    <i class="bi bi-plus"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge ${badgeClass} stok-badge" 
+                                                  data-id="${item.id}" 
+                                                  data-satuan="${item.satuan}">
+                                                ${item.stok} ${item.satuan}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-sm btn-danger btn-hapus" 
+                                                    data-id="${item.id}" data-index="${index}" title="Hapus">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                `;
+                                cartTable.append(row);
+                                
+                                // Tambah hidden input
+                                container.append(`
+                                    <input type="hidden" name="barang_items[${index}][barang_id]" value="${item.id}">
+                                    <input type="hidden" name="barang_items[${index}][jumlah]" value="${item.jumlah}">
+                                `);
+                            });
+                    });
+                    
+                    // Tunggu semua update selesai
+                    Promise.all(updatePromises).then(() => {
+                        console.log('All stock updates completed');
+                    });
+                } else {
+                    // Sembunyikan cart card
+                    cartCard.hide();
+                    cartCount.text('0 item');
+                    
+                    // Kosongkan hidden inputs
+                    container.empty();
+                }
+            }
+            
+            // Event delegation untuk button di cart edit
+            $(document).on('click', '#edit_cartTable .btn-plus', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const id = $(this).data('id');
+                const index = $(this).data('index');
+                
+                if (index !== undefined && editCartItems[index]) {
+                    const item = editCartItems[index];
+                    
+                    // Ambil stok terbaru dari server
+                    updateStokFromServer(id)
+                        .then(response => {
+                            const currentStok = response.stok;
+                            
+                            if (item.jumlah < currentStok) {
+                                item.jumlah++;
+                                // Update stok di array
+                                editCartItems[index].stok = currentStok;
+                                refreshEditCart();
+                            } else {
+                                alert('Jumlah melebihi stok tersedia (' + currentStok + ' ' + response.satuan + ')!');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error checking stock:', error);
+                            // Fallback ke stok yang ada
+                            if (item.jumlah < item.stok) {
+                                item.jumlah++;
+                                refreshEditCart();
+                            } else {
+                                alert('Jumlah melebihi stok tersedia (' + item.stok + ' ' + item.satuan + ')!');
+                            }
+                        });
+                }
+            });
+            
+            $(document).on('click', '#edit_cartTable .btn-minus', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const id = $(this).data('id');
+                const index = $(this).data('index');
+                
+                if (index !== undefined && editCartItems[index]) {
+                    const item = editCartItems[index];
+                    
+                    if (item.jumlah > 1) {
+                        item.jumlah--;
+                        refreshEditCart();
+                    }
+                }
+            });
+            
+            $(document).on('input', '#edit_cartTable .jumlah-input', function() {
+                const id = $(this).data('id');
+                const index = $(this).data('index');
+                const newJumlah = parseInt($(this).val()) || 1;
+                
+                if (index !== undefined && editCartItems[index]) {
+                    const item = editCartItems[index];
+                    
+                    // Ambil stok terbaru dari server
+                    updateStokFromServer(id)
+                        .then(response => {
+                            const currentStok = response.stok;
+                            
+                            if (newJumlah > currentStok) {
+                                alert('Jumlah melebihi stok tersedia (' + currentStok + ' ' + response.satuan + ')!');
+                                $(this).val(item.jumlah);
+                            } else if (newJumlah < 1) {
+                                $(this).val(1);
+                                item.jumlah = 1;
+                                refreshEditCart();
+                            } else {
+                                item.jumlah = newJumlah;
+                                editCartItems[index].stok = currentStok;
+                                refreshEditCart();
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error checking stock:', error);
+                            // Fallback ke stok yang ada
+                            if (newJumlah > item.stok) {
+                                alert('Jumlah melebihi stok tersedia (' + item.stok + ' ' + item.satuan + ')!');
+                                $(this).val(item.jumlah);
+                            } else if (newJumlah < 1) {
+                                $(this).val(1);
+                                item.jumlah = 1;
+                                refreshEditCart();
+                            } else {
+                                item.jumlah = newJumlah;
+                                refreshEditCart();
+                            }
+                        });
+                }
+            });
+            
+            $(document).on('click', '#edit_cartTable .btn-hapus', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const id = $(this).data('id');
+                const index = $(this).data('index');
+                
+                if (index !== undefined && editCartItems[index]) {
+                    // Konfirmasi sebelum menghapus
+                    if (confirm('Apakah Anda yakin ingin menghapus barang ini dari daftar?')) {
+                        editCartItems.splice(index, 1);
+                        refreshEditCart();
+                    }
+                }
+            });
+            
+            // Form validation before submit - DENGAN STOK REAL-TIME
+            $('#editPermintaanForm').on('submit', function(e) {
+                e.preventDefault();
+                
+                console.log('Edit form submit dipanggil');
+                
+                if (editCartItems.length === 0) {
+                    alert('Harap tambahkan minimal 1 barang ke daftar permintaan');
+                    return false;
+                }
+                
+                const satkerId = $('#edit_satker_id').val();
+                const keterangan = $('#edit_keterangan').val().trim();
+                const tanggalDibutuhkan = $('#edit_tanggal_dibutuhkan').val();
+                
+                if (!tanggalDibutuhkan) {
+                    alert('Harap pilih tanggal dibutuhkan');
+                    return false;
+                }
+                
+                const selectedDate = new Date(tanggalDibutuhkan);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                
+                if (selectedDate <= today) {
+                    alert('Tanggal dibutuhkan harus setelah hari ini (minimal besok)');
+                    return false;
+                }
+                
+                if (!satkerId) {
+                    alert('Harap pilih satuan kerja');
+                    return false;
+                }
+                
+                if (!keterangan) {
+                    alert('Harap isi keterangan kebutuhan barang');
+                    return false;
+                }
+                
+                // Validasi stok real-time untuk setiap barang
+                const validationPromises = editCartItems.map((item, index) => {
+                    return updateStokFromServer(item.id)
+                        .then(response => {
+                            if (item.jumlah > response.stok) {
+                                throw new Error(`Jumlah barang "${item.nama}" melebihi stok tersedia (${response.stok} ${response.satuan})`);
+                            }
+                            return true;
+                        })
+                        .catch(error => {
+                            throw error;
+                        });
+                });
+                
+                // Tampilkan loading
+                $('#edit_submitBtn').prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Memvalidasi...');
+                
+                // Jalankan semua validasi
+                Promise.all(validationPromises)
+                    .then(() => {
+                        // Semua validasi berhasil, submit form
+                        console.log('Edit form validasi berhasil, submit form');
+                        $(this).off('submit').submit();
                     })
                     .catch(error => {
-                        console.error(`Error updating stock for item ${item.id}:`, error);
-                        // Fallback ke stok lama
-                        let badgeClass;
-                        if (item.stok > 10) {
-                            badgeClass = 'bg-success';
-                        } else if (item.stok > 0) {
-                            badgeClass = 'bg-warning';
-                        } else {
-                            badgeClass = 'bg-danger';
-                        }
-                        
-                        const row = `
-                            <tr data-id="${item.id}" data-index="${index}">
-                                <td>${index + 1}</td>
-                                <td>${item.kode}</td>
-                                <td>
-                                    <strong>${item.nama}</strong>
-                                </td>
-                                <td>${item.kategori}</td>
-                                <td>${item.satuan}</td>
-                                <td>
-                                    <div class="input-group input-group-sm cart-quantity-control">
-                                        <button class="btn btn-outline-secondary btn-minus" type="button" 
-                                                data-id="${item.id}" data-index="${index}">
-                                            <i class="bi bi-dash"></i>
-                                        </button>
-                                        <input type="number" class="form-control text-center jumlah-input" 
-                                               value="${item.jumlah}" min="1" max="${item.stok}" 
-                                               data-id="${item.id}" data-index="${index}"
-                                               data-stok="${item.stok}">
-                                        <button class="btn btn-outline-secondary btn-plus" type="button" 
-                                                data-id="${item.id}" data-index="${index}">
-                                            <i class="bi bi-plus"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                                <td>
-                                    <span class="badge ${badgeClass} stok-badge" 
-                                          data-id="${item.id}" 
-                                          data-satuan="${item.satuan}">
-                                        ${item.stok} ${item.satuan}
-                                    </span>
-                                </td>
-                                <td>
-                                    <button class="btn btn-sm btn-danger btn-hapus" 
-                                            data-id="${item.id}" data-index="${index}" title="Hapus">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        `;
-                        cartTable.append(row);
-                        
-                        // Tambah hidden input
-                        container.append(`
-                            <input type="hidden" name="barang_items[${index}][barang_id]" value="${item.id}">
-                            <input type="hidden" name="barang_items[${index}][jumlah]" value="${item.jumlah}">
-                        `);
+                        // Ada error validasi
+                        $('#edit_submitBtn').prop('disabled', false).html('<i class="bi bi-check-circle me-1"></i>Simpan Perubahan');
+                        alert(error.message);
                     });
             });
-            
-            // Tunggu semua update selesai
-            Promise.all(updatePromises).then(() => {
-                console.log('All stock updates completed');
-            });
-        } else {
-            // Sembunyikan cart card
-            cartCard.hide();
-            cartCount.text('0 item');
-            
-            // Kosongkan hidden inputs
-            container.empty();
         }
+
+        // Detail Request Modal Handler - PERBAIKAN
+$(document).on('click', '.btn-detail', function() {
+    const requestId = $(this).data('request-id');
+    
+    console.log('🚀 Detail button clicked');
+    console.log('📌 Request ID:', requestId);
+    console.log('🔗 URL yang akan diakses:', `/admin/requests/${requestId}`);
+    
+    // Tampilkan loading state
+    $('#detailRequestModalBody').html(`
+        <div class="text-center py-4">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2 text-muted">Memuat data permintaan...</p>
+        </div>
+    `);
+    
+    // Clear modal data dulu
+    $('#detailRequestModal').data('request-id', requestId);
+    
+    // Coba dengan error handling yang lebih baik
+    $.ajax({
+        url: `/admin/requests/${requestId}`,
+        method: 'GET',
+        dataType: 'json',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        },
+        success: function(response) {
+            console.log('✅ Response success:', response);
+            
+            if (response.success && response.request) {
+                renderRequestDetails(response.request);
+            } else {
+                console.error('❌ Response error:', response);
+                showErrorModal('Data tidak ditemukan', response.message || 'Data tidak tersedia');
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('❌ AJAX Error:', {
+                status: xhr.status,
+                statusText: xhr.statusText,
+                error: error,
+                responseText: xhr.responseText,
+                url: xhr.responseURL
+            });
+            
+            // Coba route alternatif
+            if (xhr.status === 404 || xhr.status === 500) {
+                tryAlternativeRoute(requestId, xhr.status);
+            } else {
+                showErrorModal('Koneksi Gagal', 
+                    `Status: ${xhr.status}<br>
+                     Error: ${error}<br>
+                     URL: /admin/requests/${requestId}`);
+            }
+        }
+    });
+});
+
+// Fungsi coba route alternatif
+function tryAlternativeRoute(requestId, previousStatus) {
+    console.log('🔄 Mencoba route alternatif...');
+    
+    $.ajax({
+        url: `/admin/requests/${requestId}/details`,
+        method: 'GET',
+        dataType: 'json',
+        success: function(response) {
+            console.log('✅ Alternative route success:', response);
+            
+            if (response.success && response.request) {
+                renderRequestDetails(response.request);
+            } else {
+                showErrorModal('Route tidak ditemukan', 
+                    'Silakan periksa konfigurasi route atau hubungi administrator.');
+            }
+        },
+        error: function(xhr) {
+            console.error('❌ Alternative route also failed:', xhr.status);
+            
+            // Tampilkan error detail untuk debugging
+            let errorMessage = '';
+            if (previousStatus === 404) {
+                errorMessage = 'Endpoint tidak ditemukan (404). Periksa route di web.php';
+            } else if (previousStatus === 500) {
+                errorMessage = 'Server error (500). Periksa controller atau database';
+            } else if (previousStatus === 403) {
+                errorMessage = 'Akses ditolak (403). Periksa middleware auth';
+            } else {
+                errorMessage = 'Tidak dapat menghubungi server';
+            }
+            
+            showErrorModal('Koneksi Gagal', 
+                `Status: ${previousStatus || xhr.status}<br>
+                 Error: ${errorMessage}<br>
+                 URL: /admin/requests/${requestId}`);
+        }
+    });
+}
+
+// Fungsi untuk render detail permintaan
+function renderRequestDetails(request) {
+    const isMultiBarang = request.details && request.details.length > 1;
+    const totalJumlah = isMultiBarang 
+        ? request.details.reduce((sum, detail) => sum + (detail.jumlah || 0), 0)
+        : request.jumlah || 0;
+    const totalJenis = isMultiBarang ? request.details.length : 1;
+    
+    // Hitung status
+    const approvedDetails = isMultiBarang ? 
+        request.details.filter(d => d.status === 'approved').length : 0;
+    const rejectedDetails = isMultiBarang ? 
+        request.details.filter(d => d.status === 'rejected').length : 0;
+    const pendingDetails = isMultiBarang ? 
+        request.details.filter(d => !d.status || d.status === 'pending').length : 0;
+    
+    let html = `
+        <!-- Informasi Umum -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title text-primary mb-3">
+                            <i class="bi bi-card-checklist me-2"></i>Informasi Permintaan
+                        </h6>
+                        <div class="row mb-2">
+                            <div class="col-5 fw-bold">Kode Permintaan:</div>
+                            <div class="col-7">${request.kode_permintaan || '-'}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-5 fw-bold">Tanggal:</div>
+                            <div class="col-7">${formatDate(request.created_at)}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-5 fw-bold">Pemohon:</div>
+                            <div class="col-7">${request.user?.name || '-'}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-5 fw-bold">Satker Utama:</div>
+                            <div class="col-7">${request.satker?.nama_satker || '-'}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title text-primary mb-3">
+                            <i class="bi bi-clipboard-check me-2"></i>Status Permintaan
+                        </h6>
+                        <div class="row mb-2">
+                            <div class="col-5 fw-bold">Status:</div>
+                            <div class="col-7">${getStatusBadge(request.status, rejectedDetails > 0)}</div>
+                        </div>
+    `;
+    
+    // Tampilkan detail status jika multi barang
+    if (isMultiBarang) {
+        html += `
+            <div class="row mb-2">
+                <div class="col-5 fw-bold">Detail Status:</div>
+                <div class="col-7">
+                    <div class="d-flex flex-wrap gap-1">
+        `;
+        
+        if (approvedDetails > 0) {
+            html += `<span class="badge bg-success">${approvedDetails} Disetujui</span>`;
+        }
+        if (rejectedDetails > 0) {
+            html += `<span class="badge bg-danger">${rejectedDetails} Ditolak</span>`;
+        }
+        if (pendingDetails > 0) {
+            html += `<span class="badge bg-warning">${pendingDetails} Pending</span>`;
+        }
+        
+        html += `
+                    </div>
+                </div>
+            </div>
+        `;
     }
     
-    // Event delegation untuk button di cart edit
-    $(document).on('click', '#edit_cartTable .btn-plus', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        
-        const id = $(this).data('id');
-        const index = $(this).data('index');
-        
-        if (index !== undefined && editCartItems[index]) {
-            const item = editCartItems[index];
-            
-            // Ambil stok terbaru dari server
-            updateStokFromServer(id)
-                .then(response => {
-                    const currentStok = response.stok;
-                    
-                    if (item.jumlah < currentStok) {
-                        item.jumlah++;
-                        // Update stok di array
-                        editCartItems[index].stok = currentStok;
-                        refreshEditCart();
-                    } else {
-                        alert('Jumlah melebihi stok tersedia (' + currentStok + ' ' + response.satuan + ')!');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error checking stock:', error);
-                    // Fallback ke stok yang ada
-                    if (item.jumlah < item.stok) {
-                        item.jumlah++;
-                        refreshEditCart();
-                    } else {
-                        alert('Jumlah melebihi stok tersedia (' + item.stok + ' ' + item.satuan + ')!');
-                    }
-                });
-        }
-    });
+    // Tanggal status
+    if (request.delivered_at) {
+        html += `
+            <div class="row mb-2">
+                <div class="col-5 fw-bold">Dikirim pada:</div>
+                <div class="col-7">${formatDate(request.delivered_at)}</div>
+            </div>
+        `;
+    } else if (request.approved_at) {
+        html += `
+            <div class="row mb-2">
+                <div class="col-5 fw-bold">Disetujui pada:</div>
+                <div class="col-7">${formatDate(request.approved_at)}</div>
+            </div>
+        `;
+    } else if (request.rejected_at) {
+        html += `
+            <div class="row mb-2">
+                <div class="col-5 fw-bold">Ditolak pada:</div>
+                <div class="col-7">${formatDate(request.rejected_at)}</div>
+            </div>
+        `;
+    }
     
-    $(document).on('click', '#edit_cartTable .btn-minus', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        
-        const id = $(this).data('id');
-        const index = $(this).data('index');
-        
-        if (index !== undefined && editCartItems[index]) {
-            const item = editCartItems[index];
-            
-            if (item.jumlah > 1) {
-                item.jumlah--;
-                refreshEditCart();
-            }
-        }
-    });
+    // Approved by
+    if (request.approved_by_user) {
+        html += `
+            <div class="row">
+                <div class="col-5 fw-bold">Disetujui oleh:</div>
+                <div class="col-7">${request.approved_by_user.name || '-'}</div>
+            </div>
+        `;
+    }
     
-    $(document).on('input', '#edit_cartTable .jumlah-input', function() {
-        const id = $(this).data('id');
-        const index = $(this).data('index');
-        const newJumlah = parseInt($(this).val()) || 1;
+    html += `
+                    </div>
+                </div>
+            </div>
+        </div>
         
-        if (index !== undefined && editCartItems[index]) {
-            const item = editCartItems[index];
-            
-            // Ambil stok terbaru dari server
-            updateStokFromServer(id)
-                .then(response => {
-                    const currentStok = response.stok;
-                    
-                    if (newJumlah > currentStok) {
-                        alert('Jumlah melebihi stok tersedia (' + currentStok + ' ' + response.satuan + ')!');
-                        $(this).val(item.jumlah);
-                    } else if (newJumlah < 1) {
-                        $(this).val(1);
-                        item.jumlah = 1;
-                        refreshEditCart();
-                    } else {
-                        item.jumlah = newJumlah;
-                        editCartItems[index].stok = currentStok;
-                        refreshEditCart();
-                    }
-                })
-                .catch(error => {
-                    console.error('Error checking stock:', error);
-                    // Fallback ke stok yang ada
-                    if (newJumlah > item.stok) {
-                        alert('Jumlah melebihi stok tersedia (' + item.stok + ' ' + item.satuan + ')!');
-                        $(this).val(item.jumlah);
-                    } else if (newJumlah < 1) {
-                        $(this).val(1);
-                        item.jumlah = 1;
-                        refreshEditCart();
-                    } else {
-                        item.jumlah = newJumlah;
-                        refreshEditCart();
-                    }
-                });
-        }
-    });
+        <!-- Ringkasan Barang -->
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h6 class="mb-0">
+                    <i class="bi bi-box-seam me-2"></i>Ringkasan Barang
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-${isMultiBarang ? '3' : '6'} mb-3">
+                        <div class="border rounded p-3">
+                            <h4 class="text-primary fw-bold">${totalJumlah}</h4>
+                            <small class="text-muted">Total Unit</small>
+                        </div>
+                    </div>
+                    <div class="col-md-${isMultiBarang ? '3' : '6'} mb-3">
+                        <div class="border rounded p-3">
+                            <h4 class="text-primary fw-bold">${totalJenis}</h4>
+                            <small class="text-muted">Jenis Barang</small>
+                        </div>
+                    </div>
+    `;
     
-    $(document).on('click', '#edit_cartTable .btn-hapus', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        
-        const id = $(this).data('id');
-        const index = $(this).data('index');
-        
-        if (index !== undefined && editCartItems[index]) {
-            // Konfirmasi sebelum menghapus
-            if (confirm('Apakah Anda yakin ingin menghapus barang ini dari daftar?')) {
-                editCartItems.splice(index, 1);
-                refreshEditCart();
-            }
+    if (isMultiBarang) {
+        // Hitung jumlah satker unik untuk multi barang
+        const satkerNames = [];
+        if (request.satker?.nama_satker) {
+            satkerNames.push(request.satker.nama_satker);
         }
-    });
-    
-    // Form validation before submit - DENGAN STOK REAL-TIME
-    $('#editPermintaanForm').submit(function(e) {
-        e.preventDefault();
-        
-        if (editCartItems.length === 0) {
-            alert('Harap tambahkan minimal 1 barang ke daftar permintaan');
-            return false;
-        }
-        
-        const satkerId = $('#edit_satker_id').val();
-        const keterangan = $('#edit_keterangan').val().trim();
-        const tanggalDibutuhkan = $('#edit_tanggal_dibutuhkan').val();
-        const today = new Date().toISOString().split('T')[0];
-        
-        if (tanggalDibutuhkan < today) {
-            alert('Tanggal dibutuhkan tidak boleh kurang dari hari ini');
-            return false;
-        }
-        
-        if (!satkerId) {
-            alert('Harap pilih satuan kerja');
-            return false;
-        }
-        
-        if (!keterangan) {
-            alert('Harap isi keterangan kebutuhan barang');
-            return false;
-        }
-        
-        // Validasi stok real-time untuk setiap barang
-        const validationPromises = editCartItems.map((item, index) => {
-            return updateStokFromServer(item.id)
-                .then(response => {
-                    if (item.jumlah > response.stok) {
-                        throw new Error(`Jumlah barang "${item.nama}" melebihi stok tersedia (${response.stok} ${response.satuan})`);
-                    }
-                    return true;
-                })
-                .catch(error => {
-                    throw error;
-                });
-        });
-        
-        // Tampilkan loading
-        $('#edit_submitBtn').prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Memvalidasi...');
-        
-        // Jalankan semua validasi
-        Promise.all(validationPromises)
-            .then(() => {
-                // Semua validasi berhasil, submit form
-                $(this).off('submit').submit();
-            })
-            .catch(error => {
-                // Ada error validasi
-                $('#edit_submitBtn').prop('disabled', false).html('<i class="bi bi-check-circle me-1"></i>Simpan Perubahan');
-                alert(error.message);
+        if (request.details) {
+            request.details.forEach(detail => {
+                if (detail.satker?.nama_satker && !satkerNames.includes(detail.satker.nama_satker)) {
+                    satkerNames.push(detail.satker.nama_satker);
+                }
             });
-    });
+        }
+        
+        html += `
+            <div class="col-md-3 mb-3">
+                <div class="border rounded p-3">
+                    <h4 class="text-primary fw-bold">${satkerNames.length}</h4>
+                    <small class="text-muted">Jumlah Satker</small>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="border rounded p-3">
+                    <h4 class="text-primary fw-bold">${approvedDetails}</h4>
+                    <small class="text-muted">Disetujui</small>
+                </div>
+            </div>
+        `;
+    }
     
-    // Set minimum date for tanggal dibutuhkan
-    const today = new Date().toISOString().split('T')[0];
-    $('#edit_tanggal_dibutuhkan').attr('min', today);
+    html += `
+                </div>
+            </div>
+        </div>
+        
+        <!-- Detail Barang -->
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h6 class="mb-0">
+                    <i class="bi bi-list-ul me-2"></i>Detail Barang
+                </h6>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th width="5%">No</th>
+                                <th width="15%">Kode Barang</th>
+                                <th>Nama Barang</th>
+                                <th width="10%">Jumlah</th>
+                                <th width="10%">Satuan</th>
+                                <th width="15%">Status</th>
+                                <th width="15%">Satker</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+    `;
+    
+    if (isMultiBarang && request.details && request.details.length > 0) {
+        request.details.forEach((detail, index) => {
+            let statusBadge = '';
+            if (detail.status === 'approved') {
+                statusBadge = '<span class="badge bg-success">Disetujui</span>';
+            } else if (detail.status === 'rejected') {
+                statusBadge = '<span class="badge bg-danger">Ditolak</span>';
+            } else {
+                statusBadge = '<span class="badge bg-warning">Pending</span>';
+            }
+            
+            html += `
+                <tr>
+                    <td class="text-center">${index + 1}</td>
+                    <td><span class="badge bg-light text-dark">${detail.barang?.kode_barang || 'BRG-001'}</span></td>
+                    <td>${detail.barang?.nama_barang || 'Nama Barang Tidak Tersedia'}</td>
+                    <td class="text-center"><strong>${detail.jumlah || 0}</strong></td>
+                    <td class="text-center">${detail.barang?.satuan?.nama_satuan || 'unit'}</td>
+                    <td>${statusBadge}</td>
+                    <td>${detail.satker?.nama_satker || request.satker?.nama_satker || '-'}</td>
+                </tr>
+            `;
+        });
+    } else {
+        let statusBadge = '';
+        if (request.status === 'approved') {
+            statusBadge = '<span class="badge bg-success">Disetujui</span>';
+        } else if (request.status === 'rejected') {
+            statusBadge = '<span class="badge bg-danger">Ditolak</span>';
+        } else {
+            statusBadge = '<span class="badge bg-warning">Pending</span>';
+        }
+        
+        html += `
+            <tr>
+                <td class="text-center">1</td>
+                <td><span class="badge bg-light text-dark">${request.barang?.kode_barang || 'BRG-001'}</span></td>
+                <td>${request.barang?.nama_barang || 'Nama Barang Tidak Tersedia'}</td>
+                <td class="text-center"><strong>${request.jumlah || 0}</strong></td>
+                <td class="text-center">${request.barang?.satuan?.nama_satuan || 'unit'}</td>
+                <td>${statusBadge}</td>
+                <td>${request.satker?.nama_satker || '-'}</td>
+            </tr>
+        `;
+    }
+    
+    html += `
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Keterangan jika ada
+    if (request.keperluan || request.catatan) {
+        html += `
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">
+                        <i class="bi bi-card-text me-2"></i>Keterangan
+                    </h6>
+                </div>
+                <div class="card-body">
+        `;
+        
+        if (request.keperluan) {
+            html += `
+                <div class="mb-3">
+                    <h6 class="text-muted">Keperluan:</h6>
+                    <p class="mb-0">${request.keperluan || '-'}</p>
+                </div>
+            `;
+        }
+        
+        if (request.catatan) {
+            html += `
+                <div>
+                    <h6 class="text-muted">Catatan Admin:</h6>
+                    <p class="mb-0">${request.catatan || '-'}</p>
+                </div>
+            `;
+        }
+        
+        html += `
+                </div>
+            </div>
+        `;
+    }
+    
+    $('#detailRequestModalBody').html(html);
+}
+
+// Fungsi helper untuk format tanggal
+function formatDate(dateString) {
+    if (!dateString) return '-';
+    try {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('id-ID', {
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric'
+        });
+    } catch (e) {
+        return dateString;
+    }
+}
+
+// Fungsi helper untuk status badge
+function getStatusBadge(status, hasRejected) {
+    if (status == 'pending') {
+        return `<span class="badge bg-warning"><i class="bi bi-clock-history me-1"></i>Pending</span>`;
+    } else if (status == 'approved') {
+        if (hasRejected) {
+            return `<span class="badge bg-mixed"><i class="bi bi-patch-check me-1"></i>Status Campuran</span>`;
+        } else {
+            return `<span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Disetujui</span>`;
+        }
+    } else if (status == 'rejected') {
+        return `<span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i>Ditolak</span>`;
+    } else if (status == 'delivered') {
+        return `<span class="badge bg-info"><i class="bi bi-truck me-1"></i>Dikirim</span>`;
+    }
+    return `<span class="badge bg-secondary">Unknown</span>`;
+}
+
+// Fungsi untuk menampilkan error modal
+function showErrorModal(title, message) {
+    $('#detailRequestModalBody').html(`
+        <div class="text-center py-4">
+            <i class="bi bi-exclamation-triangle text-danger display-4"></i>
+            <h5 class="mt-3 text-danger">${title}</h5>
+            <p class="text-muted">${message}</p>
+            <button class="btn btn-primary btn-sm mt-2" onclick="$('#detailRequestModal').modal('hide')">
+                <i class="bi bi-x-circle"></i> Tutup
+            </button>
+        </div>
+    `);
 }
     });
-</script>
+    </script>
 </body>
 </html>

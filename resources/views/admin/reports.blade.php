@@ -295,11 +295,100 @@
             margin-bottom: 1.5rem;
         }
         
-        .table th {
-            background-color: #f8fafc;
+        /* PERBAIKAN TABLE STYLES */
+        .table-report {
+            font-size: 0.9rem;
+            margin-bottom: 0;
+        }
+        
+        .table-report th {
+            background-color: #f8fafc !important;
             font-weight: 600;
             color: var(--dark);
             border-bottom: 2px solid #e2e8f0;
+            white-space: nowrap;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            padding: 0.75rem;
+        }
+        
+        .table-report td {
+            padding: 0.75rem;
+            vertical-align: middle;
+            border-color: #f1f5f9;
+        }
+        
+        /* Kolom dengan teks panjang */
+        .table-report td.text-truncate {
+            max-width: 200px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        /* Kolom angka - rata kanan */
+        .table-report td.text-number {
+            text-align: right;
+            font-family: 'Courier New', monospace;
+            font-weight: 500;
+        }
+        
+        /* Kolom tengah */
+        .table-report td.text-center {
+            text-align: center;
+        }
+        
+        /* Kolom kode */
+        .table-report td.code-cell {
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        /* Kolom tanggal */
+        .table-report td.date-cell {
+            white-space: nowrap;
+            min-width: 120px;
+        }
+        
+        /* Kolom aksi */
+        .table-report td.action-cell {
+            min-width: 100px;
+            white-space: nowrap;
+        }
+        
+        /* Badge di dalam tabel */
+        .table-report .badge {
+            font-size: 0.75rem;
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+        }
+        
+        /* Responsive table */
+        @media (max-width: 768px) {
+            .table-report {
+                font-size: 0.8rem;
+            }
+            
+            .table-report th,
+            .table-report td {
+                padding: 0.5rem !important;
+            }
+            
+            .table-report .btn-sm {
+                padding: 0.25rem 0.5rem;
+                font-size: 0.75rem;
+            }
+        }
+        
+        /* Zebra striping untuk readability */
+        .table-report tbody tr:nth-child(even) {
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+        
+        .table-report tbody tr:hover {
+            background-color: rgba(59, 130, 246, 0.05);
         }
         
         .barang-detail-item {
@@ -595,10 +684,10 @@
                 <p class="mt-2">Memuat data...</p>
             </div>
             
-            <!-- Report Summary Table -->
+            <!-- Report Summary Table dengan Kolom Rapi -->
             <div id="reportSummaryTable">
                 <div class="table-responsive">
-                    <table class="table table-hover">
+                    <table class="table table-report table-hover">
                         <thead>
                             <tr>
                                 <th>Jenis Laporan</th>
@@ -626,13 +715,21 @@
                                 ];
                             @endphp
                             
-                            @foreach($reportTypes as $report)
+                            @foreach($reportTypes as $index => $report)
                             <tr>
-                                <td>{{ $report['name'] }}</td>
-                                <td>{{ date('F Y', strtotime($selectedMonth . '-01')) }}</td>
-                                <td id="total_{{ $report['type'] }}_monthly">
+                                <td class="text-center">{{ $loop->iteration }}</td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <i class="bi {{ $report['icon'] }} text-primary"></i>
+                                        <span>{{ $report['name'] }}</span>
+                                    </div>
+                                </td>
+                                <td class="text-center date-cell">
+                                    {{ date('F Y', strtotime($selectedMonth . '-01')) }}
+                                </td>
+                                <td class="text-center" id="total_{{ $report['type'] }}_monthly">
                                     @if($report['type'] == 'inventory')
-                                        {{ $monthlyStats['total_items'] ?? 0 }} barang
+                                        <span class="fw-bold text-primary">{{ $monthlyStats['total_items'] ?? 0 }}</span> barang
                                     @elseif($report['type'] == 'requests')
                                         {{ $monthlyStats['total_requests'] ?? 0 }} permintaan
                                         <br><small class="text-muted">
@@ -644,31 +741,38 @@
                                             {{ $monthlyStats['total_items_in_procurements'] ?? 0 }} item barang
                                         </small>
                                     @else
-                                        {{ $monthlyStats['total_expenditures'] ?? 0 }} pengeluaran
-                                        <br><small class="text-muted">
-                                            {{ $monthlyStats['total_items_in_expenditures'] ?? 0 }} item terkirim
-                                        </small>
+                                        <div>
+                                            <span class="fw-bold text-primary">{{ $monthlyStats['total_expenditures'] ?? 0 }}</span> pengeluaran
+                                        </div>
+                                        <div class="text-muted small">
+                                            <span class="fw-bold">{{ $monthlyStats['total_items_in_expenditures'] ?? 0 }}</span> item terkirim
+                                        </div>
                                     @endif
                                 </td>
                                 <td id="status_{{ $report['type'] }}_monthly">
                                     @if($report['type'] == 'inventory')
-                                    <span class="badge bg-success">{{ $monthlyStats['good_stock'] ?? 0 }} Baik</span>
-                                    <span class="badge bg-warning">{{ $monthlyStats['low_stock'] ?? 0 }} Rendah</span>
-                                    <span class="badge bg-danger">{{ $monthlyStats['critical_stock'] ?? 0 }} Kritis</span>
-                                    <span class="badge bg-secondary">{{ $monthlyStats['out_of_stock'] ?? 0 }} Habis</span>
+                                    <div class="d-flex flex-wrap gap-1">
+                                        <span class="badge bg-success">{{ $monthlyStats['good_stock'] ?? 0 }} Baik</span>
+                                        <span class="badge bg-warning">{{ $monthlyStats['low_stock'] ?? 0 }} Rendah</span>
+                                        <span class="badge bg-danger">{{ $monthlyStats['critical_stock'] ?? 0 }} Kritis</span>
+                                        <span class="badge bg-secondary">{{ $monthlyStats['out_of_stock'] ?? 0 }} Habis</span>
+                                    </div>
                                     @elseif($report['type'] == 'requests')
-                                    <span class="badge badge-pending">{{ $monthlyStats['pending_requests'] ?? 0 }} Pending</span>
-                                    <span class="badge badge-approved">{{ $monthlyStats['approved_requests'] ?? 0 }} Disetujui</span>
-                                    <span class="badge badge-rejected">{{ $monthlyStats['rejected_requests'] ?? 0 }} Ditolak</span>
-                                    <span class="badge badge-delivered">{{ $monthlyStats['delivered_requests'] ?? 0 }} Terkirim</span>
+                                    <div class="d-flex flex-wrap gap-1">
+                                        <span class="badge badge-pending">{{ $monthlyStats['pending_requests'] ?? 0 }}</span>
+                                        <span class="badge badge-approved">{{ $monthlyStats['approved_requests'] ?? 0 }}</span>
+                                        <span class="badge badge-rejected">{{ $monthlyStats['rejected_requests'] ?? 0 }}</span>
+                                        <span class="badge badge-delivered">{{ $monthlyStats['delivered_requests'] ?? 0 }}</span>
+                                    </div>
                                     @if(isset($monthlyStats['multi_barang_requests']) && $monthlyStats['multi_barang_requests'] > 0)
-                                    <br>
-                                    <span class="badge badge-multi mt-1">
-                                        {{ $monthlyStats['multi_barang_requests'] ?? 0 }} Multi Barang
-                                    </span>
-                                    <span class="badge badge-single mt-1">
-                                        {{ $monthlyStats['single_barang_requests'] ?? 0 }} Single Barang
-                                    </span>
+                                    <div class="d-flex gap-1 mt-1">
+                                        <span class="badge badge-multi">
+                                            <i class="bi bi-layers me-1"></i>{{ $monthlyStats['multi_barang_requests'] ?? 0 }}
+                                        </span>
+                                        <span class="badge badge-single">
+                                            <i class="bi bi-box me-1"></i>{{ $monthlyStats['single_barang_requests'] ?? 0 }}
+                                        </span>
+                                    </div>
                                     @endif
                                     @elseif($report['type'] == 'procurement')
                                     <span class="badge badge-pending">{{ $monthlyStats['pending_procurements'] ?? 0 }} Pending</span>
@@ -685,7 +789,9 @@
                                         {{ $monthlyStats['restock_procurements'] ?? 0 }} Restock
                                     </span>
                                     @else
-                                    <span class="badge bg-info">Pengeluaran Barang</span>
+                                    <span class="badge bg-info">
+                                        <i class="bi bi-arrow-up-right me-1"></i>Pengeluaran Barang
+                                    </span>
                                     @endif
                                 </td>
                                 <td id="budget_{{ $report['type'] }}_monthly">
@@ -945,23 +1051,43 @@
         // Update inventory stats
         $('#total_inventory_monthly').text(data.total_items + ' barang');
         $('#status_inventory_monthly').html(`
-            <span class="badge bg-success">${data.good_stock} Baik</span>
-            <span class="badge bg-warning">${data.low_stock} Rendah</span>
-            <span class="badge bg-danger">${data.critical_stock} Kritis</span>
-            <span class="badge bg-secondary">${data.out_of_stock} Habis</span>
+            <div class="d-flex flex-wrap gap-1">
+                <span class="badge bg-success">${data.good_stock} Baik</span>
+                <span class="badge bg-warning">${data.low_stock} Rendah</span>
+                <span class="badge bg-danger">${data.critical_stock} Kritis</span>
+                <span class="badge bg-secondary">${data.out_of_stock} Habis</span>
+            </div>
+        `);
+        
+        // Update requests stats
+        $('#total_requests_monthly').html(`
+            <div>
+                <span class="fw-bold text-primary">${data.total_requests}</span> permintaan
+            </div>
+            <div class="text-muted small">
+                <span class="fw-bold">${data.total_items_in_requests}</span> item barang
+            </div>
         `);
         
         // Update requests stats
         $('#total_requests_monthly').html(`${data.total_requests} permintaan<br>
             <small class="text-muted">${data.total_items_in_requests} item barang</small>`);
         $('#status_requests_monthly').html(`
-            <span class="badge badge-pending">${data.pending_requests} Pending</span>
-            <span class="badge badge-approved">${data.approved_requests} Disetujui</span>
-            <span class="badge badge-rejected">${data.rejected_requests} Ditolak</span>
-            <span class="badge badge-delivered">${data.delivered_requests} Terkirim</span>
-            ${data.multi_barang_requests > 0 ? `<br>
-            <span class="badge badge-multi mt-1">${data.multi_barang_requests} Multi Barang</span>
-            <span class="badge badge-single mt-1">${data.single_barang_requests} Single Barang</span>` : ''}
+            <div class="d-flex flex-wrap gap-1">
+                <span class="badge badge-pending">${data.pending_requests}</span>
+                <span class="badge badge-approved">${data.approved_requests}</span>
+                <span class="badge badge-rejected">${data.rejected_requests}</span>
+                <span class="badge badge-delivered">${data.delivered_requests}</span>
+            </div>
+            ${data.multi_barang_requests > 0 ? `
+            <div class="d-flex gap-1 mt-1">
+                <span class="badge badge-multi">
+                    <i class="bi bi-layers me-1"></i>${data.multi_barang_requests}
+                </span>
+                <span class="badge badge-single">
+                    <i class="bi bi-box me-1"></i>${data.single_barang_requests}
+                </span>
+            </div>` : ''}
         `);
         
         // Update procurement stats
@@ -1013,6 +1139,15 @@
         if (amount > 100000000) return 'budget-high';
         if (amount > 50000000) return 'budget-medium';
         return 'budget-low';
+        // Update expenditures stats
+        $('#total_expenditures_monthly').html(`
+            <div>
+                <span class="fw-bold text-primary">${data.total_expenditures}</span> pengeluaran
+            </div>
+            <div class="text-muted small">
+                <span class="fw-bold">${data.total_items_in_expenditures}</span> item terkirim
+            </div>
+        `);
     }
     
     function updateButtons(selectedMonth) {
@@ -1085,7 +1220,7 @@
         const columnCount = getColumnCount(type);
         
         const tableStructure = `
-            <table class="table table-hover">
+            <table class="table table-report table-hover">
                 <thead>
                     ${tableHeaders}
                 </thead>

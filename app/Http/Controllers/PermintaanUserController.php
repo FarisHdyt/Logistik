@@ -118,11 +118,11 @@ class PermintaanUserController extends Controller
      */
     public function store(Request $request)
     {
-        // Validasi input untuk multi barang
+        // Validasi input untuk multi barang - TANGGAL HARUS after:today
         $validated = $request->validate([
             'satker_id' => 'required|exists:satkers,id',
             'keterangan' => 'nullable|string|max:500',
-            'tanggal_dibutuhkan' => 'required|date|after_or_equal:today',
+            'tanggal_dibutuhkan' => 'required|date|after:today', // HARUS after:today (bukan after_or_equal)
             'barang_items' => 'required|array|min:1',
             'barang_items.*.barang_id' => 'required|exists:barangs,id',
             'barang_items.*.jumlah' => 'required|integer|min:1',
@@ -221,68 +221,68 @@ class PermintaanUserController extends Controller
         ]);
     }
 
-   /**
- * Show the form for editing the specified resource - MULTI BARANG
- */
-public function edit($id)
-{
-    $user = auth()->user();
-    
-    // Hanya bisa edit permintaan yang masih pending
-    $permintaan = Permintaan::where('user_id', $user->id)
-        ->where('status', 'pending')
-        ->with(['details.barang.satuan', 'details.barang.kategori', 'satker'])
-        ->findOrFail($id);
-    
-    // Get all available barang (stok > 0) + barang yang sudah ada di permintaan
-    $barang = Barang::where(function($query) use ($permintaan) {
-            $query->where('stok', '>', 0)
-                  ->orWhereIn('id', $permintaan->details->pluck('barang_id')->toArray());
-        })
-        ->orderBy('nama_barang')
-        ->get();
-            
-    $satkers = Satker::orderBy('nama_satker')->get();
-    
-    return view('user.permintaan', [
-        'permintaan' => $permintaan,
-        'barang' => $barang,
-        'satkers' => $satkers,
-        'isEdit' => true
-    ]);
-}
-
-/**
- * API untuk mendapatkan stok barang real-time
- */
-public function getStokBarang($id)
-{
-    try {
-        $barang = Barang::findOrFail($id);
+    /**
+     * Show the form for editing the specified resource - MULTI BARANG
+     */
+    public function edit($id)
+    {
+        $user = auth()->user();
         
-        return response()->json([
-            'success' => true,
-            'stok' => $barang->stok,
-            'satuan' => $barang->satuan->nama_satuan ?? 'unit'
+        // Hanya bisa edit permintaan yang masih pending
+        $permintaan = Permintaan::where('user_id', $user->id)
+            ->where('status', 'pending')
+            ->with(['details.barang.satuan', 'details.barang.kategori', 'satker'])
+            ->findOrFail($id);
+        
+        // Get all available barang (stok > 0) + barang yang sudah ada di permintaan
+        $barang = Barang::where(function($query) use ($permintaan) {
+                $query->where('stok', '>', 0)
+                      ->orWhereIn('id', $permintaan->details->pluck('barang_id')->toArray());
+            })
+            ->orderBy('nama_barang')
+            ->get();
+                
+        $satkers = Satker::orderBy('nama_satker')->get();
+        
+        return view('user.permintaan', [
+            'permintaan' => $permintaan,
+            'barang' => $barang,
+            'satkers' => $satkers,
+            'isEdit' => true
         ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Barang tidak ditemukan'
-        ], 404);
     }
-}
+
+    /**
+     * API untuk mendapatkan stok barang real-time
+     */
+    public function getStokBarang($id)
+    {
+        try {
+            $barang = Barang::findOrFail($id);
+            
+            return response()->json([
+                'success' => true,
+                'stok' => $barang->stok,
+                'satuan' => $barang->satuan->nama_satuan ?? 'unit'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Barang tidak ditemukan'
+            ], 404);
+        }
+    }
 
     /**
      * Update the specified resource in storage - MULTI BARANG
      */
     public function update(Request $request, $id)
     {
-        // Validasi input untuk multi barang
+        // Validasi input untuk multi barang - TANGGAL HARUS after:today
         $validated = $request->validate([
             'satker_id' => 'required|exists:satkers,id',
             'keterangan' => 'nullable|string|max:500',
-            'tanggal_dibutuhkan' => 'required|date|after_or_equal:today',
+            'tanggal_dibutuhkan' => 'required|date|after:today', // HARUS after:today (bukan after_or_equal)
             'barang_items' => 'required|array|min:1',
             'barang_items.*.barang_id' => 'required|exists:barangs,id',
             'barang_items.*.jumlah' => 'required|integer|min:1',

@@ -7,55 +7,71 @@ use App\Models\Barang;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use PDF;
+use Illuminate\Support\Str;
 
 class UserLaporanController extends Controller
 {
     public function index(Request $request)
-    {
-        $user = auth()->user();
-        
-        // Gunakan approver() bukan approvedBy()
-        $query = Permintaan::where('user_id', $user->id)
-            ->with(['barang', 'satker', 'approver']) // Ini yang diperbaiki
-            ->orderBy('created_at', 'desc');
-        
-        
-        // Apply filters
-        if ($request->has('start_date') && $request->start_date != '') {
-            $query->whereDate('created_at', '>=', $request->start_date);
-        }
-        
-        if ($request->has('end_date') && $request->end_date != '') {
-            $query->whereDate('created_at', '<=', $request->end_date);
-        }
-        
-        if ($request->has('status') && $request->status != '') {
-            $query->where('status', $request->status);
-        }
-        
-        $permintaan = $query->paginate(15);
-        
-        // Get statistics khusus untuk user ini
-        $stats = $this->getUserStatistics($user->id);
-        
-        // Prepare chart data for monthly requests user
-        $chartData = $this->getUserChartData($user->id);
-        
-        return view('user.laporan', compact('permintaan', 'stats', 'chartData'));
-    }
+{
+    $user = auth()->user();
+    
+    // PERBAIKAN: Load satker dari permintaan utama (bukan dari details)
+    $query = Permintaan::where('user_id', $user->id)
+        ->with([
+            'barang.satuan',
+            'satker:id,nama_satker', // ✅ Ini SATKER UTAMA yang dipilih user
+            'details' => function($query) {
+                $query->with([
+                    'barang.satuan',
+                    // JANGAN load satker dari detail, karena kita mau pakai satker utama
+                ])->orderBy('id');
+            },
+            'approver:id,name'
+        ])
+        ->orderBy('created_at', 'desc');
+    
+    // ... filter code tetap sama ...
+    
+    $permintaan = $query->paginate(15);
+    
+    $stats = $this->getUserStatistics($user->id);
+    $chartData = $this->getUserChartData($user->id);
+    
+    return view('user.laporan', compact('permintaan', 'stats', 'chartData'));
+}
     
     /**
      * Get statistics for specific user
      */
     private function getUserStatistics($userId)
     {
+        // Hitung total items termasuk dari details
+        $totalItems = Permintaan::where('user_id', $userId)
+            ->withCount('details')
+            ->get()
+            ->sum(function($permintaan) {
+                return $permintaan->details_count > 0 ? $permintaan->details_count : 1;
+            });
+        
+        // Hitung total quantity
+        $totalQuantity = Permintaan::where('user_id', $userId)
+            ->with(['details'])
+            ->get()
+            ->sum(function($permintaan) {
+                if ($permintaan->details->count() > 0) {
+                    return $permintaan->details->sum('jumlah');
+                }
+                return $permintaan->jumlah;
+            });
+        
         return [
             'total' => Permintaan::where('user_id', $userId)->count(),
             'pending' => Permintaan::where('user_id', $userId)->where('status', 'pending')->count(),
             'approved' => Permintaan::where('user_id', $userId)->where('status', 'approved')->count(),
             'rejected' => Permintaan::where('user_id', $userId)->where('status', 'rejected')->count(),
             'delivered' => Permintaan::where('user_id', $userId)->where('status', 'delivered')->count(),
-            'total_items' => Permintaan::where('user_id', $userId)->distinct('barang_id')->count('barang_id'),
+            'total_items' => $totalItems,
+            'total_quantity' => $totalQuantity,
             'total_satker' => Permintaan::where('user_id', $userId)->distinct('satker_id')->count('satker_id'),
         ];
     }
@@ -105,9 +121,19 @@ class UserLaporanController extends Controller
     {
         $user = auth()->user();
         
-        // Apply filters untuk export user
+        // Load data dengan detail untuk export
         $query = Permintaan::where('user_id', $user->id)
-            ->with(['barang.kategori', 'barang.satuan', 'satker', 'approver'])
+            ->with([
+                'barang.satuan',
+                'satker',
+                'details' => function($query) {
+                    $query->with([
+                        'barang.satuan',
+                        'satker'
+                    ])->orderBy('id');
+                },
+                'approver'
+            ])
             ->orderBy('created_at', 'desc');
         
         if ($request->has('start_date') && $request->start_date != '') {
@@ -124,35 +150,39 @@ class UserLaporanController extends Controller
         
         $permintaan = $query->get();
         
-        // Statistics untuk export user
+        // Statistics untuk export user dengan perhitungan yang benar
         $stats = [
             'total' => $permintaan->count(),
             'pending' => $permintaan->where('status', 'pending')->count(),
             'approved' => $permintaan->where('status', 'approved')->count(),
             'rejected' => $permintaan->where('status', 'rejected')->count(),
             'delivered' => $permintaan->where('status', 'delivered')->count(),
+            'total_items' => $permintaan->sum(function($item) {
+                return $item->details->count() > 0 ? $item->details->count() : 1;
+            }),
+            'total_quantity' => $permintaan->sum(function($item) {
+                return $item->details->count() > 0 ? $item->details->sum('jumlah') : $item->jumlah;
+            }),
         ];
         
-        // Prepare data untuk PDF
+        // Prepare data untuk PDF/Excel
         $data = [
             'permintaan' => $permintaan,
             'stats' => $stats,
             'user' => $user,
             'filters' => $request->all(),
-            'printDate' => Carbon::now()->format('d/m/Y H:i'),
+            'printDate' => Carbon::now()->format('d/m/Y H:i:s'),
             'title' => 'Laporan Permintaan Barang - ' . $user->name,
         ];
         
         if ($type === 'excel') {
-
-    $filename = 'laporan-permintaan-' . $user->name . '-' . date('Y-m-d') . '.xls';
-
-    return response()
-        ->view('exports.user-permintaan-excel', $data)
-        ->header('Content-Type', 'application/vnd.ms-excel')
-        ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
-}
-
+            $filename = 'laporan-permintaan-' . $user->name . '-' . date('Y-m-d') . '.xls';
+            
+            return response()
+                ->view('exports.user-permintaan-excel', $data)
+                ->header('Content-Type', 'application/vnd.ms-excel')
+                ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+        }
         
         // PDF Export
         $pdf = PDF::loadView('exports.user-permintaan-pdf', $data);
@@ -169,7 +199,17 @@ class UserLaporanController extends Controller
         
         // Apply filters untuk print user
         $query = Permintaan::where('user_id', $user->id)
-            ->with(['barang.kategori', 'barang.satuan', 'satker', 'approver'])
+            ->with([
+                'barang.satuan',
+                'satker',
+                'details' => function($query) {
+                    $query->with([
+                        'barang.satuan',
+                        'satker'
+                    ])->orderBy('id');
+                },
+                'approver'
+            ])
             ->orderBy('created_at', 'desc');
         
         if ($request->has('start_date') && $request->start_date != '') {
@@ -186,12 +226,19 @@ class UserLaporanController extends Controller
         
         $permintaan = $query->get();
         
+        // Hitung statistik untuk print
         $stats = [
             'total' => $permintaan->count(),
             'pending' => $permintaan->where('status', 'pending')->count(),
             'approved' => $permintaan->where('status', 'approved')->count(),
             'rejected' => $permintaan->where('status', 'rejected')->count(),
             'delivered' => $permintaan->where('status', 'delivered')->count(),
+            'total_items' => $permintaan->sum(function($item) {
+                return $item->details->count() > 0 ? $item->details->count() : 1;
+            }),
+            'total_quantity' => $permintaan->sum(function($item) {
+                return $item->details->count() > 0 ? $item->details->sum('jumlah') : $item->jumlah;
+            }),
         ];
         
         $data = [
@@ -258,5 +305,28 @@ class UserLaporanController extends Controller
             'monthly_data' => $monthlyData,
             'status_data' => $statusData
         ]);
+    }
+    
+    /**
+     * Helper method untuk menghitung status campuran
+     */
+    private function calculateMixedStatus($permintaan)
+    {
+        if ($permintaan->details->count() == 0) {
+            return false;
+        }
+        
+        $hasApproved = false;
+        $hasRejected = false;
+        
+        foreach ($permintaan->details as $detail) {
+            if ($detail->status === 'approved') {
+                $hasApproved = true;
+            } elseif ($detail->status === 'rejected') {
+                $hasRejected = true;
+            }
+        }
+        
+        return $hasApproved && $hasRejected;
     }
 }

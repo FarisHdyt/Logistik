@@ -353,123 +353,150 @@
                 </div>
             </div>
             
-            <!-- Laporan Table -->
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">Daftar Permintaan Barang Saya</h5>
-                </div>
-                <div class="card-body">
-                    @if($permintaan->count() > 0)
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Kode Permintaan</th>
-                                    <th>Barang</th>
-                                    <th>Jumlah</th>
-                                    <th>Satuan Kerja</th>
-                                    <th>Tanggal Permintaan</th>
-                                    <th>Tanggal Dibutuhkan</th>
-                                    <th>Status</th>
-                                    <th>Keterangan</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($permintaan as $item)
-                                @php
-                                    // Cek apakah ini multi barang atau single barang
-                                    $isMultiBarang = isset($item->details) && $item->details->count() > 0;
-                                    $totalJumlah = $isMultiBarang ? $item->details->sum('jumlah') : $item->jumlah;
-                                    $barangCount = $isMultiBarang ? $item->details->count() : 1;
-                                    $firstBarang = $isMultiBarang ? $item->details->first()->barang : $item->barang;
-                                @endphp
-                                <tr>
-                                    <td>{{ $loop->iteration + (($permintaan->currentPage() - 1) * $permintaan->perPage()) }}</td>
-                                    <td>
-                                        <span class="badge bg-light text-dark">{{ $item->kode_permintaan }}</span>
-                                    </td>
-                                    <td>
-                                        @if($isMultiBarang)
-                                            <!-- Tampilkan seperti single barang untuk keseragaman -->
-                                            <strong>{{ $item->details->count() }} jenis barang</strong><br>
-                                            <small class="text-muted">
-                                                {{ $firstBarang->nama_barang ?? 'N/A' }} 
-                                                @if($item->details->count() > 1)
-                                                    +{{ $item->details->count() - 1 }} lainnya
-                                                @endif
-                                            </small>
-                                        @else
-                                            <strong>{{ $item->barang->nama_barang ?? 'N/A' }}</strong><br>
-                                            <small class="text-muted">{{ $item->barang->kode_barang ?? '' }}</small>
-                                        @endif
-                                    </td>
-                                    <td class="text-muted">
-                                        @if($isMultiBarang)
-                                            {{ $totalJumlah }} unit
-                                            @if($item->details->count() > 1)
-                                            <br><small class="text-muted">{{ $item->details->count() }} jenis</small>
-                                            @endif
-                                        @else
-                                            {{ $item->jumlah }} {{ $item->barang->satuan->nama_satuan ?? 'unit' }}
-                                        @endif
-                                    </td>
-                                    <td>{{ $item->satker->nama_satker ?? '-' }}</td>
-                                    <td>{{ $item->created_at->format('d/m/Y H:i') }}</td>
-                                    <td>{{ $item->tanggal_dibutuhkan ? \Carbon\Carbon::parse($item->tanggal_dibutuhkan)->format('d/m/Y') : '-' }}</td>
-                                    <td>
-                                        @if($item->status == 'pending')
-                                            <span class="badge bg-warning status-badge">
-                                                <i class="bi bi-clock-history me-1"></i>Pending
-                                            </span>
-                                        @elseif($item->status == 'approved')
-                                            <span class="badge bg-success status-badge">
-                                                <i class="bi bi-check-circle me-1"></i>Disetujui
-                                            </span>
-                                        @elseif($item->status == 'rejected')
-                                            <span class="badge bg-danger status-badge">
-                                                <i class="bi bi-x-circle me-1"></i>Ditolak
-                                            </span>
-                                        @elseif($item->status == 'delivered')
-                                            <span class="badge bg-info status-badge">
-                                                <i class="bi bi-truck me-1"></i>Dikirim
-                                            </span>
-                                        @endif
-                                        
-                                        @if($item->alasan_penolakan && $item->status == 'rejected')
-                                        <div class="mt-1 small text-danger">
-                                            <i class="bi bi-exclamation-triangle"></i>
-                                            {{ Str::limit($item->alasan_penolakan, 30) }}
-                                        </div>
-                                        @endif
-                                    </td>
-                                    <td>{{ Str::limit($item->keterangan, 50) }}</td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <!-- Pagination -->
-                    @if($permintaan->hasPages())
-                    <div class="d-flex justify-content-between align-items-center mt-3">
-                        <div>
-                            <p class="mb-0">Menampilkan {{ $permintaan->firstItem() }} - {{ $permintaan->lastItem() }} dari {{ $permintaan->total() }} permintaan</p>
-                        </div>
-                        <nav>
-                            {{ $permintaan->links() }}
-                        </nav>
-                    </div>
-                    @endif
-                    @else
-                    <div class="text-center py-5">
-                        <i class="bi bi-clipboard-x display-1 text-muted"></i>
-                        <h5 class="mt-3">Tidak ada data laporan</h5>
-                        <p class="text-muted">Belum ada permintaan barang yang tercatat</p>
-                    </div>
-                    @endif
-                </div>
+           <!-- Laporan Table -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Daftar Permintaan Barang Saya</h5>
+    </div>
+    <div class="card-body">
+        @if($permintaan->count() > 0)
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Kode Permintaan</th>
+                        <th>Barang</th>
+                        <th class="text-center">Jumlah</th>
+                        <th>Satker</th>
+                        <th>Tanggal Permintaan</th>
+                        <th>Status</th>
+                        <th>Keterangan</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($permintaan as $item)
+                    @php
+                        // Cek apakah ini multi barang atau single barang
+                        $isMultiBarang = isset($item->details) && $item->details->count() > 0;
+                        $totalJumlah = $isMultiBarang ? $item->details->sum('jumlah') : $item->jumlah;
+                        $barangCount = $isMultiBarang ? $item->details->count() : 1;
+                        
+                        // ✅ SATKER DARI DATA UTAMA (yang dipilih user)
+                        $satkerNama = $item->satker->nama_satker ?? '-';
+                    @endphp
+                    <tr>
+                        <td>{{ $loop->iteration + (($permintaan->currentPage() - 1) * $permintaan->perPage()) }}</td>
+                        <td>
+                            <span class="badge bg-light text-dark">{{ $item->kode_permintaan }}</span>
+                        </td>
+                        <td>
+                            @if($isMultiBarang)
+                                <div>
+                                    <strong>{{ $barangCount }} jenis barang:</strong>
+                                    <ul class="list-unstyled mb-0 mt-1" style="font-size: 0.85rem;">
+                                        @foreach($item->details as $detail)
+                                        <li class="mb-1 pb-1 border-bottom">
+                                            <div class="d-flex justify-content-between">
+                                                <div>
+                                                    <span class="text-muted">{{ $detail->barang->kode_barang ?? 'N/A' }}</span>
+                                                    {{ $detail->barang->nama_barang ?? 'N/A' }}
+                                                    <span class="badge bg-light text-dark">
+                                                        {{ $detail->jumlah }} {{ $detail->barang->satuan->nama_satuan ?? 'unit' }}
+                                                    </span>
+                                                </div>
+                                                <div>
+                                                    @if($detail->status == 'approved')
+                                                    <span class="badge bg-success" style="font-size: 0.7rem;">
+                                                        <i class="bi bi-check-circle"></i>
+                                                    </span>
+                                                    @elseif($detail->status == 'rejected')
+                                                    <span class="badge bg-danger" style="font-size: 0.7rem;">
+                                                        <i class="bi bi-x-circle"></i>
+                                                    </span>
+                                                    @elseif($detail->status == 'delivered')
+                                                    <span class="badge bg-info" style="font-size: 0.7rem;">
+                                                        <i class="bi bi-truck"></i>
+                                                    </span>
+                                                    @else
+                                                    <span class="badge bg-warning" style="font-size: 0.7rem;">
+                                                        <i class="bi bi-clock-history"></i>
+                                                    </span>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @else
+                                <div>
+                                    <strong>{{ $item->barang->nama_barang ?? 'N/A' }}</strong><br>
+                                    <small class="text-muted">{{ $item->barang->kode_barang ?? '' }}</small>
+                                </div>
+                            @endif
+                        </td>
+                        <td class="text-center">
+                            @if($isMultiBarang)
+                                <span class="badge bg-primary">{{ $totalJumlah }} unit</span><br>
+                                <small class="text-muted">{{ $barangCount }} jenis</small>
+                            @else
+                                <span class="badge bg-primary">
+                                    {{ $item->jumlah }} {{ $item->barang->satuan->nama_satuan ?? 'unit' }}
+                                </span>
+                            @endif
+                        </td>
+                        <td>
+                            <!-- ✅ Tampilkan SATKER yang DIPILIH USER -->
+                            {{ $satkerNama }}
+                        </td>
+                        <td>{{ $item->created_at->format('d/m/Y H:i') }}</td>
+                        <td>
+                            @if($item->status == 'pending')
+                                <span class="badge bg-warning status-badge">
+                                    <i class="bi bi-clock-history me-1"></i>Pending
+                                </span>
+                            @elseif($item->status == 'approved')
+                                <span class="badge bg-success status-badge">
+                                    <i class="bi bi-check-circle me-1"></i>Disetujui
+                                </span>
+                            @elseif($item->status == 'rejected')
+                                <span class="badge bg-danger status-badge">
+                                    <i class="bi bi-x-circle me-1"></i>Ditolak
+                                </span>
+                            @elseif($item->status == 'delivered')
+                                <span class="badge bg-info status-badge">
+                                    <i class="bi bi-truck me-1"></i>Dikirim
+                                </span>
+                            @endif
+                        </td>
+                        <td>{{ Str::limit($item->keterangan, 50) }}</td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        @if($permintaan->hasPages())
+        <div class="d-flex justify-content-between align-items-center mt-3">
+            <div>
+                <p class="mb-0">Menampilkan {{ $permintaan->firstItem() }} - {{ $permintaan->lastItem() }} dari {{ $permintaan->total() }} permintaan</p>
             </div>
+            <nav>
+                {{ $permintaan->links() }}
+            </nav>
+        </div>
+        @endif
+        @else
+        <div class="text-center py-5">
+            <i class="bi bi-clipboard-x display-1 text-muted"></i>
+            <h5 class="mt-3">Tidak ada data laporan</h5>
+            <p class="text-muted">Belum ada permintaan barang yang tercatat</p>
+        </div>
+        @endif
+    </div>
+</div>  
             
             <!-- Summary Card -->
             <div class="card mt-4">

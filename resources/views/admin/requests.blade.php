@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Permintaan Barang | SILOG Polres</title>
-    <!-- CSRF Token Meta Tag -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -21,6 +20,7 @@
             --dark: #1e293b;
             --light: #f8fafc;
             --delivered-color: #8b5cf6;
+            --mixed-color: #f97316;
             --sidebar-width: 250px;
         }
         
@@ -36,7 +36,6 @@
             color: var(--dark);
         }
         
-        /* Sidebar */
         .sidebar {
             background: linear-gradient(180deg, var(--dark) 0%, #0f172a 100%);
             color: white;
@@ -91,14 +90,12 @@
             text-align: center;
         }
         
-        /* Main Content */
         .main-content {
             margin-left: var(--sidebar-width);
             padding: 1.5rem;
             min-height: 100vh;
         }
         
-        /* Top Bar */
         .topbar {
             background: white;
             padding: 1rem 1.5rem;
@@ -143,7 +140,6 @@
             background: #b91c1c;
         }
         
-        /* Page Header */
         .page-header {
             background: white;
             border-radius: 10px;
@@ -163,7 +159,6 @@
             gap: 0.5rem;
         }
         
-        /* Stats Cards */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -176,6 +171,13 @@
             border-radius: 10px;
             padding: 1rem;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: transform 0.3s;
+            cursor: pointer;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
         
         .stat-content h5 {
@@ -190,7 +192,6 @@
             margin: 0;
         }
         
-        /* Status Filter Tabs */
         .status-tabs {
             display: flex;
             gap: 0.5rem;
@@ -225,7 +226,6 @@
             border-color: var(--primary);
         }
         
-        /* Badges */
         .badge {
             padding: 0.4rem 0.8rem;
             font-weight: 600;
@@ -271,7 +271,35 @@
             border-color: #a78bfa;
         }
         
-        /* Tables */
+        .badge-mixed {
+            background-color: #ffedd5 !important;
+            color: #9a3412 !important;
+            border-color: #fb923c;
+        }
+        
+        .detail-status {
+            font-size: 0.7rem;
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            margin-left: 0.3rem;
+            vertical-align: middle;
+        }
+        
+        .detail-status.approved {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+        
+        .detail-status.rejected {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .detail-status.pending {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+        
         .table-card {
             background: white;
             border-radius: 10px;
@@ -286,7 +314,6 @@
             border-bottom: 2px solid #e2e8f0;
         }
         
-        /* Filter Bar */
         .filter-bar {
             background: white;
             border-radius: 10px;
@@ -295,7 +322,6 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
         
-        /* Alert */
         .alert-container {
             position: fixed;
             top: 20px;
@@ -304,7 +330,6 @@
             min-width: 300px;
         }
         
-        /* Select2 Custom Styling */
         .select2-container--default .select2-selection--single {
             border: 1px solid #dee2e6;
             height: calc(1.5em + 0.75rem + 2px);
@@ -321,7 +346,6 @@
             height: calc(1.5em + 0.75rem + 2px);
         }
         
-        /* Form Section Styling */
         .form-section {
             background: #f8fafc;
             border-radius: 8px;
@@ -381,7 +405,6 @@
             margin-bottom: 0.75rem;
         }
         
-        /* Modal Form Styling */
         .modal-form {
             max-height: 70vh;
             overflow-y: auto;
@@ -402,12 +425,10 @@
             border-radius: 3px;
         }
         
-        /* Required Star */
         .required-star {
             color: #dc2626;
         }
         
-        /* Multi Item Barang Styling */
         .multi-barang-list {
             list-style: none;
             padding: 0;
@@ -415,7 +436,7 @@
         }
         
         .multi-barang-list li {
-            padding: 0.25rem 0;
+            padding: 0.5rem 0;
             border-bottom: 1px solid #f1f1f1;
             font-size: 0.85rem;
         }
@@ -440,7 +461,37 @@
             display: block;
         }
         
-        /* Responsive */
+        .detail-actions {
+            display: flex;
+            gap: 0.25rem;
+            margin-top: 0.25rem;
+        }
+        
+        .detail-actions .btn {
+            padding: 0.15rem 0.3rem;
+            font-size: 0.7rem;
+        }
+        
+        .detail-table th {
+            background-color: #f8f9fa !important;
+            font-weight: 600;
+        }
+        
+        .detail-table tr:hover {
+            background-color: #f8fafc;
+        }
+        
+        .data-label {
+            font-weight: 600;
+            color: #1e3a8a;
+            min-width: 150px;
+        }
+        
+        .data-value {
+            color: #334155;
+            font-weight: 500;
+        }
+        
         @media (max-width: 768px) {
             .sidebar {
                 width: 70px;
@@ -565,7 +616,7 @@
             </div>
         </div>
         
-        <!-- Alert Container (SELALU ADA) -->
+        <!-- Alert Container -->
         <div class="alert-container" id="alertContainer"></div>
         
         <!-- Alert Messages dari Session -->
@@ -606,31 +657,37 @@
         
         <!-- Stats Cards -->
         <div class="stats-grid">
-            <div class="stat-card">
+            <div class="stat-card" onclick="filterByStatus('all')">
                 <div class="stat-content">
                     <h5>{{ $stats['total_requests'] ?? 0 }}</h5>
                     <p>Total Permintaan</p>
                 </div>
             </div>
-            <div class="stat-card">
+            <div class="stat-card" onclick="filterByStatus('pending')">
                 <div class="stat-content">
                     <h5>{{ $stats['pending_requests'] ?? 0 }}</h5>
                     <p>Pending</p>
                 </div>
             </div>
-            <div class="stat-card">
+            <div class="stat-card" onclick="filterByStatus('approved')">
                 <div class="stat-content">
                     <h5>{{ $stats['approved_requests'] ?? 0 }}</h5>
                     <p>Disetujui</p>
                 </div>
             </div>
-            <div class="stat-card">
+            <div class="stat-card" onclick="filterByStatus('rejected')">
                 <div class="stat-content">
                     <h5>{{ $stats['rejected_requests'] ?? 0 }}</h5>
                     <p>Ditolak</p>
                 </div>
             </div>
-            <div class="stat-card">
+            <div class="stat-card" onclick="filterByStatus('mixed')">
+                <div class="stat-content">
+                    <h5>{{ $stats['mixed_requests'] ?? 0 }}</h5>
+                    <p>Status Campuran</p>
+                </div>
+            </div>
+            <div class="stat-card" onclick="filterByStatus('delivered')">
                 <div class="stat-content">
                     <h5>{{ $stats['delivered_requests'] ?? 0 }}</h5>
                     <p>Terkirim</p>
@@ -662,6 +719,7 @@
                             <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
                             <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Disetujui</option>
                             <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Ditolak</option>
+                            <option value="mixed" {{ request('status') == 'mixed' ? 'selected' : '' }}>Status Campuran</option>
                             <option value="delivered" {{ request('status') == 'delivered' ? 'selected' : '' }}>Terkirim</option>
                         </select>
                     </div>
@@ -684,11 +742,12 @@
             <a href="{{ route('admin.requests', ['status' => 'all']) }}" class="status-tab {{ !request('status') || request('status') == 'all' ? 'active' : '' }}">Semua</a>
             <a href="{{ route('admin.requests', ['status' => 'pending']) }}" class="status-tab {{ request('status') == 'pending' ? 'active' : '' }}">Pending</a>
             <a href="{{ route('admin.requests', ['status' => 'approved']) }}" class="status-tab {{ request('status') == 'approved' ? 'active' : '' }}">Disetujui</a>
-            <a href="{{ route('admin.requests', ['status' => 'rejected']) }}" class="status-tab {{ request('status') == 'rejected' ? 'active' : '' }}">Ditolak</a>
+            <a href="{{ route('admin.requests', ['status' => 'rejected']) }}" class="status-tab {{ request('status') == 'rejected' ? 'active' : '' }}>Ditolak</a>
+            <a href="{{ route('admin.requests', ['status' => 'mixed']) }}" class="status-tab {{ request('status') == 'mixed' ? 'active' : '' }}">Status Campuran</a>
             <a href="{{ route('admin.requests', ['status' => 'delivered']) }}" class="status-tab {{ request('status') == 'delivered' ? 'active' : '' }}">Terkirim</a>
         </div>
         
-        <!-- Requests Table dengan Dukungan Multi Barang -->
+        <!-- ✅ PERBAIKAN UTAMA: Requests Table dengan SATKER OTOMATIS -->
         <div class="table-card">
             <div class="table-responsive">
                 <table class="table table-bordered table-hover" width="100%" cellspacing="0">
@@ -709,19 +768,34 @@
                         @if(isset($requests) && $requests->count() > 0)
                             @foreach($requests as $index => $request)
                             @php
-                                // Cek apakah multi barang atau single barang
                                 $isMultiBarang = isset($request->details) && $request->details->count() > 0;
                                 $totalJumlah = $isMultiBarang ? $request->details->sum('jumlah') : $request->jumlah;
                                 $barangCount = $isMultiBarang ? $request->details->count() : 1;
-                                
-                                // Untuk single barang
                                 $firstBarang = $isMultiBarang ? null : $request->barang;
                                 
-                                // Ambil satker (untuk multi barang ambil dari yang pertama atau dari request)
-                                $satker = $request->satker ?? ($isMultiBarang && $request->details->first() ? $request->details->first()->satker : null);
+                                // Hitung status per detail
+                                $hasApprovedDetails = $isMultiBarang ? $request->details->where('status', 'approved')->count() > 0 : false;
+                                $hasRejectedDetails = $isMultiBarang ? $request->details->where('status', 'rejected')->count() > 0 : false;
+                                $hasMixedStatus = $hasApprovedDetails && $hasRejectedDetails;
                                 
-                                // Debug: untuk melihat data
-                                // dd($request->details, $request->barang);
+                                // ✅ PERBAIKAN: Ambil semua satker dari details
+                                $detailSatkers = collect();
+                                if ($isMultiBarang && isset($request->details)) {
+                                    foreach ($request->details as $detail) {
+                                        if ($detail->satker) {
+                                            $detailSatkers->push($detail->satker);
+                                        }
+                                    }
+                                }
+                                
+                                $uniqueSatkers = $detailSatkers->unique('id');
+                                
+                                // Jika ada satker dari parent (permintaan lama)
+                                if ($request->satker && !$uniqueSatkers->contains('id', $request->satker->id)) {
+                                    $uniqueSatkers->push($request->satker);
+                                }
+                                
+                                $satkerCount = $uniqueSatkers->count();
                             @endphp
                             <tr>
                                 <td>{{ ($requests->currentPage() - 1) * $requests->perPage() + $index + 1 }}</td>
@@ -738,10 +812,64 @@
                                                     {{ $detail->barang->nama_barang ?? 'Barang Contoh' }}
                                                     <span class="barang-info">
                                                         {{ $detail->jumlah ?? 1 }} {{ $detail->barang->satuan->nama_satuan ?? 'unit' }}
-                                                        @if(isset($detail->satker) && isset($satker) && $detail->satker->nama_satker != $satker->nama_satker)
-                                                        | {{ $detail->satker->nama_satker ?? 'SATUAN HUMAS' }}
+                                                        
+                                                        <!-- ✅ PERBAIKAN: Tampilkan satker dari detail jika berbeda dengan parent -->
+                                                        @php
+                                                            $detailSatker = $detail->satker ?? null;
+                                                            $parentSatker = $request->satker ?? null;
+                                                            $showDetailSatker = $detailSatker && 
+                                                                (!$parentSatker || $detailSatker->id != $parentSatker->id);
+                                                        @endphp
+                                                        
+                                                        @if($showDetailSatker)
+                                                            <br>
+                                                            <small class="text-success">
+                                                                <i class="bi bi-building me-1"></i>
+                                                                {{ $detailSatker->nama_satker }}
+                                                            </small>
+                                                        @endif
+                                                        
+                                                        @if($detail->status)
+                                                            @if($detail->status == 'approved')
+                                                            <span class="badge bg-success status-badge">
+                                                                <i class="bi bi-check-circle me-1"></i>Disetujui
+                                                            </span>
+                                                            @elseif($detail->status == 'rejected')
+                                                            <span class="badge bg-danger status-badge">
+                                                                <i class="bi bi-x-circle me-1"></i>Ditolak
+                                                            </span>
+                                                            @elseif($detail->status == 'delivered')
+                                                            <span class="badge bg-info status-badge">
+                                                                <i class="bi bi-truck me-1"></i>Dikirim
+                                                            </span>
+                                                            @else
+                                                            <span class="badge bg-warning detail-status">
+                                                                <i class="bi bi-clock-history me-1"></i>Pending
+                                                            </span>
+                                                            @endif
                                                         @endif
                                                     </span>
+                                                    @if($request->status == 'pending' || $hasMixedStatus)
+                                                    <div class="detail-actions">
+                                                        @if($detail->status != 'approved')
+                                                        <button type="button" class="btn btn-success btn-sm btn-approve-detail" 
+                                                                data-request-id="{{ $request->id }}"
+                                                                data-detail-id="{{ $detail->id }}"
+                                                                title="Setujui barang ini">
+                                                            <i class="bi bi-check"></i>
+                                                        </button>
+                                                        @endif
+                                                        @if($detail->status != 'rejected')
+                                                        <button type="button" class="btn btn-danger btn-sm btn-reject-detail" 
+                                                                data-request-id="{{ $request->id }}"
+                                                                data-detail-id="{{ $detail->id }}"
+                                                                data-barang-name="{{ $detail->barang->nama_barang ?? 'Barang' }}"
+                                                                title="Tolak barang ini">
+                                                            <i class="bi bi-x"></i>
+                                                        </button>
+                                                        @endif
+                                                    </div>
+                                                    @endif
                                                 </li>
                                                 @endforeach
                                             </ul>
@@ -766,23 +894,28 @@
                                     </span>
                                 </td>
                                 <td>
+                                    <!-- ✅ PERBAIKAN: Tampilkan satker otomatis -->
                                     @if($isMultiBarang)
-                                        @php
-                                            $uniqueSatkers = $request->details->pluck('satker')->unique('id');
-                                        @endphp
-                                        @if($uniqueSatkers->count() == 1)
+                                        @if($satkerCount == 1)
                                             {{ $uniqueSatkers->first()->nama_satker ?? '-' }}
                                         @else
                                             <div>
                                                 <span class="text-primary">
-                                                    <i class="bi bi-collection"></i> Multiple
+                                                    <i class="bi bi-collection"></i> Multiple ({{ $satkerCount }})
                                                 </span>
                                                 <br>
-                                                <small class="text-muted">{{ $uniqueSatkers->count() }} satker</small>
+                                                <small class="text-muted">
+                                                    @foreach($uniqueSatkers->take(3) as $satkerItem)
+                                                        {{ $satkerItem->nama_satker }}@if(!$loop->last), @endif
+                                                    @endforeach
+                                                    @if($satkerCount > 3)
+                                                        + {{ $satkerCount - 3 }} lainnya
+                                                    @endif
+                                                </small>
                                             </div>
                                         @endif
                                     @else
-                                        {{ $satker->nama_satker ?? '-' }}
+                                        {{ $request->satker->nama_satker ?? '-' }}
                                     @endif
                                 </td>
                                 <td>{{ $request->created_at->format('d/m/Y') }}</td>
@@ -792,9 +925,15 @@
                                             <i class="bi bi-clock-history me-1"></i>Pending
                                         </span>
                                     @elseif($request->status == 'approved')
+                                        @if($hasMixedStatus)
+                                        <span class="badge bg-mixed status-badge">
+                                            <i class="bi bi-patch-check me-1"></i>Status Campuran
+                                        </span>
+                                        @else
                                         <span class="badge bg-success status-badge">
                                             <i class="bi bi-check-circle me-1"></i>Disetujui
                                         </span>
+                                        @endif
                                     @elseif($request->status == 'rejected')
                                         <span class="badge bg-danger status-badge">
                                             <i class="bi bi-x-circle me-1"></i>Ditolak
@@ -811,19 +950,19 @@
                                                 data-bs-target="#detailRequestModal" data-request-id="{{ $request->id }}" title="Detail">
                                             <i class="bi bi-eye"></i>
                                         </button>
-                                        @if($request->status == 'pending')
+                                        @if($request->status == 'pending' && !$isMultiBarang)
                                         <button type="button" class="btn btn-success btn-sm btn-approve" 
-                                                data-request-id="{{ $request->id }}" title="Setujui">
+                                                data-request-id="{{ $request->id }}" title="Setujui Semua">
                                             <i class="bi bi-check"></i>
                                         </button>
                                         <button type="button" class="btn btn-danger btn-sm btn-reject" 
-                                                data-request-id="{{ $request->id }}" title="Tolak">
+                                                data-request-id="{{ $request->id }}" title="Tolak Semua">
                                             <i class="bi bi-x"></i>
                                         </button>
                                         @endif
-                                        @if($request->status == 'approved')
+                                        @if($request->status == 'approved' || $hasMixedStatus)
                                         <button type="button" class="btn btn-primary btn-sm btn-deliver" 
-                                                data-request-id="{{ $request->id }}" title="Tandai Terkirim">
+                                                data-request-id="{{ $request->id }}" title="Kirim Barang Disetujui">
                                             <i class="bi bi-truck"></i>
                                         </button>
                                         @endif
@@ -942,7 +1081,7 @@
                     <div class="text-center mb-3">
                         <i class="bi bi-check-circle text-success display-4"></i>
                     </div>
-                    <p class="text-center">Apakah Anda yakin ingin menyetujui permintaan ini?</p>
+                    <p class="text-center">Apakah Anda yakin ingin menyetujui semua barang dalam permintaan ini?</p>
                     <div class="alert alert-info">
                         <i class="bi bi-info-circle me-2"></i>
                         Stok akan dikurangi saat barang ditandai sebagai "Terkirim"
@@ -951,7 +1090,7 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
                     <button type="button" class="btn btn-success" id="confirmApprove">
-                        <i class="bi bi-check me-1"></i> Setujui
+                        <i class="bi bi-check me-1"></i> Setujui Semua
                     </button>
                 </div>
             </div>
@@ -982,7 +1121,38 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
                     <button type="button" class="btn btn-danger" id="confirmReject">
-                        <i class="bi bi-x me-1"></i> Tolak
+                        <i class="bi bi-x me-1"></i> Tolak Semua
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Reject Detail Modal -->
+    <div class="modal fade" id="rejectDetailModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="rejectDetailModalLabel">Tolak Barang</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center mb-3">
+                        <i class="bi bi-x-circle text-danger display-4"></i>
+                    </div>
+                    <div class="mb-3">
+                        <label for="detailRejectReason" class="form-label">
+                            Alasan Penolakan
+                            <span class="required-star">*</span>
+                        </label>
+                        <textarea class="form-control" id="detailRejectReason" rows="3" 
+                                  placeholder="Masukkan alasan penolakan barang ini..." required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-danger" id="confirmRejectDetail">
+                        <i class="bi bi-x me-1"></i> Tolak Barang Ini
                     </button>
                 </div>
             </div>
@@ -1001,7 +1171,7 @@
                     <div class="text-center mb-3">
                         <i class="bi bi-truck text-primary display-4"></i>
                     </div>
-                    <p class="text-center">Apakah barang sudah dikirim kepada pemohon?</p>
+                    <p class="text-center">Hanya barang yang disetujui akan dikirim. Apakah Anda yakin?</p>
                     <div class="mb-3">
                         <label for="deliverNote" class="form-label">Catatan Pengiriman (Opsional)</label>
                         <textarea class="form-control" id="deliverNote" rows="2" 
@@ -1009,13 +1179,13 @@
                     </div>
                     <div class="alert alert-warning">
                         <i class="bi bi-exclamation-triangle me-2"></i>
-                        Stok barang akan dikurangi setelah ditandai sebagai terkirim.
+                        Hanya stok barang yang disetujui akan dikurangi.
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
                     <button type="button" class="btn btn-primary" id="confirmDeliver">
-                        <i class="bi bi-check me-1"></i> Ya, Sudah Terkirim
+                        <i class="bi bi-check me-1"></i> Kirim Barang Disetujui
                     </button>
                 </div>
             </div>
@@ -1027,13 +1197,11 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
     $(document).ready(function() {
-        // Inisialisasi Select2 untuk filter satker
         $('.select2-satker-filter').select2({
             placeholder: "Semua Satker",
             allowClear: true
         });
         
-        // Submit form filter dengan Enter
         $('#searchInput').keypress(function(e) {
             if (e.which == 13) {
                 $('#filterForm').submit();
@@ -1041,21 +1209,146 @@
             }
         });
         
-        // Auto dismiss alerts setelah 5 detik
         setTimeout(() => {
             $('.alert').alert('close');
         }, 5000);
         
-        // Variabel global untuk menyimpan request ID
         let currentRequestId = null;
+        let currentDetailId = null;
         
-        // Event Delegation untuk tombol approve (untuk data dinamis/pagination)
+        // ================ APPROVE/REJECT PER DETAIL ================
+        
+        $(document).on('click', '.btn-approve-detail', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            currentDetailId = $(this).data('detail-id');
+            currentRequestId = $(this).data('request-id');
+            
+            if (!currentDetailId || !currentRequestId) {
+                showAlert('ID tidak valid', 'warning');
+                return;
+            }
+            
+            if (confirm('Apakah Anda yakin ingin menyetujui barang ini?')) {
+                const csrfToken = $('meta[name="csrf-token"]').attr('content') || '{{ csrf_token() }}';
+                const $button = $(this);
+                
+                $.ajax({
+                    url: `/admin/requests/${currentRequestId}/details/${currentDetailId}/approve`,
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken
+                    },
+                    data: { _token: csrfToken },
+                    beforeSend: function() {
+                        $button.prop('disabled', true)
+                            .html('<span class="spinner-border spinner-border-sm"></span>');
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            showAlert(response.message, 'success');
+                            setTimeout(() => location.reload(), 1000);
+                        } else {
+                            showAlert(response.message, 'danger');
+                        }
+                    },
+                    error: function(xhr) {
+                        const error = xhr.responseJSON?.message || 'Terjadi kesalahan';
+                        showAlert(error, 'danger');
+                    },
+                    complete: function() {
+                        $button.prop('disabled', false)
+                            .html('<i class="bi bi-check"></i>');
+                    }
+                });
+            }
+        });
+        
+        $(document).on('click', '.btn-reject-detail', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            currentDetailId = $(this).data('detail-id');
+            currentRequestId = $(this).data('request-id');
+            const barangName = $(this).data('barang-name');
+            
+            if (!currentDetailId || !currentRequestId) {
+                showAlert('ID tidak valid', 'warning');
+                return;
+            }
+            
+            $('#rejectDetailModal').modal('show');
+            $('#rejectDetailModal').data('detail-id', currentDetailId);
+            $('#rejectDetailModal').data('request-id', currentRequestId);
+            $('#detailRejectReason').val('');
+            
+            if (barangName) {
+                $('#rejectDetailModalLabel').html(`Tolak Barang: ${barangName}`);
+            }
+        });
+        
+        $('#confirmRejectDetail').click(function(e) {
+            e.preventDefault();
+            
+            const detailId = $('#rejectDetailModal').data('detail-id');
+            const requestId = $('#rejectDetailModal').data('request-id');
+            const reason = $('#detailRejectReason').val().trim();
+            
+            if (!detailId || !requestId) {
+                showAlert('ID tidak valid', 'warning');
+                return;
+            }
+            
+            if (!reason) {
+                showAlert('Harap masukkan alasan penolakan', 'warning');
+                $('#detailRejectReason').focus();
+                return;
+            }
+            
+            const csrfToken = $('meta[name="csrf-token"]').attr('content') || '{{ csrf_token() }}';
+            
+            $.ajax({
+                url: `/admin/requests/${requestId}/details/${detailId}/reject`,
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                data: {
+                    _token: csrfToken,
+                    reason: reason
+                },
+                beforeSend: function() {
+                    $('#confirmRejectDetail').prop('disabled', true)
+                        .html('<span class="spinner-border spinner-border-sm"></span> Memproses...');
+                },
+                success: function(response) {
+                    if (response.success) {
+                        showAlert(response.message, 'success');
+                        $('#rejectDetailModal').modal('hide');
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        showAlert(response.message, 'danger');
+                    }
+                },
+                error: function(xhr) {
+                    const error = xhr.responseJSON?.message || 'Terjadi kesalahan';
+                    showAlert(error, 'danger');
+                },
+                complete: function() {
+                    $('#confirmRejectDetail').prop('disabled', false)
+                        .html('<i class="bi bi-x me-1"></i> Tolak Barang Ini');
+                }
+            });
+        });
+        
+        // ================ APPROVE/REJECT SEMUA (Single Barang) ================
+        
         $(document).on('click', '.btn-approve', function(e) {
             e.preventDefault();
             e.stopPropagation();
             
             currentRequestId = $(this).data('request-id');
-            console.log('Approve clicked for ID:', currentRequestId);
             
             if (!currentRequestId) {
                 showAlert('ID permintaan tidak valid', 'warning');
@@ -1065,13 +1358,11 @@
             $('#approveModal').modal('show');
         });
         
-        // Event Delegation untuk tombol reject
         $(document).on('click', '.btn-reject', function(e) {
             e.preventDefault();
             e.stopPropagation();
             
             currentRequestId = $(this).data('request-id');
-            console.log('Reject clicked for ID:', currentRequestId);
             
             if (!currentRequestId) {
                 showAlert('ID permintaan tidak valid', 'warning');
@@ -1082,24 +1373,6 @@
             $('#rejectModal').modal('show');
         });
         
-        // Event Delegation untuk tombol deliver (tandai terkirim)
-        $(document).on('click', '.btn-deliver', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            currentRequestId = $(this).data('request-id');
-            console.log('Deliver clicked for ID:', currentRequestId);
-            
-            if (!currentRequestId) {
-                showAlert('ID permintaan tidak valid', 'warning');
-                return;
-            }
-            
-            $('#deliverNote').val('');
-            $('#deliverModal').modal('show');
-        });
-        
-        // Handler untuk confirm approve
         $('#confirmApprove').click(function(e) {
             e.preventDefault();
             
@@ -1108,12 +1381,8 @@
                 return;
             }
             
-            console.log('Confirm approve for ID:', currentRequestId);
-            
-            // Ambil CSRF token dari meta tag
             const csrfToken = $('meta[name="csrf-token"]').attr('content') || '{{ csrf_token() }}';
             
-            // Kirim request approve
             $.ajax({
                 url: `/admin/requests/${currentRequestId}/approve`,
                 method: 'POST',
@@ -1128,8 +1397,6 @@
                         .html('<span class="spinner-border spinner-border-sm"></span> Memproses...');
                 },
                 success: function(response) {
-                    console.log('Approve Response:', response);
-                    
                     if (response.success) {
                         showAlert(response.message, 'success');
                         setTimeout(() => {
@@ -1140,7 +1407,6 @@
                     }
                 },
                 error: function(xhr, status, error) {
-                    console.error('Approve AJAX Error:', xhr.responseText);
                     let errorMessage = 'Terjadi kesalahan saat menyetujui permintaan';
                     
                     if (xhr.responseJSON && xhr.responseJSON.message) {
@@ -1151,13 +1417,12 @@
                 },
                 complete: function() {
                     $('#confirmApprove').prop('disabled', false)
-                        .html('<i class="bi bi-check me-1"></i> Setujui');
+                        .html('<i class="bi bi-check me-1"></i> Setujui Semua');
                     $('#approveModal').modal('hide');
                 }
             });
         });
         
-        // Handler untuk confirm reject
         $('#confirmReject').click(function(e) {
             e.preventDefault();
             
@@ -1173,12 +1438,8 @@
                 return;
             }
             
-            console.log('Confirm reject for ID:', currentRequestId, 'Reason:', reason);
-            
-            // Ambil CSRF token dari meta tag
             const csrfToken = $('meta[name="csrf-token"]').attr('content') || '{{ csrf_token() }}';
             
-            // Kirim request reject
             $.ajax({
                 url: `/admin/requests/${currentRequestId}/reject`,
                 method: 'POST',
@@ -1194,8 +1455,6 @@
                         .html('<span class="spinner-border spinner-border-sm"></span> Memproses...');
                 },
                 success: function(response) {
-                    console.log('Reject Response:', response);
-                    
                     if (response.success) {
                         showAlert(response.message, 'success');
                         setTimeout(() => {
@@ -1206,7 +1465,6 @@
                     }
                 },
                 error: function(xhr, status, error) {
-                    console.error('Reject AJAX Error:', xhr.responseText);
                     let errorMessage = 'Terjadi kesalahan saat menolak permintaan';
                     
                     if (xhr.responseJSON && xhr.responseJSON.message) {
@@ -1217,13 +1475,29 @@
                 },
                 complete: function() {
                     $('#confirmReject').prop('disabled', false)
-                        .html('<i class="bi bi-x me-1"></i> Tolak');
+                        .html('<i class="bi bi-x me-1"></i> Tolak Semua');
                     $('#rejectModal').modal('hide');
                 }
             });
         });
         
-        // Handler untuk confirm deliver
+        // ================ DELIVER ================
+        
+        $(document).on('click', '.btn-deliver', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            currentRequestId = $(this).data('request-id');
+            
+            if (!currentRequestId) {
+                showAlert('ID permintaan tidak valid', 'warning');
+                return;
+            }
+            
+            $('#deliverNote').val('');
+            $('#deliverModal').modal('show');
+        });
+        
         $('#confirmDeliver').click(function(e) {
             e.preventDefault();
             
@@ -1234,12 +1508,8 @@
             
             const note = $('#deliverNote').val().trim();
             
-            console.log('Confirm deliver for ID:', currentRequestId, 'Note:', note);
-            
-            // Ambil CSRF token dari meta tag
             const csrfToken = $('meta[name="csrf-token"]').attr('content') || '{{ csrf_token() }}';
             
-            // Kirim request deliver
             $.ajax({
                 url: `/admin/requests/${currentRequestId}/deliver`,
                 method: 'POST',
@@ -1248,15 +1518,13 @@
                 },
                 data: {
                     _token: csrfToken,
-                    catatan: note || 'Barang telah dikirim'
+                    catatan: note || 'Barang yang disetujui telah dikirim'
                 },
                 beforeSend: function() {
                     $('#confirmDeliver').prop('disabled', true)
                         .html('<span class="spinner-border spinner-border-sm"></span> Memproses...');
                 },
                 success: function(response) {
-                    console.log('Deliver Response:', response);
-                    
                     if (response.success) {
                         showAlert(response.message, 'success');
                         setTimeout(() => {
@@ -1267,7 +1535,6 @@
                     }
                 },
                 error: function(xhr, status, error) {
-                    console.error('Deliver AJAX Error:', xhr.responseText);
                     let errorMessage = 'Terjadi kesalahan saat menandai sebagai terkirim';
                     
                     if (xhr.responseJSON && xhr.responseJSON.message) {
@@ -1278,17 +1545,17 @@
                 },
                 complete: function() {
                     $('#confirmDeliver').prop('disabled', false)
-                        .html('<i class="bi bi-check me-1"></i> Ya, Sudah Terkirim');
+                        .html('<i class="bi bi-check me-1"></i> Kirim Barang Disetujui');
                     $('#deliverModal').modal('hide');
                 }
             });
         });
         
-        // Detail Request Modal Handler - Updated untuk multi barang
+        // ================ DETAIL MODAL - PERBAIKAN UTAMA ================
+        
         $(document).on('click', '.btn-detail', function() {
             const requestId = $(this).data('request-id');
             
-            // Tampilkan loading state
             $('#detailRequestModalBody').html(`
                 <div class="text-center py-4">
                     <div class="spinner-border text-primary" role="status">
@@ -1298,300 +1565,416 @@
                 </div>
             `);
             
-            // Fetch request data via AJAX
-            fetch(`/admin/requests/${requestId}`)
-                .then(response => response.json())
-                .then(data => {
-                    const request = data.request || data;
-                    const isMultiBarang = request.details && request.details.length > 1;
-                    const totalJumlah = isMultiBarang 
-                        ? request.details.reduce((sum, detail) => sum + (detail.jumlah || 0), 0)
-                        : request.jumlah || 0;
-                    const totalJenis = isMultiBarang ? request.details.length : 1;
-                    
-                    // Debug: tampilkan data di console
-                    console.log('Request Data:', request);
-                    console.log('Is Multi Barang:', isMultiBarang);
-                    console.log('Details:', request.details);
-                    
-                    let html = `
-                        <!-- Informasi Umum -->
-                        <div class="row mb-4">
-                            <div class="col-md-6">
-                                <div class="card">
-                                    <div class="card-body">
-                                        <h6 class="card-title text-primary mb-3">
-                                            <i class="bi bi-card-checklist me-2"></i>Informasi Permintaan
-                                        </h6>
-                                        <div class="row mb-2">
-                                            <div class="col-5 fw-bold">Kode Permintaan:</div>
-                                            <div class="col-7">${request.kode_permintaan || '-'}</div>
-                                        </div>
-                                        <div class="row mb-2">
-                                            <div class="col-5 fw-bold">Tanggal:</div>
-                                            <div class="col-7">${new Date(request.created_at).toLocaleDateString('id-ID', {
-                                                day: '2-digit',
-                                                month: 'long',
-                                                year: 'numeric'
-                                            })}</div>
-                                        </div>
-                                        <div class="row mb-2">
-                                            <div class="col-5 fw-bold">Pemohon:</div>
-                                            <div class="col-7">${request.user?.name || '-'}</div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-5 fw-bold">Satker Utama:</div>
-                                            <div class="col-7">${request.satker?.nama_satker || '-'}</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="card">
-                                    <div class="card-body">
-                                        <h6 class="card-title text-primary mb-3">
-                                            <i class="bi bi-clipboard-check me-2"></i>Status Permintaan
-                                        </h6>
-                                        <div class="row mb-2">
-                                            <div class="col-5 fw-bold">Status:</div>
-                                            <div class="col-7">
-                    `;
-                    
-                    // Status badge
-                    if (request.status == 'pending') {
-                        html += `<span class="badge bg-warning"><i class="bi bi-clock-history me-1"></i>Pending</span>`;
-                    } else if (request.status == 'approved') {
-                        html += `<span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Disetujui</span>`;
-                    } else if (request.status == 'rejected') {
-                        html += `<span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i>Ditolak</span>`;
-                    } else if (request.status == 'delivered') {
-                        html += `<span class="badge bg-info"><i class="bi bi-truck me-1"></i>Dikirim</span>`;
-                    }
-                    
-                    html += `
-                                            </div>
-                                        </div>
-                    `;
-                    
-                    // Tanggal status sesuai kondisi
-                    if (request.delivered_at) {
-                        html += `
-                            <div class="row mb-2">
-                                <div class="col-5 fw-bold">Dikirim pada:</div>
-                                <div class="col-7">${new Date(request.delivered_at).toLocaleDateString('id-ID')}</div>
-                            </div>
-                        `;
-                    } else if (request.approved_at) {
-                        html += `
-                            <div class="row mb-2">
-                                <div class="col-5 fw-bold">Disetujui pada:</div>
-                                <div class="col-7">${new Date(request.approved_at).toLocaleDateString('id-ID')}</div>
-                            </div>
-                        `;
-                    } else if (request.rejected_at) {
-                        html += `
-                            <div class="row mb-2">
-                                <div class="col-5 fw-bold">Ditolak pada:</div>
-                                <div class="col-7">${new Date(request.rejected_at).toLocaleDateString('id-ID')}</div>
-                            </div>
-                        `;
-                    }
-                    
-                    // Approved by
-                    if (request.approved_by_user) {
-                        html += `
-                            <div class="row">
-                                <div class="col-5 fw-bold">Oleh:</div>
-                                <div class="col-7">${request.approved_by_user.name || '-'}</div>
-                            </div>
-                        `;
-                    }
-                    
-                    html += `
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Ringkasan Barang -->
-                        <div class="card mb-4">
-                            <div class="card-header bg-light">
-                                <h6 class="mb-0">
-                                    <i class="bi bi-box-seam me-2"></i>Ringkasan Barang
-                                </h6>
-                            </div>
-                            <div class="card-body">
-                                <div class="row text-center">
-                                    <div class="col-md-${isMultiBarang ? '4' : '6'} mb-3">
-                                        <div class="border rounded p-3">
-                                            <h4 class="text-primary fw-bold">${totalJumlah}</h4>
-                                            <small class="text-muted">Total Unit</small>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-${isMultiBarang ? '4' : '6'} mb-3">
-                                        <div class="border rounded p-3">
-                                            <h4 class="text-primary fw-bold">${totalJenis}</h4>
-                                            <small class="text-muted">Jenis Barang</small>
-                                        </div>
-                                    </div>
-                    `;
-                    
-                    if (isMultiBarang) {
-                        // Hitung jumlah satker unik untuk multi barang
-                        const satkerNames = [];
-                        if (request.satker?.nama_satker) {
-                            satkerNames.push(request.satker.nama_satker);
-                        }
-                        if (request.details) {
-                            request.details.forEach(detail => {
-                                if (detail.satker?.nama_satker && !satkerNames.includes(detail.satker.nama_satker)) {
-                                    satkerNames.push(detail.satker.nama_satker);
-                                }
-                            });
-                        }
-                        
-                        html += `
-                            <div class="col-md-4 mb-3">
-                                <div class="border rounded p-3">
-                                    <h4 class="text-primary fw-bold">${satkerNames.length}</h4>
-                                    <small class="text-muted">Jumlah Satker</small>
-                                </div>
-                            </div>
-                        `;
-                    }
-                    
-                    html += `
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Detail Barang -->
-                        <div class="card mb-4">
-                            <div class="card-header bg-light">
-                                <h6 class="mb-0">
-                                    <i class="bi bi-list-ul me-2"></i>Detail Barang
-                                </h6>
-                            </div>
-                            <div class="card-body p-0">
-                                <div class="table-responsive">
-                                    <table class="table table-hover mb-0">
-                                        <thead class="table-light">
-                                            <tr>
-                                                <th width="5%">No</th>
-                                                <th width="15%">Kode Barang</th>
-                                                <th>Nama Barang</th>
-                                                <th width="10%">Jumlah</th>
-                                                <th width="10%">Satuan</th>
-                                                <th width="20%">Satker</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                    `;
-                    
-                    if (isMultiBarang && request.details && request.details.length > 0) {
-                        // Tampilkan semua detail barang untuk multi barang
-                        request.details.forEach((detail, index) => {
-                            html += `
-                                <tr>
-                                    <td class="text-center">${index + 1}</td>
-                                    <td><span class="badge bg-light text-dark">${detail.barang?.kode_barang || 'BRG-001'}</span></td>
-                                    <td>${detail.barang?.nama_barang || 'Nama Barang Tidak Tersedia'}</td>
-                                    <td class="text-center"><strong>${detail.jumlah || 0}</strong></td>
-                                    <td class="text-center">${detail.barang?.satuan?.nama_satuan || 'unit'}</td>
-                                    <td>${detail.satker?.nama_satker || request.satker?.nama_satker || '-'}</td>
-                                </tr>
-                            `;
-                        });
+            const csrfToken = $('meta[name="csrf-token"]').attr('content') || '{{ csrf_token() }}';
+            
+            $.ajax({
+                url: `/admin/requests/${requestId}`,
+                method: 'GET',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                success: function(response) {
+                    if (response.success && response.data) {
+                        renderDetailModal(response.data);
                     } else {
-                        // Tampilkan single barang
-                        html += `
-                            <tr>
-                                <td class="text-center">1</td>
-                                <td><span class="badge bg-light text-dark">${request.barang?.kode_barang || 'BRG-001'}</span></td>
-                                <td>${request.barang?.nama_barang || 'Nama Barang Tidak Tersedia'}</td>
-                                <td class="text-center"><strong>${request.jumlah || 0}</strong></td>
-                                <td class="text-center">${request.barang?.satuan?.nama_satuan || 'unit'}</td>
-                                <td>${request.satker?.nama_satker || '-'}</td>
-                            </tr>
-                        `;
-                    }
-                    
-                    html += `
-                                        </tbody>
-                                    </table>
-                                </div>
+                        showAlert(response.message || 'Gagal memuat data', 'danger');
+                        $('#detailRequestModalBody').html(`
+                            <div class="text-center py-4">
+                                <i class="bi bi-exclamation-triangle text-danger display-4"></i>
+                                <h5 class="mt-3 text-danger">Gagal memuat data permintaan</h5>
+                                <p class="text-muted">${response.message || 'Data tidak ditemukan'}</p>
                             </div>
-                        </div>
-                    `;
-                    
-                    // Keterangan jika ada
-                    if (request.keperluan || request.catatan) {
-                        html += `
-                            <div class="card">
-                                <div class="card-header bg-light">
-                                    <h6 class="mb-0">
-                                        <i class="bi bi-card-text me-2"></i>Keterangan
-                                    </h6>
-                                </div>
-                                <div class="card-body">
-                        `;
-                        
-                        if (request.keperluan) {
-                            html += `
-                                <div class="mb-3">
-                                    <h6 class="text-muted">Keperluan:</h6>
-                                    <p class="mb-0">${request.keperluan}</p>
-                                </div>
-                            `;
-                        }
-                        
-                        if (request.catatan) {
-                            html += `
-                                <div>
-                                    <h6 class="text-muted">Catatan Admin:</h6>
-                                    <p class="mb-0">${request.catatan}</p>
-                                </div>
-                            `;
-                        }
-                        
-                        html += `
-                                </div>
-                            </div>
-                        `;
+                        `);
                     }
-                    
-                    $('#detailRequestModalBody').html(html);
-                })
-                .catch(error => {
-                    console.error('Error:', error);
+                },
+                error: function(xhr, status, error) {
                     $('#detailRequestModalBody').html(`
                         <div class="text-center py-4">
                             <i class="bi bi-exclamation-triangle text-danger display-4"></i>
                             <h5 class="mt-3 text-danger">Gagal memuat data permintaan</h5>
-                            <p class="text-muted">Silakan coba lagi atau hubungi administrator</p>
-                            <button class="btn btn-primary btn-sm mt-2" onclick="location.reload()">
-                                <i class="bi bi-arrow-clockwise"></i> Coba Lagi
-                            </button>
+                            <p class="text-muted">${xhr.responseJSON?.message || 'Silakan coba lagi'}</p>
                         </div>
                     `);
-                });
+                }
+            });
         });
     });
     
-    // Fungsi untuk menampilkan alert
+    // ================ FUNGSI RENDER DETAIL MODAL ================
+    
+    function renderDetailModal(request) {
+        const isMultiBarang = (request.details && request.details.length > 0) || 
+                             (request.details_count && request.details_count > 0);
+        
+        let totalJumlah = 0;
+        let totalJenis = 1;
+        let approvedDetails = 0;
+        let rejectedDetails = 0;
+        let pendingDetails = 0;
+        let deliveredDetails = 0;
+        
+        if (isMultiBarang && request.details) {
+            request.details.forEach(detail => {
+                const jumlah = parseInt(detail.jumlah) || 0;
+                totalJumlah += jumlah;
+                
+                if (detail.status === 'approved' || detail.status === 'delivered') {
+                    approvedDetails++;
+                    if (detail.status === 'delivered') deliveredDetails++;
+                } 
+                else if (detail.status === 'rejected') rejectedDetails++;
+                else pendingDetails++;
+            });
+            
+            totalJenis = request.details.length;
+        } else {
+            totalJumlah = parseInt(request.jumlah) || 0;
+            if (request.status === 'approved' || request.status === 'delivered') {
+                approvedDetails = 1;
+                if (request.status === 'delivered') deliveredDetails = 1;
+            }
+            else if (request.status === 'rejected') rejectedDetails = 1;
+            else pendingDetails = 1;
+        }
+        
+        const formatDate = (dateString) => {
+            if (!dateString) return '-';
+            try {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('id-ID', {
+                    day: '2-digit',
+                    month: 'long',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            } catch (e) {
+                return dateString;
+            }
+        };
+        
+        const formatTime = (dateString) => {
+            if (!dateString) return '-';
+            try {
+                const date = new Date(dateString);
+                return date.toLocaleTimeString('id-ID', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            } catch (e) {
+                return dateString;
+            }
+        };
+        
+        let statusBadgeHtml = '';
+        if (request.status == 'pending') {
+            statusBadgeHtml = `<span class="badge bg-warning"><i class="bi bi-clock-history me-1"></i>Pending</span>`;
+        } else if (request.status == 'approved') {
+            if (rejectedDetails > 0) {
+                statusBadgeHtml = `<span class="badge bg-mixed"><i class="bi bi-patch-check me-1"></i>Status Campuran</span>`;
+            } else {
+                statusBadgeHtml = `<span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Disetujui</span>`;
+            }
+        } else if (request.status == 'rejected') {
+            statusBadgeHtml = `<span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i>Ditolak</span>`;
+        } else if (request.status == 'delivered') {
+            statusBadgeHtml = `<span class="badge bg-info"><i class="bi bi-truck me-1"></i>Dikirim</span>`;
+        }
+        
+        // ✅ PERBAIKAN: HTML untuk detail barang dengan SATKER
+        let detailBarangHtml = '';
+        if (isMultiBarang && request.details && request.details.length > 0) {
+            detailBarangHtml = `
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover detail-table">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Kode Barang</th>
+                                <th>Nama Barang</th>
+                                <th class="text-center">Jumlah</th>
+                                <th class="text-center">Satuan</th>
+                                <th class="text-center">Status</th>
+                                <th>Satker</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            request.details.forEach((detail, index) => {
+                let detailStatusBadge = '';
+                if (detail.status === 'approved') {
+                    detailStatusBadge = '<span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Disetujui</span>';
+                } else if (detail.status === 'rejected') {
+                    detailStatusBadge = '<span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i>Ditolak</span>';
+                } else if (detail.status === 'delivered') {
+                    detailStatusBadge = '<span class="badge bg-info"><i class="bi bi-truck me-1"></i>Dikirim</span>';
+                } else {
+                    detailStatusBadge = '<span class="badge bg-warning"><i class="bi bi-clock-history me-1"></i>Pending</span>';
+                }
+                
+                const barangKode = detail.barang?.kode_barang || 'N/A';
+                const barangNama = detail.barang?.nama_barang || 'Nama tidak tersedia';
+                const barangSatuan = detail.barang?.satuan?.nama_satuan || 'unit';
+                
+                // ✅ PERBAIKAN: Ambil satker dari detail atau dari parent
+                const satkerNama = detail.satker?.nama_satker || 
+                                  (detail.satker_id === request.satker_id ? request.satker?.nama_satker : '-');
+                
+                const jumlah = detail.jumlah || 0;
+                
+                detailBarangHtml += `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td><code>${barangKode}</code></td>
+                        <td>${barangNama}</td>
+                        <td class="text-center"><strong>${jumlah}</strong></td>
+                        <td class="text-center">${barangSatuan}</td>
+                        <td class="text-center">${detailStatusBadge}</td>
+                        <td>${satkerNama}</td>
+                    </tr>
+                `;
+            });
+            
+            detailBarangHtml += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        } else {
+            let barangStatusBadge = '';
+            if (request.status === 'approved') {
+                barangStatusBadge = '<span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Disetujui</span>';
+            } else if (request.status === 'rejected') {
+                barangStatusBadge = '<span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i>Ditolak</span>';
+            } else if (request.status === 'delivered') {
+                barangStatusBadge = '<span class="badge bg-info"><i class="bi bi-truck me-1"></i>Dikirim</span>';
+            } else {
+                barangStatusBadge = '<span class="badge bg-warning"><i class="bi bi-clock-history me-1"></i>Pending</span>';
+            }
+            
+            const barangKode = request.barang?.kode_barang || 'N/A';
+            const barangNama = request.barang?.nama_barang || 'Nama tidak tersedia';
+            const barangSatuan = request.barang?.satuan?.nama_satuan || 'unit';
+            const satkerNama = request.satker?.nama_satker || '-';
+            const jumlah = request.jumlah || 0;
+            const stok = request.barang?.stok || 0;
+            
+            detailBarangHtml = `
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="data-label">Kode Barang:</div>
+                                <div class="data-value"><code>${barangKode}</code></div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="data-label">Nama Barang:</div>
+                                <div class="data-value">${barangNama}</div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="data-label">Jumlah Diminta:</div>
+                                <div class="data-value">
+                                    <span class="badge bg-primary">${jumlah} ${barangSatuan}</span>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="data-label">Stok Tersedia:</div>
+                                <div class="data-value">
+                                    <span class="badge ${stok >= jumlah ? 'bg-success' : 'bg-danger'}">
+                                        ${stok} ${barangSatuan}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="data-label">Status:</div>
+                                <div class="data-value">${barangStatusBadge}</div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="data-label">Satker:</div>
+                                <div class="data-value">${satkerNama}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        let html = `
+            <!-- Informasi Permintaan -->
+            <div class="card mb-3">
+                <div class="card-header bg-primary text-white">
+                    <h6 class="mb-0">
+                        <i class="bi bi-card-checklist me-2"></i>Informasi Permintaan
+                        <span class="badge bg-light text-dark float-end">
+                            ${isMultiBarang ? 'Multi Barang' : 'Single Barang'}
+                        </span>
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-2">
+                            <div class="data-label">Kode Permintaan:</div>
+                            <div class="data-value">
+                                <strong>${request.kode_permintaan || 'N/A'}</strong>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <div class="data-label">Tanggal Permintaan:</div>
+                            <div class="data-value">${formatDate(request.created_at)}</div>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <div class="data-label">Pemohon:</div>
+                            <div class="data-value">${request.user?.name || 'N/A'}</div>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <div class="data-label">Satker Utama:</div>
+                            <div class="data-value">${request.satker?.nama_satker || 'N/A'}</div>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <div class="data-label">Status Permintaan:</div>
+                            <div class="data-value">${statusBadgeHtml}</div>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <div class="data-label">Total Barang:</div>
+                            <div class="data-value">
+                                <span class="badge bg-primary">
+                                    ${totalJumlah} unit (${totalJenis} jenis)
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Ringkasan Status -->
+            <div class="card mb-3">
+                <div class="card-header bg-secondary text-white">
+                    <h6 class="mb-0">
+                        <i class="bi bi-clipboard-check me-2"></i>Ringkasan Status
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3 mb-3">
+                            <div class="border rounded p-3 bg-light">
+                                <h4 class="text-primary fw-bold">${totalJumlah}</h4>
+                                <small class="text-muted">Total Unit</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="border rounded p-3 bg-light">
+                                <h4 class="text-primary fw-bold">${totalJenis}</h4>
+                                <small class="text-muted">Jenis Barang</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="border rounded p-3 bg-success bg-opacity-10">
+                                <h4 class="text-success fw-bold">${approvedDetails}</h4>
+                                <small class="text-muted">Disetujui</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="border rounded p-3 bg-danger bg-opacity-10">
+                                <h4 class="text-danger fw-bold">${rejectedDetails}</h4>
+                                <small class="text-muted">Ditolak</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Detail Barang -->
+            <div class="card mb-3">
+                <div class="card-header bg-success text-white">
+                    <h6 class="mb-0">
+                        <i class="bi bi-box-seam me-2"></i>Detail Barang
+                        <span class="badge bg-light text-dark float-end">${totalJenis} jenis</span>
+                    </h6>
+                </div>
+                <div class="card-body">
+                    ${detailBarangHtml}
+                </div>
+            </div>
+        `;
+        
+        if (request.keperluan || request.keterangan || request.catatan) {
+            html += `
+                <div class="card">
+                    <div class="card-header bg-warning text-white">
+                        <h6 class="mb-0">
+                            <i class="bi bi-card-text me-2"></i>Keterangan & Catatan
+                        </h6>
+                    </div>
+                    <div class="card-body">
+            `;
+            
+            if (request.keperluan) {
+                html += `
+                    <div class="mb-3">
+                        <div class="data-label">Keperluan:</div>
+                        <div class="data-value">${request.keperluan}</div>
+                    </div>
+                `;
+            }
+            
+            if (request.keterangan) {
+                html += `
+                    <div class="mb-3">
+                        <div class="data-label">Keterangan Pemohon:</div>
+                        <div class="data-value">${request.keterangan}</div>
+                    </div>
+                `;
+            }
+            
+            if (request.catatan) {
+                html += `
+                    <div class="mb-3">
+                        <div class="data-label">Catatan Admin:</div>
+                        <div class="data-value">${request.catatan}</div>
+                    </div>
+                `;
+            }
+            
+            if (request.approved_at && request.approver) {
+                html += `
+                    <div class="alert alert-success">
+                        <i class="bi bi-check-circle me-2"></i>
+                        <strong>Disetujui oleh:</strong> ${request.approver?.name || 'Admin'} 
+                        pada ${formatDate(request.approved_at)} ${formatTime(request.approved_at)}
+                    </div>
+                `;
+            }
+            
+            if (request.delivered_at && request.deliverer) {
+                html += `
+                    <div class="alert alert-info">
+                        <i class="bi bi-truck me-2"></i>
+                        <strong>Dikirim oleh:</strong> ${request.deliverer?.name || 'Admin'} 
+                        pada ${formatDate(request.delivered_at)} ${formatTime(request.delivered_at)}
+                    </div>
+                `;
+            }
+            
+            html += `
+                    </div>
+                </div>
+            `;
+        }
+        
+        $('#detailRequestModalBody').html(html);
+    }
+    
     function showAlert(message, type = 'success') {
-        // Pastikan alert container ada
         let alertContainer = document.getElementById('alertContainer');
         
         if (!alertContainer) {
-            // Buat alert container jika tidak ada
             alertContainer = document.createElement('div');
             alertContainer.className = 'alert-container';
             alertContainer.id = 'alertContainer';
             document.body.appendChild(alertContainer);
         }
         
-        // Hapus alert sebelumnya
         const existingAlerts = alertContainer.querySelectorAll('.alert');
         existingAlerts.forEach(alert => {
             const bsAlert = bootstrap.Alert.getInstance(alert);
@@ -1619,10 +2002,8 @@
         
         alertContainer.appendChild(alert);
         
-        // Inisialisasi Bootstrap alert
         const bsAlert = new bootstrap.Alert(alert);
         
-        // Auto dismiss setelah 5 detik (kecuali untuk warning/error penting)
         if (type !== 'warning' && type !== 'danger') {
             setTimeout(() => {
                 if (alert.parentNode === alertContainer) {
@@ -1632,15 +2013,16 @@
         }
     }
     
-    // Print Function
+    function filterByStatus(status) {
+        window.location.href = `{{ route('admin.requests') }}?status=${status}`;
+    }
+    
     function printRequests() {
-        // Sembunyikan elemen yang tidak perlu dicetak
         const elementsToHide = document.querySelectorAll('.sidebar, .topbar, .page-header, .stats-grid, .filter-bar, .status-tabs, .action-buttons, .btn-group');
         elementsToHide.forEach(el => {
             if (el) el.style.display = 'none';
         });
         
-        // Perlebar tabel untuk cetak
         const tableCard = document.querySelector('.table-card');
         if (tableCard) {
             const originalStyles = {
@@ -1650,7 +2032,6 @@
             tableCard.style.boxShadow = 'none';
             tableCard.style.padding = '0';
             
-            // Tambahkan judul cetak
             const printTitle = document.createElement('h4');
             printTitle.textContent = 'Laporan Permintaan Barang - SILOG Polres';
             printTitle.style.textAlign = 'center';
@@ -1658,7 +2039,6 @@
             printTitle.style.fontWeight = 'bold';
             tableCard.parentNode.insertBefore(printTitle, tableCard);
             
-            // Tambahkan tanggal cetak
             const printDate = document.createElement('p');
             printDate.textContent = 'Tanggal: ' + new Date().toLocaleDateString('id-ID');
             printDate.style.textAlign = 'center';
@@ -1666,7 +2046,6 @@
             printDate.style.color = '#666';
             printTitle.parentNode.insertBefore(printDate, printTitle.nextSibling);
             
-            // Tambahkan filter info jika ada
             let filterInfo = '';
             const searchInput = document.getElementById('searchInput');
             const satkerFilter = document.getElementById('satkerFilter');
@@ -1694,10 +2073,8 @@
                 printTitle.parentNode.insertBefore(filterElement, printTitle.nextSibling.nextSibling);
             }
             
-            // Cetak
             window.print();
             
-            // Kembalikan tampilan normal setelah cetak
             setTimeout(() => {
                 elementsToHide.forEach(el => {
                     if (el) el.style.display = '';
@@ -1706,7 +2083,6 @@
                 tableCard.style.boxShadow = originalStyles.boxShadow;
                 tableCard.style.padding = originalStyles.padding;
                 
-                // Hapus elemen yang ditambahkan
                 [printTitle, printDate, filterElement].forEach(el => {
                     if (el && el.parentNode) {
                         el.parentNode.removeChild(el);
@@ -1716,7 +2092,6 @@
         }
     }
     
-    // Print Detail Function
     function printDetail() {
         const detailContent = document.getElementById('detailRequestModalBody');
         if (!detailContent) {
@@ -1790,6 +2165,7 @@
                     .bg-success { background-color: #198754; color: #fff; }
                     .bg-danger { background-color: #dc3545; color: #fff; }
                     .bg-info { background-color: #0dcaf0; color: #fff; }
+                    .bg-mixed { background-color: #fd7e14; color: #fff; }
                     .bg-light { background-color: #f8f9fa; color: #212529; }
                     .text-primary { color: #0d6efd; }
                     .text-muted { color: #6c757d; }
@@ -1827,7 +2203,6 @@
         printWindow.document.close();
     }
     
-    // Logout confirmation
     document.querySelector('form[action="{{ route("logout") }}"]')?.addEventListener('submit', function(e) {
         if (!confirm('Apakah Anda yakin ingin logout?')) {
             e.preventDefault();

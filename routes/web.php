@@ -187,6 +187,63 @@ Route::middleware(['auth', 'check.maintenance'])->group(function () {
             Route::get('/{id}', [SatkerController::class, 'show'])->name('admin.satker.show');
         });
     });
+    
+    // Category Routes
+    Route::prefix('categories')->group(function () {
+        Route::get('/', [CategoryController::class, 'index'])->name('admin.categories.index');
+        Route::post('/', [CategoryController::class, 'store'])->name('admin.categories.store');
+        Route::post('/quick-store', [CategoryController::class, 'quickStore'])->name('admin.categories.quick-store');
+        Route::get('/{kategori}/edit', [CategoryController::class, 'edit'])->name('admin.categories.edit');
+        Route::put('/{kategori}', [CategoryController::class, 'update'])->name('admin.categories.update');
+        Route::delete('/{kategori}', [CategoryController::class, 'destroy'])->name('admin.categories.destroy');
+    });
+    
+    // Permintaan (Requests) Routes - untuk admin mengelola permintaan
+    Route::prefix('requests')->group(function () {
+        // ROUTE DENGAN METHOD GET HARUS DIDAHULUKAN
+        Route::get('/', [PermintaanController::class, 'index'])->name('admin.requests');
+        Route::get('/create', [PermintaanController::class, 'create'])->name('admin.requests.create');
+        Route::get('/{permintaan}', [PermintaanController::class, 'show'])->name('admin.requests.show');
+        Route::get('/{permintaan}/details', [PermintaanController::class, 'show'])->name('admin.requests.details');
+        Route::get('/{permintaan}/debug', [PermintaanController::class, 'debugShow'])->name('admin.requests.debug');
+        
+        // ROUTE DENGAN METHOD POST/PUT/DELETE SETELAHNYA
+        Route::post('/', [PermintaanController::class, 'store'])->name('admin.requests.store');
+        Route::post('/{permintaan}/approve', [PermintaanController::class, 'approve'])->name('admin.requests.approve');
+        Route::post('/{permintaan}/reject', [PermintaanController::class, 'reject'])->name('admin.requests.reject');
+        Route::post('/{permintaan}/details/{detail}/approve', [PermintaanController::class, 'approveDetail'])
+            ->name('admin.requests.details.approve');
+        Route::post('/{permintaan}/details/{detail}/reject', [PermintaanController::class, 'rejectDetail'])
+            ->name('admin.requests.details.reject');
+        Route::post('/{permintaan}/deliver', [PermintaanController::class, 'markAsDelivered'])->name('admin.requests.deliver');
+        Route::delete('/{permintaan}', [PermintaanController::class, 'destroy'])->name('admin.requests.destroy');
+    });
+    
+    // Reports Routes - TAMBAHKAN ROUTE GET-REQUEST-DETAILS
+    Route::prefix('reports')->group(function () {
+        Route::get('/', [ReportController::class, 'index'])->name('admin.reports');
+        Route::get('/generate', [ReportController::class, 'generate'])->name('admin.reports.generate');
+        Route::get('/export/{type?}', [ReportController::class, 'export'])->name('admin.reports.export');
+        Route::get('/get-monthly-stats', [ReportController::class, 'getMonthlyStats'])->name('admin.reports.get-monthly-stats');
+        Route::get('/view-details', [ReportController::class, 'viewDetails'])->name('admin.reports.view-details');
+        Route::get('/get-chart-data', [ReportController::class, 'getChartData'])->name('admin.reports.get-chart-data');
+        // TAMBAH ROUTE INI UNTUK DETAIL PERMINTAAN
+        Route::get('/get-request-details', [ReportController::class, 'getRequestDetails'])->name('admin.reports.get-request-details');
+    });
+    
+    // Satker Routes untuk Admin
+    Route::prefix('satker')->group(function () {
+        Route::get('/', [SatkerController::class, 'index'])->name('admin.satker');
+        Route::post('/', [SatkerController::class, 'store'])->name('admin.satker.store');
+        Route::put('/{satker}', [SatkerController::class, 'update'])->name('admin.satker.update');
+        Route::delete('/{satker}', [SatkerController::class, 'destroy'])->name('admin.satker.destroy');
+        Route::get('/{id}/details', [SatkerController::class, 'getDetails'])->name('admin.satker.details');
+        Route::post('/{satker}/toggle-status', [SatkerController::class, 'toggleStatus'])->name('admin.satker.toggle-status');
+        Route::get('/{satker}/edit', [SatkerController::class, 'edit'])->name('admin.satker.edit');
+        Route::get('/create', [SatkerController::class, 'create'])->name('admin.satker.create');
+        Route::get('/{id}', [SatkerController::class, 'show'])->name('admin.satker.show');
+    });
+});
 
     // ==================== ROUTES UNTUK SUPERADMIN ====================
     Route::prefix('superadmin')->middleware(['role:superadmin'])->group(function () {
@@ -337,7 +394,7 @@ Route::middleware(['auth', 'check.maintenance'])->group(function () {
         Route::get('/inventory/get-recent-procurements', [InventoryController::class, 'getRecentProcurements'])
             ->name('api.inventory.get.recent.procurements');
     });
-});
+
 
 // ==================== MAINTENANCE ROUTES (KHUSUS) ====================
 Route::middleware('auth')->group(function () {
