@@ -464,7 +464,7 @@
     <div class="sidebar">
         <div class="sidebar-brand">
             <h3>SILOG</h3>
-            <p>Superadmin Dashboard</p>
+            <p>Log Aktivitas Sistem</p>
         </div>
         
         <div class="sidebar-nav">
@@ -472,6 +472,14 @@
                 <a href="{{ route('superadmin.dashboard') }}" class="nav-link">
                     <i class="bi bi-speedometer2"></i>
                     <span>Dashboard</span>
+                </a>
+            </div>
+            
+            <!-- Menu Validasi Pengadaan ditambahkan di sini -->
+            <div class="nav-item">
+                <a href="{{ route('superadmin.procurement') }}" class="nav-link">
+                    <i class="bi bi-cart-check"></i>
+                    <span>Validasi Pengadaan</span>
                 </a>
             </div>
             

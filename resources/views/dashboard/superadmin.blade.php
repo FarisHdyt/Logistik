@@ -378,6 +378,14 @@
                 </a>
             </div>
             
+            <!-- Menu Validasi Pengadaan -->
+            <div class="nav-item">
+                <a href="{{ route('superadmin.procurement') }}" class="nav-link">
+                    <i class="bi bi-cart-check"></i>
+                    <span>Validasi Pengadaan</span>
+                </a>
+            </div>
+            
             <div class="nav-item">
                 <a href="{{ route('superadmin.accounts.index') }}" class="nav-link">
                     <i class="bi bi-people"></i>
@@ -467,6 +475,14 @@
         
         <!-- Quick Actions -->
         <div class="quick-actions">
+            <!-- Action untuk Validasi Pengadaan -->
+            <a href="{{ route('superadmin.procurement') }}" class="action-btn">
+                <div class="action-icon">
+                    <i class="bi bi-cart-check"></i>
+                </div>
+                <div>Validasi Pengadaan</div>
+            </a>
+            
             <a href="{{ route('superadmin.accounts.create') }}" class="action-btn">
                 <div class="action-icon">
                     <i class="bi bi-person-plus"></i>
@@ -487,16 +503,9 @@
                 </div>
                 <div>Generate Laporan</div>
             </a>
-            
-            <a href="{{ route('superadmin.settings') }}" class="action-btn">
-                <div class="action-icon">
-                    <i class="bi bi-sliders"></i>
-                </div>
-                <div>Pengaturan Sistem</div>
-            </a>
         </div>
         
-        <!-- Stats Cards -->
+        <!-- Stats Cards (Disederhanakan) -->
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-icon" style="background-color: #ede9fe; color: var(--superadmin-color);">
@@ -505,16 +514,6 @@
                 <div class="stat-content">
                     <h3>{{ $data['total_users'] ?? 0 }}</h3>
                     <p>Total Users</p>
-                </div>
-            </div>
-            
-            <div class="stat-card">
-                <div class="stat-icon" style="background-color: #dbeafe; color: var(--primary);">
-                    <i class="bi bi-people"></i>
-                </div>
-                <div class="stat-content">
-                    <h3>{{ $data['total_admins'] ?? 0 }}</h3>
-                    <p>Admin Aktif</p>
                 </div>
             </div>
             
@@ -528,12 +527,23 @@
                 </div>
             </div>
             
+            <!-- Statistik untuk Pengadaan -->
             <div class="stat-card">
                 <div class="stat-icon" style="background-color: #fef3c7; color: var(--warning);">
+                    <i class="bi bi-cart-plus"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>{{ $data['pending_procurements'] ?? 0 }}</h3>
+                    <p>Pengadaan Menunggu</p>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon" style="background-color: #d1fae5; color: var(--success);">
                     <i class="bi bi-clock-history"></i>
                 </div>
                 <div class="stat-content">
-                    <h3>{{ $data['total_activities'] ?? 0 }}</h3>
+                    <h3>{{ $data['today_activities'] ?? 0 }}</h3>
                     <p>Aktivitas Hari Ini</p>
                 </div>
             </div>
@@ -680,7 +690,10 @@
                                         'create' => 'primary',
                                         'update' => 'warning',
                                         'delete' => 'danger',
-                                        'view' => 'info'
+                                        'view' => 'info',
+                                        'approve' => 'success',
+                                        'reject' => 'danger',
+                                        'validate' => 'info'
                                     ];
                                     $color = $actionColors[$action] ?? 'dark';
                                 @endphp
@@ -722,6 +735,10 @@
                             <div class="col-6">
                                 <small class="text-muted">Total Satker</small>
                                 <p class="mb-1"><strong>{{ $data['total_satker'] ?? 0 }}</strong></p>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">Pengadaan Menunggu</small>
+                                <p class="mb-1"><strong>{{ $data['pending_procurements'] ?? 0 }}</strong></p>
                             </div>
                             <div class="col-6">
                                 <small class="text-muted">Aktivitas Hari Ini</small>

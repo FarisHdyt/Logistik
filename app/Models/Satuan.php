@@ -48,6 +48,11 @@ class Satuan extends Model
         return $this->hasMany(Barang::class, 'satuan_id');
     }
 
+    public function procurements()
+    {
+        return $this->hasMany(Procurement::class, 'satuan_id');
+    }
+
     /**
      * Scope untuk mencari satuan berdasarkan kode
      *

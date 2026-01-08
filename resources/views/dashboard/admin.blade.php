@@ -377,6 +377,13 @@
             </div>
             
             <div class="nav-item">
+                <a href="{{ route('admin.procurement') }}" class="nav-link">
+                    <i class="bi bi-cart-plus"></i>
+                    <span>Pengadaan Barang</span>
+                </a>
+            </div>
+
+            <div class="nav-item">
                 <a href="{{ route('admin.requests') }}" class="nav-link">
                     <i class="bi bi-clipboard-check"></i>
                     <span>Permintaan Barang</span>

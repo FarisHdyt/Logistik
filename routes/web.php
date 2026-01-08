@@ -14,6 +14,8 @@ use App\Http\Controllers\SatkerController;
 use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SuperadminReportsController;
+use App\Http\Controllers\ProcurementController;
+use App\Http\Controllers\SuperadminProcurementController; // Ditambahkan
 
 /*
 |--------------------------------------------------------------------------
@@ -36,7 +38,6 @@ Route::get('/maintenance-bypass/{secret}', function ($secret) {
 })->name('maintenance.bypass');
 
 // ==================== AUTHENTICATION ROUTES ====================
-// Routes auth harus TANPA middleware check.maintenance agar bisa login
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
@@ -52,7 +53,6 @@ Route::middleware('guest')->group(function () {
 });
 
 // ==================== PROTECTED ROUTES DENGAN MAINTENANCE CHECK ====================
-// TAMBAHKAN 'check.maintenance' DI SINI!
 Route::middleware(['auth', 'check.maintenance'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
@@ -60,17 +60,14 @@ Route::middleware(['auth', 'check.maintenance'])->group(function () {
 
     // ==================== ROUTES UNTUK USER ====================
     Route::prefix('user')->group(function () {
-        // Dashboard user - redirect ke permintaan
         Route::get('/dashboard', function () {
             return redirect()->route('user.permintaan');
         })->name('user.dashboard');
         
-        // Laporan Routes
         Route::get('/laporan', [UserLaporanController::class, 'index'])->name('user.laporan');
         Route::get('/laporan/export/{type}', [UserLaporanController::class, 'export'])->name('user.laporan.export');
         Route::get('/laporan/print', [UserLaporanController::class, 'print'])->name('user.laporan.print');
         
-        // Permintaan Routes
         Route::prefix('permintaan')->group(function () {
             Route::get('/', [PermintaanUserController::class, 'index'])->name('user.permintaan');
             Route::get('/create', [PermintaanUserController::class, 'create'])->name('user.permintaan.create');
@@ -82,25 +79,67 @@ Route::middleware(['auth', 'check.maintenance'])->group(function () {
             Route::get('/track/{kode_permintaan}', [PermintaanUserController::class, 'track'])->name('user.permintaan.track');
             Route::get('/cetak/print', [PermintaanUserController::class, 'cetak'])->name('user.permintaan.cetak');
             Route::get('/barang/{id}/stok', [PermintaanUserController::class, 'getStokBarang'])
-            ->name('user.permintaan.barang.stok');
+                ->name('user.permintaan.barang.stok');
         });
     });
 
     // ==================== ROUTES UNTUK ADMIN ====================
     Route::prefix('admin')->middleware(['role:admin,superadmin'])->group(function () {
-        // Dashboard admin
         Route::get('/dashboard', [DashboardController::class, 'adminDashboard'])->name('admin.dashboard');
         Route::get('/dashboard/chart-data', [DashboardController::class, 'getChartDataApi'])->name('admin.dashboard.chart-data');
 
         // Inventory Routes
         Route::prefix('inventory')->group(function () {
             Route::get('/', [InventoryController::class, 'index'])->name('admin.inventory');
+            Route::get('/create', [InventoryController::class, 'create'])->name('admin.inventory.create');
             Route::post('/', [InventoryController::class, 'store'])->name('admin.inventory.store');
             Route::get('/{barang}/edit', [InventoryController::class, 'edit'])->name('admin.inventory.edit');
             Route::put('/{barang}', [InventoryController::class, 'update'])->name('admin.inventory.update');
             Route::delete('/{barang}', [InventoryController::class, 'destroy'])->name('admin.inventory.destroy');
             Route::post('/{barang}/restock', [InventoryController::class, 'restock'])->name('admin.inventory.restock');
             Route::get('/{barang}', [InventoryController::class, 'show'])->name('admin.inventory.show');
+            
+            Route::post('/store-pengadaan', [InventoryController::class, 'storePengadaan'])
+                ->name('admin.inventory.store.pengadaan');
+            
+            Route::get('/get-barang-procurement', [InventoryController::class, 'getBarangForProcurement'])
+                ->name('admin.inventory.get.barang.procurement');
+            
+            Route::get('/get-barang-detail/{id}', [InventoryController::class, 'getBarangDetail'])
+                ->name('admin.inventory.get.barang.detail');
+            
+            Route::get('/get-recent-procurements', [InventoryController::class, 'getRecentProcurements'])
+                ->name('admin.inventory.get.recent.procurements');
+            
+            Route::post('/category/quick-store', [InventoryController::class, 'quickStoreCategory'])
+                ->name('admin.inventory.category.quick-store');
+            
+            Route::get('/search', [InventoryController::class, 'search'])->name('admin.inventory.search');
+            
+            Route::get('/get-by-kode/{kode}', [InventoryController::class, 'getBarangByKode'])
+                ->name('admin.inventory.get-by-kode');
+        });
+        
+        // Procurement Routes (Pengadaan Barang)
+        Route::prefix('procurement')->group(function () {
+            Route::get('/', [ProcurementController::class, 'index'])->name('admin.procurement');
+            Route::get('/create', [ProcurementController::class, 'create'])->name('admin.procurement.create');
+            Route::post('/', [ProcurementController::class, 'store'])->name('admin.procurement.store');
+            Route::get('/{procurement}', [ProcurementController::class, 'show'])->name('admin.procurement.show');
+            Route::get('/{procurement}/edit', [ProcurementController::class, 'edit'])->name('admin.procurement.edit');
+            Route::put('/{procurement}', [ProcurementController::class, 'update'])->name('admin.procurement.update');
+            Route::delete('/{procurement}', [ProcurementController::class, 'destroy'])->name('admin.procurement.destroy');
+            
+            // Action routes untuk mengubah status
+            Route::post('/{procurement}/approve', [ProcurementController::class, 'approve'])->name('admin.procurement.approve');
+            Route::post('/{procurement}/reject', [ProcurementController::class, 'reject'])->name('admin.procurement.reject');
+            Route::post('/{procurement}/process', [ProcurementController::class, 'process'])->name('admin.procurement.process');
+            Route::post('/{procurement}/complete', [ProcurementController::class, 'complete'])->name('admin.procurement.complete');
+            Route::post('/{procurement}/cancel', [ProcurementController::class, 'cancel'])->name('admin.procurement.cancel');
+            
+            // API routes untuk AJAX
+            Route::get('/barang-ajax', [ProcurementController::class, 'getBarangForSelect'])->name('admin.procurement.barang-ajax');
+            Route::get('/recent-ajax', [ProcurementController::class, 'getRecentProcurements'])->name('admin.procurement.recent-ajax');
         });
         
         // Category Routes
@@ -113,7 +152,7 @@ Route::middleware(['auth', 'check.maintenance'])->group(function () {
             Route::delete('/{kategori}', [CategoryController::class, 'destroy'])->name('admin.categories.destroy');
         });
         
-        // Permintaan (Requests) Routes - untuk admin mengelola permintaan
+        // Permintaan (Requests) Routes
         Route::prefix('requests')->group(function () {
             Route::get('/', [PermintaanController::class, 'index'])->name('admin.requests');
             Route::get('/create', [PermintaanController::class, 'create'])->name('admin.requests.create');
@@ -135,7 +174,7 @@ Route::middleware(['auth', 'check.maintenance'])->group(function () {
             Route::get('/get-chart-data', [ReportController::class, 'getChartData'])->name('admin.reports.get-chart-data');
         });
         
-        // Satker Routes untuk Admin
+        // Satker Routes
         Route::prefix('satker')->group(function () {
             Route::get('/', [SatkerController::class, 'index'])->name('admin.satker');
             Route::post('/', [SatkerController::class, 'store'])->name('admin.satker.store');
@@ -151,11 +190,10 @@ Route::middleware(['auth', 'check.maintenance'])->group(function () {
 
     // ==================== ROUTES UNTUK SUPERADMIN ====================
     Route::prefix('superadmin')->middleware(['role:superadmin'])->group(function () {
-        // Dashboard Superadmin
         Route::get('/dashboard', [DashboardController::class, 'superadminDashboard'])->name('superadmin.dashboard');
         Route::get('/dashboard/chart-data', [DashboardController::class, 'getSuperadminChartData'])->name('superadmin.dashboard.chart-data');
         
-        // Accounts Management Routes
+        // Accounts Management
         Route::prefix('accounts')->group(function () {
             Route::get('/', [AccountsController::class, 'index'])->name('superadmin.accounts.index');
             Route::get('/create', [AccountsController::class, 'create'])->name('superadmin.accounts.create');
@@ -165,69 +203,53 @@ Route::middleware(['auth', 'check.maintenance'])->group(function () {
             Route::put('/{user}', [AccountsController::class, 'update'])->name('superadmin.accounts.update');
             Route::delete('/{user}', [AccountsController::class, 'destroy'])->name('superadmin.accounts.destroy');
             
-            // Additional routes
             Route::post('/{user}/toggle-status', [AccountsController::class, 'toggleStatus'])
                 ->name('superadmin.accounts.toggle-status');
             
-            Route::post('/bulk-action', [AccountsController::class, 'bulkAction'])
-                ->name('superadmin.accounts.bulk-action');
-            
             Route::post('/{user}/reset-password', [AccountsController::class, 'resetPassword'])
                 ->name('superadmin.accounts.reset-password');
-            
-            Route::get('/{user}/activity-logs', [AccountsController::class, 'activityLogs'])
-                ->name('superadmin.accounts.activity-logs');
         });
         
-        // Manajemen Satker untuk Superadmin
+        // Validasi Pengadaan untuk Superadmin
+        Route::prefix('procurement')->group(function () {
+            Route::get('/', [SuperadminProcurementController::class, 'index'])->name('superadmin.procurement');
+            Route::get('/{id}', [SuperadminProcurementController::class, 'show'])->name('superadmin.procurement.show');
+            Route::post('/{id}/approve', [SuperadminProcurementController::class, 'approve'])->name('superadmin.procurement.approve');
+            Route::post('/{id}/reject', [SuperadminProcurementController::class, 'reject'])->name('superadmin.procurement.reject');
+            
+            // Route untuk chart data
+            Route::get('/chart-data', [SuperadminProcurementController::class, 'getChartData'])->name('superadmin.procurement.chart-data');
+        });
+        
+        // Validasi Permintaan untuk Superadmin (diasumsikan ada controller yang sesuai)
+        Route::prefix('requests')->group(function () {
+            Route::get('/', [PermintaanController::class, 'index'])->name('superadmin.requests'); // Sesuaikan dengan controller yang tepat
+        });
+        
+        // Manajemen Satker
         Route::prefix('satker')->group(function () {
-            // Index page
             Route::get('/', [SatkerController::class, 'index'])->name('superadmin.satker.index');
-            
-            // Create page
             Route::get('/create', [SatkerController::class, 'create'])->name('superadmin.satker.create');
-            
-            // Store new satker
             Route::post('/', [SatkerController::class, 'store'])->name('superadmin.satker.store');
-            
-            // Show satker details (AJAX)
             Route::get('/{id}', [SatkerController::class, 'show'])->name('superadmin.satker.show');
-            
-            // Edit page
             Route::get('/{satker}/edit', [SatkerController::class, 'edit'])->name('superadmin.satker.edit');
-            
-            // Update satker
             Route::put('/{satker}', [SatkerController::class, 'update'])->name('superadmin.satker.update');
-            
-            // Delete satker
             Route::delete('/{satker}', [SatkerController::class, 'destroy'])->name('superadmin.satker.destroy');
             
-            // AJAX routes untuk fitur tambahan
             Route::get('/{id}/details', [SatkerController::class, 'getDetails'])->name('superadmin.satker.details');
             Route::get('/select-options', [SatkerController::class, 'getSatkersForSelect'])->name('superadmin.satker.select-options');
-            Route::post('/search', [SatkerController::class, 'search'])->name('superadmin.satker.search');
-            Route::get('/statistics', [SatkerController::class, 'getStatistics'])->name('superadmin.satker.statistics');
-            Route::get('/{satker}/check-users', [SatkerController::class, 'checkHasUsers'])->name('superadmin.satker.check-users');
         });
         
         // Log Aktivitas
         Route::prefix('activity-logs')->group(function () {
-            // Index page
             Route::get('/', [ActivityLogController::class, 'index'])->name('superadmin.activity-logs');
-            
-            // Show log details (AJAX)
             Route::get('/{id}', [ActivityLogController::class, 'show'])->name('superadmin.activity-logs.show');
-            
-            // Clear all logs
             Route::post('/clear', [ActivityLogController::class, 'clear'])->name('superadmin.activity-logs.clear');
-            
-            // Export logs
             Route::get('/export', [ActivityLogController::class, 'export'])->name('superadmin.activity-logs.export');
         });
         
-        // ==================== PENGATURAN SISTEM ====================
+        // Pengaturan Sistem
         Route::prefix('settings')->group(function () {
-            // Halaman utama pengaturan
             Route::get('/', [SettingController::class, 'index'])->name('superadmin.settings');
             
             // Profil
@@ -239,14 +261,13 @@ Route::middleware(['auth', 'check.maintenance'])->group(function () {
             Route::get('/download-backup/{filename}', [SettingController::class, 'downloadBackup'])->name('superadmin.download-backup');
             Route::delete('/delete-backup/{filename}', [SettingController::class, 'deleteBackup'])->name('superadmin.delete-backup');
             Route::post('/restore-database', [SettingController::class, 'restoreDatabase'])->name('superadmin.restore-database');
-            Route::post('/schedule-backup', [SettingController::class, 'scheduleBackup'])->name('superadmin.schedule-backup');
             
             // Import Data
             Route::post('/import-users', [SettingController::class, 'importUsers'])->name('superadmin.import-users');
             Route::post('/import-satker', [SettingController::class, 'importSatker'])->name('superadmin.import-satker');
             Route::get('/download-template/{type}', [SettingController::class, 'downloadTemplate'])->name('superadmin.download-template');
             
-            // System Maintenance Routes
+            // System Maintenance
             Route::post('/maintenance/enable', [SettingController::class, 'enableMaintenance'])
                 ->name('superadmin.maintenance.enable');
             
@@ -256,40 +277,20 @@ Route::middleware(['auth', 'check.maintenance'])->group(function () {
             Route::get('/maintenance/status', [SettingController::class, 'checkMaintenanceStatus'])
                 ->name('superadmin.maintenance.status');
             
-            Route::post('/maintenance/bypass', [SettingController::class, 'bypassMaintenance'])
-                ->name('superadmin.maintenance.bypass');
-            
             // System maintenance lainnya
             Route::post('/clear-cache', [SettingController::class, 'clearCache'])->name('superadmin.clear-cache');
             Route::post('/optimize-database', [SettingController::class, 'optimizeDatabase'])->name('superadmin.optimize-database');
-            
-            // Backup & Restore - routes tambahan untuk view
-            Route::get('/backup', function() {
-                $user = auth()->user();
-                return view('superadmin.settings.backup', compact('user'));
-            })->name('superadmin.backup');
-            
-            // Import/Export - routes tambahan untuk view
-            Route::get('/import-export', function() {
-                $user = auth()->user();
-                return view('superadmin.settings.import-export', compact('user'));
-            })->name('superadmin.import-export');
             
             // Export Data
             Route::get('/export/users', [SettingController::class, 'exportUsers'])->name('superadmin.export-users');
             Route::get('/export/satker', [SettingController::class, 'exportSatker'])->name('superadmin.export-satker');
             
             // General Settings
-            Route::get('/general', function() {
-                $user = auth()->user();
-                return view('superadmin.settings.general', compact('user'));
-            })->name('superadmin.general-settings');
-            
             Route::put('/update-general', [SettingController::class, 'updateGeneral'])->name('superadmin.update-general');
             Route::put('/update-email', [SettingController::class, 'updateEmail'])->name('superadmin.update-email');
         });
         
-        // ==================== REPORTS UNTUK SUPERADMIN ====================
+        // Reports untuk Superadmin
         Route::prefix('reports')->group(function () {
             Route::get('/', [SuperadminReportsController::class, 'index'])->name('superadmin.reports');
             Route::get('/generate-pdf', [SuperadminReportsController::class, 'generatePdf'])->name('superadmin.reports.generate-pdf');
@@ -300,40 +301,45 @@ Route::middleware(['auth', 'check.maintenance'])->group(function () {
     });
 
     // ==================== API ROUTES UNTUK SEMUA USER ====================
-    Route::get('/api/barang/search', function (\Illuminate\Http\Request $request) {
-        $query = $request->get('q');
-        $barang = \App\Models\Barang::with(['kategori', 'satuan', 'gudang'])
-            ->where('stok', '>', 0)
-            ->where(function($q) use ($query) {
-                $q->where('nama_barang', 'LIKE', "%{$query}%")
-                  ->orWhere('kode_barang', 'LIKE', "%{$query}%");
-            })
-            ->orderBy('nama_barang')
-            ->limit(10)
-            ->get();
-        return response()->json($barang);
-    })->name('api.barang.search');
-
-    Route::get('/api/barang/{id}', function ($id) {
-        $barang = \App\Models\Barang::with(['kategori', 'satuan', 'gudang'])
-            ->find($id);        
-        if (!$barang) {
-            return response()->json(['error' => 'Barang tidak ditemukan'], 404);
-        }
-        return response()->json($barang);
-    })->name('api.barang.get');
-    
-    // API Routes untuk Satker
     Route::prefix('api')->group(function () {
+        // Route untuk pencarian barang
+        Route::get('/barang/search', function (\Illuminate\Http\Request $request) {
+            $query = $request->get('q');
+            $barang = \App\Models\Barang::with(['kategori', 'satuan', 'gudang'])
+                ->where('stok', '>', 0)
+                ->where(function($q) use ($query) {
+                    $q->where('nama_barang', 'LIKE', "%{$query}%")
+                      ->orWhere('kode_barang', 'LIKE', "%{$query}%");
+                })
+                ->orderBy('nama_barang')
+                ->limit(10)
+                ->get();
+            return response()->json($barang);
+        })->name('api.barang.search');
+
+        // Route untuk mendapatkan detail barang
+        Route::get('/barang/{id}', function ($id) {
+            $barang = \App\Models\Barang::with(['kategori', 'satuan', 'gudang'])
+                ->find($id);        
+            if (!$barang) {
+                return response()->json(['error' => 'Barang tidak ditemukan'], 404);
+            }
+            return response()->json($barang);
+        })->name('api.barang.get');
+        
+        // API Routes untuk Satker
         Route::get('/satker/{id}/details', [SatkerController::class, 'getDetails'])->name('api.satker.details');
         Route::get('/satker/select-options', [SatkerController::class, 'getSatkersForSelect'])->name('api.satker.select-options');
-        Route::post('/satker/search', [SatkerController::class, 'search'])->name('api.satker.search');
+        
+        Route::get('/inventory/get-barang-procurement', [InventoryController::class, 'getBarangForProcurement'])
+            ->name('api.inventory.get.barang.procurement');
+            
+        Route::get('/inventory/get-recent-procurements', [InventoryController::class, 'getRecentProcurements'])
+            ->name('api.inventory.get.recent.procurements');
     });
 });
 
 // ==================== MAINTENANCE ROUTES (KHUSUS) ====================
-// Routes maintenance yang dapat diakses bahkan dalam maintenance mode
-// PERBAIKAN: Gunakan middleware auth saja tanpa check.maintenance agar bisa diakses saat maintenance
 Route::middleware('auth')->group(function () {
     Route::post('/settings/maintenance/enable', [SettingController::class, 'enableMaintenance'])
         ->name('settings.maintenance.enable')
@@ -346,14 +352,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/settings/maintenance/status', [SettingController::class, 'checkMaintenanceStatus'])
         ->name('settings.maintenance.status')
         ->middleware('role:superadmin');
-    
-    Route::post('/settings/maintenance/bypass', [SettingController::class, 'bypassMaintenance'])
-        ->name('settings.maintenance.bypass')
-        ->middleware('role:superadmin');
 });
 
 // ==================== MAINTENANCE PAGE ROUTE ====================
-// Route untuk menampilkan halaman maintenance
 Route::get('/maintenance', function () {
     $filePath = storage_path('framework/down');
     if (file_exists($filePath)) {

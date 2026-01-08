@@ -64,4 +64,30 @@ class User extends Authenticatable
     {
         return $query->where('role', $role);
     }
+
+   // Tambahkan hubungan dengan Procurement
+    public function procurements()
+    {
+        return $this->hasMany(Procurement::class, 'user_id');
+    }
+
+    public function approvedProcurements()
+    {
+        return $this->hasMany(Procurement::class, 'disetujui_oleh');
+    }
+
+    public function processedProcurements()
+    {
+        return $this->hasMany(Procurement::class, 'diproses_oleh');
+    }
+
+    public function completedProcurements()
+    {
+        return $this->hasMany(Procurement::class, 'selesai_oleh');
+    }
+
+    public function cancelledProcurements()
+    {
+        return $this->hasMany(Procurement::class, 'dibatalkan_oleh');
+    }
 }

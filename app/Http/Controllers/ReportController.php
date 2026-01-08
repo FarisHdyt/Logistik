@@ -6,6 +6,7 @@ use App\Models\Barang;
 use App\Models\Permintaan;
 use App\Models\PermintaanDetail;
 use App\Models\Kategori;
+use App\Models\Procurement;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
@@ -28,7 +29,7 @@ class ReportController extends Controller
         
         // Data untuk charts
         $monthlyRequestsData = $this->getMonthlyRequestsData();
-        $requestStatusData = $this->getRequestStatusData();
+        $procurementStatusData = $this->getProcurementStatusData();
         
         // Data statistik bulanan default
         $selectedMonth = request('month', date('Y-m'));
@@ -38,7 +39,7 @@ class ReportController extends Controller
             'user', 
             'stats', 
             'monthlyRequestsData', 
-            'requestStatusData',
+            'procurementStatusData',
             'monthlyStats',
             'selectedMonth'
         );
@@ -77,6 +78,13 @@ class ReportController extends Controller
             }
         }
         
+        // Statistik pengadaan
+        $totalProcurements = Procurement::count();
+        $pendingProcurements = Procurement::where('status', Procurement::STATUS_PENDING)->count();
+        
+        // Hitung total anggaran pengadaan
+        $totalBudgetProcurements = Procurement::sum('harga_perkiraan');
+        
         return [
             'total_items' => Barang::count(),
             'total_requests' => $totalRequests,
@@ -94,6 +102,9 @@ class ReportController extends Controller
             'single_barang_requests' => $singleBarangRequests,
             'total_items_in_requests' => $totalItemsInRequests,
             'total_items_in_expenditures' => $totalItemsInExpenditures,
+            'total_procurements' => $totalProcurements,
+            'pending_procurements' => $pendingProcurements,
+            'total_budget_procurements' => $totalBudgetProcurements,
         ];
     }
     
@@ -125,7 +136,12 @@ class ReportController extends Controller
         // Requests stats - dengan detail multi barang
         $requests = Permintaan::with(['details'])->whereBetween('created_at', [$startDate, $endDate])->get();
         
-        // Hitung statistik untuk multi barang
+        // Procurement stats
+        $procurements = Procurement::with(['barang', 'kategori', 'satuan', 'user'])
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->get();
+        
+        // Hitung statistik untuk multi barang permintaan
         $totalItemsInRequests = 0;
         $multiBarangRequests = 0;
         $singleBarangRequests = 0;
@@ -141,6 +157,56 @@ class ReportController extends Controller
                 $totalItemsInRequests += $request->jumlah;
             }
         }
+        
+        // Hitung statistik untuk pengadaan
+        $totalItemsInProcurements = 0;
+        $totalBudgetProcurements = 0;
+        $newItemProcurements = 0;
+        $restockProcurements = 0;
+        $pendingProcurements = 0;
+        $approvedProcurements = 0;
+        $processingProcurements = 0;
+        $completedProcurements = 0;
+        $cancelledProcurements = 0;
+        $rejectedProcurements = 0;
+        
+        foreach ($procurements as $procurement) {
+            $totalItemsInProcurements += $procurement->jumlah;
+            $totalBudgetProcurements += $procurement->harga_perkiraan * $procurement->jumlah;
+            
+            // Hitung tipe pengadaan
+            if ($procurement->tipe_pengadaan == Procurement::TYPE_NEW) {
+                $newItemProcurements++;
+            } else {
+                $restockProcurements++;
+            }
+            
+            // Hitung status pengadaan
+            switch ($procurement->status) {
+                case Procurement::STATUS_PENDING:
+                    $pendingProcurements++;
+                    break;
+                case Procurement::STATUS_APPROVED:
+                    $approvedProcurements++;
+                    break;
+                case Procurement::STATUS_PROCESSING:
+                    $processingProcurements++;
+                    break;
+                case Procurement::STATUS_COMPLETED:
+                    $completedProcurements++;
+                    break;
+                case Procurement::STATUS_CANCELLED:
+                    $cancelledProcurements++;
+                    break;
+                case Procurement::STATUS_REJECTED:
+                    $rejectedProcurements++;
+                    break;
+            }
+        }
+        
+        // Hitung rata-rata anggaran per pengadaan
+        $avgBudgetPerProcurement = $procurements->count() > 0 ? 
+            $totalBudgetProcurements / $procurements->count() : 0;
         
         // Expenditures stats
         $expenditures = Permintaan::with(['details'])
@@ -181,6 +247,20 @@ class ReportController extends Controller
             'multi_barang_requests' => $multiBarangRequests,
             'single_barang_requests' => $singleBarangRequests,
             
+            // Procurement stats
+            'total_procurements' => $procurements->count(),
+            'total_items_in_procurements' => $totalItemsInProcurements,
+            'total_budget_procurements' => $totalBudgetProcurements,
+            'avg_budget_per_procurement' => $avgBudgetPerProcurement,
+            'new_item_procurements' => $newItemProcurements,
+            'restock_procurements' => $restockProcurements,
+            'pending_procurements' => $pendingProcurements,
+            'approved_procurements' => $approvedProcurements,
+            'processing_procurements' => $processingProcurements,
+            'completed_procurements' => $completedProcurements,
+            'cancelled_procurements' => $cancelledProcurements,
+            'rejected_procurements' => $rejectedProcurements,
+            
             // Expenditure stats
             'total_expenditures' => $expenditures->count(),
             'total_items_in_expenditures' => $totalItemsInExpenditures,
@@ -209,16 +289,24 @@ class ReportController extends Controller
     }
     
     /**
-     * Get request status data for pie chart
+     * Get procurement status data for pie chart
      */
-    private function getRequestStatusData()
+    private function getProcurementStatusData()
     {
-        $statuses = ['pending', 'approved', 'rejected', 'delivered'];
+        $statuses = [
+            Procurement::STATUS_PENDING,
+            Procurement::STATUS_APPROVED,
+            Procurement::STATUS_PROCESSING,
+            Procurement::STATUS_COMPLETED,
+            Procurement::STATUS_CANCELLED,
+            Procurement::STATUS_REJECTED
+        ];
+        
         $data = [];
         
         foreach ($statuses as $status) {
-            $count = Permintaan::where('status', $status)->count();
-            $total = Permintaan::count();
+            $count = Procurement::where('status', $status)->count();
+            $total = Procurement::count();
             $percentage = $total > 0 ? round(($count / $total) * 100, 1) : 0;
             
             $data[$status] = compact('count', 'percentage');
@@ -234,7 +322,7 @@ class ReportController extends Controller
     {
         try {
             $request->validate([
-                'report_type' => 'required|in:inventory,requests,expenditures',
+                'report_type' => 'required|in:inventory,requests,expenditures,procurement',
                 'start_date' => 'nullable|date',
                 'end_date' => 'nullable|date|after_or_equal:start_date',
             ]);
@@ -270,6 +358,8 @@ class ReportController extends Controller
                     return $this->generateRequestsTable($startDate, $endDate);
                 case 'expenditures':
                     return $this->generateExpendituresTable($startDate, $endDate);
+                case 'procurement':
+                    return $this->generateProcurementTable($startDate, $endDate);
                 default:
                     return '<div class="alert alert-info">Jenis laporan tidak valid.</div>';
             }
@@ -310,15 +400,15 @@ class ReportController extends Controller
                          ($item->stok <= $item->stok_minimal * 2 ? 'bg-warning' : 'bg-success'));
             
             $html .= '<tr>';
-            $html .= '<td>' . $no++ . '</td>';
-            $html .= '<td>' . $item->kode_barang . '</td>';
-            $html .= '<td>' . $item->nama_barang . '</td>';
-            $html .= '<td>' . ($item->kategori->nama_kategori ?? '-') . '</td>';
-            $html .= '<td>' . $item->stok . '</td>';
-            $html .= '<td>' . $item->stok_minimal . '</td>';
-            $html .= '<td>' . ($item->satuan->nama_satuan ?? '-') . '</td>';
-            $html .= '<td>' . ($item->gudang->nama_gudang ?? '-') . '</td>';
-            $html .= '<td><span class="badge ' . $statusClass . '">' . $status . '</span></td>';
+            $html .= '<td class="text-center">' . $no++ . '</td>';
+            $html .= '<td>' . htmlspecialchars($item->kode_barang) . '</td>';
+            $html .= '<td>' . htmlspecialchars($item->nama_barang) . '</td>';
+            $html .= '<td>' . htmlspecialchars($item->kategori->nama_kategori ?? '-') . '</td>';
+            $html .= '<td class="text-center">' . $item->stok . '</td>';
+            $html .= '<td class="text-center">' . $item->stok_minimal . '</td>';
+            $html .= '<td>' . htmlspecialchars($item->satuan->nama_satuan ?? '-') . '</td>';
+            $html .= '<td>' . htmlspecialchars($item->gudang->nama_gudang ?? '-') . '</td>';
+            $html .= '<td class="text-center"><span class="badge ' . $statusClass . '">' . $status . '</span></td>';
             $html .= '</tr>';
         }
         
@@ -382,10 +472,10 @@ class ReportController extends Controller
             
             $html .= '<tr>';
             $html .= '<td class="text-center">' . $no++ . '</td>';
-            $html .= '<td><strong>' . $item->kode_permintaan . '</strong></td>';
+            $html .= '<td><strong>' . htmlspecialchars($item->kode_permintaan) . '</strong></td>';
             $html .= '<td>' . $item->created_at->format('d/m/Y H:i') . '</td>';
-            $html .= '<td>' . ($item->user->name ?? '-') . '</td>';
-            $html .= '<td>' . ($item->satker->nama_satker ?? '-') . '</td>';
+            $html .= '<td>' . htmlspecialchars($item->user->name ?? '-') . '</td>';
+            $html .= '<td>' . htmlspecialchars($item->satker->nama_satker ?? '-') . '</td>';
             $html .= '<td class="text-center">' . $jenisPermintaan . '</td>';
             $html .= '<td class="text-center">' . $jumlahBarangDisplay . '</td>';
             $html .= '<td class="text-center"><strong>' . $totalItemDisplay . '</strong></td>';
@@ -404,6 +494,98 @@ class ReportController extends Controller
             $html .= 'if (typeof detailData === "undefined") { window.detailData = {}; }';
             $html .= implode('', $scriptData);
             $html .= '</script>';
+        }
+        
+        return $html;
+    }
+    
+    /**
+     * Generate procurement report table
+     */
+    private function generateProcurementTable($startDate, $endDate)
+    {
+        $data = Procurement::with(['barang', 'kategori', 'satuan', 'user'])
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->get();
+        
+        if ($data->isEmpty()) {
+            return '<tr><td colspan="12" class="text-center py-4">Tidak ada data pengadaan dalam periode yang dipilih.</td></tr>';
+        }
+        
+        $html = '';
+        $no = 1;
+        
+        foreach ($data as $procurement) {
+            // Format data
+            $kodeNamaBarang = ($procurement->barang ? htmlspecialchars($procurement->barang->kode_barang . ' - ' . $procurement->barang->nama_barang) : 
+                              htmlspecialchars($procurement->kode_barang . ' - ' . $procurement->nama_barang));
+            
+            $tipePengadaan = $procurement->tipe_pengadaan == Procurement::TYPE_NEW ? 
+                '<span class="badge badge-new-item">Barang Baru</span>' : 
+                '<span class="badge badge-restock">Restock</span>';
+            
+            $hargaPerkiraan = 'Rp ' . number_format($procurement->harga_perkiraan, 0, ',', '.');
+            $totalPerkiraan = 'Rp ' . number_format($procurement->harga_perkiraan * $procurement->jumlah, 0, ',', '.');
+            
+            $prioritas = match($procurement->prioritas) {
+                Procurement::PRIORITY_URGENT => '<span class="badge badge-priority-mendesak">Mendesak</span>',
+                Procurement::PRIORITY_HIGH => '<span class="badge badge-priority-tinggi">Tinggi</span>',
+                default => '<span class="badge badge-priority-normal">Normal</span>'
+            };
+            
+            $status = match($procurement->status) {
+                Procurement::STATUS_PENDING => '<span class="badge badge-pending">Menunggu</span>',
+                Procurement::STATUS_APPROVED => '<span class="badge badge-approved">Disetujui</span>',
+                Procurement::STATUS_REJECTED => '<span class="badge badge-rejected">Ditolak</span>',
+                Procurement::STATUS_PROCESSING => '<span class="badge badge-processing">Diproses</span>',
+                Procurement::STATUS_COMPLETED => '<span class="badge badge-completed">Selesai</span>',
+                Procurement::STATUS_CANCELLED => '<span class="badge badge-cancelled">Dibatalkan</span>',
+                default => '<span class="badge">' . $procurement->status . '</span>'
+            };
+            
+            // Progress bar
+            $progressWidth = match($procurement->status) {
+                Procurement::STATUS_PENDING => '20%',
+                Procurement::STATUS_APPROVED => '40%',
+                Procurement::STATUS_REJECTED => '0%',
+                Procurement::STATUS_PROCESSING => '60%',
+                Procurement::STATUS_COMPLETED => '100%',
+                Procurement::STATUS_CANCELLED => '0%',
+                default => '20%'
+            };
+            
+            $progressClass = match($procurement->status) {
+                Procurement::STATUS_PENDING => 'progress-pending',
+                Procurement::STATUS_APPROVED => 'progress-approved',
+                Procurement::STATUS_REJECTED => 'progress-rejected',
+                Procurement::STATUS_PROCESSING => 'progress-processing',
+                Procurement::STATUS_COMPLETED => 'progress-completed',
+                Procurement::STATUS_CANCELLED => 'progress-cancelled',
+                default => 'progress-pending'
+            };
+            
+            $progressHtml = '<div class="procurement-progress">
+                <div class="procurement-progress-bar ' . $progressClass . '" style="width: ' . $progressWidth . '"></div>
+            </div>';
+            
+            $html .= '<tr>';
+            $html .= '<td class="text-center">' . $no++ . '</td>';
+            $html .= '<td>' . $kodeNamaBarang . '</td>';
+            $html .= '<td>' . $tipePengadaan . '</td>';
+            $html .= '<td class="text-center">' . $procurement->jumlah . '</td>';
+            $html .= '<td>' . $hargaPerkiraan . '</td>';
+            $html .= '<td><strong>' . $totalPerkiraan . '</strong></td>';
+            $html .= '<td>' . $prioritas . '</td>';
+            $html .= '<td class="text-center">' . $status . '</td>';
+            $html .= '<td>' . htmlspecialchars($procurement->user->name ?? '-') . '</td>';
+            $html .= '<td>' . $procurement->created_at->format('d/m/Y') . '</td>';
+            $html .= '<td class="text-center">' . $progressHtml . '</td>';
+            $html .= '<td class="text-center">';
+            $html .= '<button class="btn btn-sm btn-outline-info" onclick="viewProcurementDetails(' . $procurement->id . ')" title="Lihat Detail">';
+            $html .= '<i class="bi bi-eye"></i>';
+            $html .= '</button>';
+            $html .= '</td>';
+            $html .= '</tr>';
         }
         
         return $html;
@@ -432,11 +614,11 @@ class ReportController extends Controller
                     </thead>
                     <tbody>
                         <tr>
-                            <td>' . ($permintaan->barang->nama_barang ?? '-') . '</td>
-                            <td>' . ($permintaan->barang->kode_barang ?? '-') . '</td>
+                            <td>' . htmlspecialchars($permintaan->barang->nama_barang ?? '-') . '</td>
+                            <td>' . htmlspecialchars($permintaan->barang->kode_barang ?? '-') . '</td>
                             <td>' . $permintaan->jumlah . '</td>
-                            <td>' . ($permintaan->barang->satuan->nama_satuan ?? '-') . '</td>
-                            <td>' . ($permintaan->satker->nama_satker ?? '-') . '</td>
+                            <td>' . htmlspecialchars($permintaan->barang->satuan->nama_satuan ?? '-') . '</td>
+                            <td>' . htmlspecialchars($permintaan->satker->nama_satker ?? '-') . '</td>
                         </tr>
                     </tbody>
                 </table>
@@ -464,11 +646,11 @@ class ReportController extends Controller
             $html .= '
                 <tr>
                     <td>' . $no++ . '</td>
-                    <td>' . ($detail->barang->nama_barang ?? '-') . '</td>
-                    <td>' . ($detail->barang->kode_barang ?? '-') . '</td>
+                    <td>' . htmlspecialchars($detail->barang->nama_barang ?? '-') . '</td>
+                    <td>' . htmlspecialchars($detail->barang->kode_barang ?? '-') . '</td>
                     <td>' . $detail->jumlah . '</td>
-                    <td>' . ($detail->barang->satuan->nama_satuan ?? '-') . '</td>
-                    <td>' . ($detail->satker->nama_satker ?? $permintaan->satker->nama_satker ?? '-') . '</td>
+                    <td>' . htmlspecialchars($detail->barang->satuan->nama_satuan ?? '-') . '</td>
+                    <td>' . htmlspecialchars($detail->satker->nama_satker ?? $permintaan->satker->nama_satker ?? '-') . '</td>
                 </tr>';
         }
         
@@ -534,18 +716,18 @@ class ReportController extends Controller
             }
             
             $html .= '<tr>';
-            $html .= '<td>' . $no++ . '</td>';
-            $html .= '<td><strong>' . $item->kode_permintaan . '</strong></td>';
+            $html .= '<td class="text-center">' . $no++ . '</td>';
+            $html .= '<td><strong>' . htmlspecialchars($item->kode_permintaan) . '</strong></td>';
             $html .= '<td>' . $tanggal . '</td>';
-            $html .= '<td>';
+            $html .= '<td class="text-center">';
             $html .= $isMultiBarang ? 
                 '<span class="badge badge-multi">Multi Barang</span>' : 
                 '<span class="badge badge-single">Single Barang</span>';
             $html .= '</td>';
-            $html .= '<td>' . $jumlahBarang . '</td>';
-            $html .= '<td><strong>' . $totalItem . ' unit</strong></td>';
-            $html .= '<td>' . ($item->satker->nama_satker ?? '-') . '</td>';
-            $html .= '<td>' . ($item->keperluan ?? '-') . '</td>';
+            $html .= '<td class="text-center">' . $jumlahBarang . '</td>';
+            $html .= '<td class="text-center"><strong>' . $totalItem . ' unit</strong></td>';
+            $html .= '<td>' . htmlspecialchars($item->satker->nama_satker ?? '-') . '</td>';
+            $html .= '<td>' . htmlspecialchars($item->keperluan ?? '-') . '</td>';
             $html .= '</tr>';
         }
         
@@ -560,7 +742,7 @@ class ReportController extends Controller
             }
             
             $request->validate([
-                'type' => 'sometimes|required|in:inventory,requests,expenditures',
+                'type' => 'sometimes|required|in:inventory,requests,expenditures,procurement',
                 'format' => 'required|in:csv,excel,pdf',
                 'start_date' => 'nullable|date',
                 'end_date' => 'nullable|date|after_or_equal:start_date',
@@ -577,6 +759,8 @@ class ReportController extends Controller
                     return $this->exportRequests($format, $startDate, $endDate);
                 case 'expenditures':
                     return $this->exportExpenditures($format, $startDate, $endDate);
+                case 'procurement':
+                    return $this->exportProcurement($format, $startDate, $endDate);
                 default:
                     return back()->with('error', 'Jenis laporan tidak valid');
             }
@@ -695,6 +879,65 @@ class ReportController extends Controller
                 return $this->exportToPdf('Laporan Permintaan Barang', $headers, $rows->toArray(), $filename . '.pdf');
             case 'excel':
                 return $this->exportToExcel('Laporan Permintaan Barang', $headers, $rows->toArray(), $filename);
+            default:
+                return $this->exportToCsv($headers, $rows->toArray(), $filename . '.csv');
+        }
+    }
+    
+    /**
+     * Export procurement data
+     */
+    private function exportProcurement($format, $startDate, $endDate)
+    {
+        $query = Procurement::with(['barang', 'kategori', 'satuan', 'user']);
+        if ($startDate && $endDate) {
+            $query->whereBetween('created_at', [$startDate, $endDate]);
+        }
+        $data = $query->get();
+        
+        $filename = 'laporan-pengadaan-' . date('Y-m-d');
+        $headers = ['Kode/Nama Barang', 'Tipe Pengadaan', 'Kategori', 'Jumlah', 'Satuan', 'Harga Perkiraan', 'Total', 'Prioritas', 'Status', 'Diajukan Oleh', 'Tanggal', 'Alasan Pengadaan'];
+        
+        $rows = $data->map(function($procurement) {
+            $tipePengadaan = $procurement->tipe_pengadaan == Procurement::TYPE_NEW ? 'Barang Baru' : 'Restock';
+            $prioritas = match($procurement->prioritas) {
+                Procurement::PRIORITY_URGENT => 'Mendesak',
+                Procurement::PRIORITY_HIGH => 'Tinggi',
+                default => 'Normal'
+            };
+            
+            $status = match($procurement->status) {
+                Procurement::STATUS_PENDING => 'Menunggu Persetujuan',
+                Procurement::STATUS_APPROVED => 'Disetujui',
+                Procurement::STATUS_REJECTED => 'Ditolak',
+                Procurement::STATUS_PROCESSING => 'Sedang Diproses',
+                Procurement::STATUS_COMPLETED => 'Selesai',
+                Procurement::STATUS_CANCELLED => 'Dibatalkan',
+                default => $procurement->status
+            };
+            
+            return [
+                ($procurement->barang ? $procurement->barang->kode_barang . ' - ' . $procurement->barang->nama_barang : 
+                 $procurement->kode_barang . ' - ' . $procurement->nama_barang),
+                $tipePengadaan,
+                $procurement->kategori->nama_kategori ?? '',
+                $procurement->jumlah,
+                $procurement->satuan->nama_satuan ?? '',
+                'Rp ' . number_format($procurement->harga_perkiraan, 0, ',', '.'),
+                'Rp ' . number_format($procurement->harga_perkiraan * $procurement->jumlah, 0, ',', '.'),
+                $prioritas,
+                $status,
+                $procurement->user->name ?? '',
+                $procurement->created_at->format('d/m/Y'),
+                $procurement->alasan_pengadaan ?? ''
+            ];
+        });
+        
+        switch ($format) {
+            case 'pdf':
+                return $this->exportToPdf('Laporan Pengadaan Barang', $headers, $rows->toArray(), $filename . '.pdf');
+            case 'excel':
+                return $this->exportToExcel('Laporan Pengadaan Barang', $headers, $rows->toArray(), $filename);
             default:
                 return $this->exportToCsv($headers, $rows->toArray(), $filename . '.csv');
         }

@@ -8,6 +8,10 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <!-- Tambahkan Select2 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <!-- SweetAlert2 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <!-- Animate.css -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <style>
         :root {
             --primary: #1e3a8a;
@@ -188,7 +192,7 @@
             margin: 0;
         }
         
-        /* Badges - PERBAIKAN: Tambahkan warna teks yang jelas */
+        /* Badges */
         .badge {
             padding: 0.4rem 0.8rem;
             font-weight: 600;
@@ -212,6 +216,31 @@
             background-color: #d1fae5 !important;
             color: #065f46 !important;
             border-color: #10b981;
+        }
+        
+        /* Badge Status Pengadaan */
+        .badge-pending {
+            background-color: #fef3c7 !important;
+            color: #92400e !important;
+            border-color: #fbbf24;
+        }
+        
+        .badge-processing {
+            background-color: #dbeafe !important;
+            color: #1e40af !important;
+            border-color: #60a5fa;
+        }
+        
+        .badge-completed {
+            background-color: #d1fae5 !important;
+            color: #065f46 !important;
+            border-color: #10b981;
+        }
+        
+        .badge-cancelled {
+            background-color: #fee2e2 !important;
+            color: #991b1b !important;
+            border-color: #f87171;
         }
         
         /* Tables */
@@ -289,6 +318,17 @@
         
         .btn-restock:hover {
             background-color: #0da271;
+        }
+        
+        /* Pengadaan Button */
+        .btn-pengadaan {
+            background-color: #0ea5e9;
+            color: white;
+            border: none;
+        }
+        
+        .btn-pengadaan:hover {
+            background-color: #0284c7;
         }
         
         /* Pagination Styling */
@@ -519,6 +559,13 @@
             </div>
             
             <div class="nav-item">
+                <a href="{{ route('admin.procurement') }}" class="nav-link">
+                    <i class="bi bi-cart-plus"></i>
+                    <span>Pengadaan Barang</span>
+                </a>
+            </div>
+            
+            <div class="nav-item">
                 <a href="{{ route('admin.requests') }}" class="nav-link">
                     <i class="bi bi-clipboard-check"></i>
                     <span>Permintaan Barang</span>
@@ -531,14 +578,12 @@
                     <span>Laporan</span>
                 </a>
             </div>
-            
-            <!-- Hapus menu Manajemen User dan Pengaturan yang hanya untuk superadmin -->
         </div>
         
         <div class="sidebar-footer" style="padding: 1.5rem; position: absolute; bottom: 0; width: 100%;">
             <div class="text-center">
                 <small style="opacity: 0.7;">Sistem Logistik Polres</small><br>
-                <small style="opacity: 0.5;">v1.0.0</small>
+                <small style="opacity: 0.5;">v1.1.0</small>
             </div>
         </div>
     </div>
@@ -586,6 +631,18 @@
         </div>
         @endif
         
+        @if($errors->any())
+        <div class="alert-container">
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                @foreach($errors->all() as $error)
+                    <div>{{ $error }}</div>
+                @endforeach
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        </div>
+        @endif
+        
         <!-- Page Header -->
         <div class="page-header">
             <div class="d-flex justify-content-between align-items-center">
@@ -594,9 +651,12 @@
                     <p class="text-muted mb-0">Kelola data barang Logistik Polres</p>
                 </div>
                 <div class="action-buttons">
-                    <button class="btn btn-primary btn-action" data-bs-toggle="modal" data-bs-target="#addItemModal">
-                        <i class="bi bi-plus-circle"></i> Tambah Barang
+                    <button class="btn btn-primary btn-action" data-bs-toggle="modal" data-bs-target="#pengadaanModal">
+                        <i class="bi bi-cart-plus"></i> Ajukan Pengadaan
                     </button>
+                    <a href="{{ route('admin.inventory.create') }}" class="btn btn-success btn-action">
+                        <i class="bi bi-plus-circle"></i> Tambah Barang
+                    </a>
                     <button class="btn btn-warning btn-action" onclick="printTable()">
                         <i class="bi bi-printer"></i> Cetak
                     </button>
@@ -720,15 +780,19 @@
                                             <i class="bi bi-eye"></i>
                                         </button>
                                         <button type="button" class="btn btn-warning btn-sm edit-item" 
-                                                data-item-id="{{ $item->id }}" title="Edit">
+                                                data-item-id="{{ $item->id }}" 
+                                                data-item-kode="{{ $item->kode_barang }}"
+                                                data-item-nama="{{ $item->nama_barang }}"
+                                                title="Edit">
                                             <i class="bi bi-pencil"></i>
                                         </button>
-                                        <button type="button" class="btn btn-restock btn-sm restock-item" 
-                                                data-item-id="{{ $item->id }}" title="Restock">
-                                            <i class="bi bi-plus-circle"></i>
+                                        <button type="button" class="btn btn-pengadaan btn-sm ajukan-pengadaan" 
+                                                data-item-id="{{ $item->id }}" data-item-kode="{{ $item->kode_barang }}" 
+                                                data-item-nama="{{ $item->nama_barang }}" title="Ajukan Pengadaan">
+                                            <i class="bi bi-cart-plus"></i>
                                         </button>
-                                        <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" 
-                                                data-bs-target="#deleteModal" data-item-id="{{ $item->id }}" title="Hapus">
+                                        <button type="button" class="btn btn-danger btn-sm delete-item" 
+                                                data-item-id="{{ $item->id }}" title="Hapus">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </div>
@@ -811,159 +875,196 @@
         </div>
     </div>
     
-    <!-- Add Item Modal -->
-    <div class="modal fade" id="addItemModal" tabindex="-1" aria-labelledby="addItemModalLabel" aria-hidden="true">
+    <!-- Pengadaan Modal -->
+    <div class="modal fade" id="pengadaanModal" tabindex="-1" aria-labelledby="pengadaanModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="addItemModalLabel">Tambah Barang Baru</h5>
+                    <h5 class="modal-title" id="pengadaanModalLabel">Ajukan Pengadaan Barang</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form method="POST" action="{{ route('admin.inventory.store') }}" id="addItemForm">
+                <!-- PERBAIKAN: Menggunakan route yang benar -->
+                <form method="POST" action="{{ route('admin.inventory.store.pengadaan') }}" id="pengadaanForm">
                     @csrf
                     <div class="modal-body modal-form">
-                        <!-- Bagian Informasi Dasar -->
+                        <!-- Tipe Pengadaan -->
                         <div class="form-section">
                             <div class="form-section-title">
                                 <i class="bi bi-info-circle"></i>
-                                Informasi Dasar Barang
+                                Tipe Pengadaan
                             </div>
                             <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label for="kode_barang" class="form-label">
-                                        Kode Barang
-                                        <span class="required-star">*</span>
-                                    </label>
-                                    <input type="text" class="form-control" id="kode_barang" name="kode_barang" 
-                                           placeholder="Masukkan kode barang" required>
-                                    <div class="form-text">Kode unik untuk identifikasi barang</div>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="nama_barang" class="form-label">
-                                        Nama Barang
-                                        <span class="required-star">*</span>
-                                    </label>
-                                    <input type="text" class="form-control" id="nama_barang" name="nama_barang" 
-                                           placeholder="Masukkan nama barang" required>
+                                <div class="col-md-12">
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="tipe_pengadaan" 
+                                               id="tipe_baru" value="baru" checked>
+                                        <label class="form-check-label" for="tipe_baru">
+                                            Barang Baru
+                                        </label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="tipe_pengadaan" 
+                                               id="tipe_restock" value="restock">
+                                        <label class="form-check-label" for="tipe_restock">
+                                            Restock Barang
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         
-                        <!-- Bagian Klasifikasi -->
-                        <div class="form-section">
-                            <div class="form-section-title">
-                                <i class="bi bi-tags"></i>
-                                Klasifikasi Barang
-                            </div>
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label for="kategori_id" class="form-label">
-                                        Kategori
-                                        <span class="required-star">*</span>
-                                    </label>
-                                    <select class="form-select select2-category-add" id="kategori_id" name="kategori_id" 
-                                            style="width: 100%;" required>
-                                        <option value="">Pilih Kategori</option>
-                                        @if(isset($categories) && $categories->count() > 0)
-                                            @foreach($categories as $category)
-                                            <option value="{{ $category->id }}">{{ $category->nama_kategori }}</option>
-                                            @endforeach
-                                        @endif
-                                    </select>
-                                    <div class="form-text">Ketik untuk mencari atau tambah kategori baru</div>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="satuan_id" class="form-label">
-                                        Satuan
-                                        <span class="required-star">*</span>
-                                    </label>
-                                    <select class="form-select select2-satuan-add" id="satuan_id" name="satuan_id" required>
-                                        <option value="">Pilih Satuan</option>
-                                        @if(isset($units) && $units->count() > 0)
-                                            @foreach($units as $unit)
-                                            <option value="{{ $unit->id }}">{{ $unit->nama_satuan }}</option>
-                                            @endforeach
-                                        @endif
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Bagian Lokasi Penyimpanan -->
-                        <div class="form-section">
-                            <div class="form-section-title">
-                                <i class="bi bi-geo-alt"></i>
-                                Lokasi Penyimpanan
-                            </div>
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label for="gudang_id" class="form-label">Gudang</label>
-                                    <select class="form-select select2-gudang-add" id="gudang_id" name="gudang_id">
-                                        <option value="">Pilih Gudang</option>
-                                        @if(isset($warehouses) && $warehouses->count() > 0)
-                                            @foreach($warehouses as $warehouse)
-                                            <option value="{{ $warehouse->id }}">{{ $warehouse->nama_gudang }}</option>
-                                            @endforeach
-                                        @endif
-                                    </select>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="lokasi" class="form-label">Lokasi Spesifik</label>
-                                    <input type="text" class="form-control" id="lokasi" name="lokasi" 
-                                           placeholder="Contoh: Rak A-1, Lantai 2">
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Bagian Stok & Harga -->
+                        <!-- Bagian Barang yang Diajukan -->
                         <div class="form-section">
                             <div class="form-section-title">
                                 <i class="bi bi-box"></i>
-                                Stok & Harga
+                                Barang yang Diajukan
                             </div>
-                            <div class="row g-3">
-                                <div class="col-md-4">
-                                    <label for="stok" class="form-label">
-                                        Stok Awal
-                                        <span class="required-star">*</span>
-                                    </label>
-                                    <input type="number" class="form-control" id="stok" name="stok" 
-                                           min="0" placeholder="0" required>
+                            
+                            <!-- Untuk Barang Baru -->
+                            <div id="formBarangBaru">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label for="kode_barang_pengadaan" class="form-label">
+                                            Kode Barang
+                                            <span class="required-star">*</span>
+                                        </label>
+                                        <input type="text" class="form-control" id="kode_barang_pengadaan" 
+                                               name="kode_barang" placeholder="Masukkan kode barang">
+                                        <div class="form-text">Kode unik untuk identifikasi barang baru</div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="nama_barang_pengadaan" class="form-label">
+                                            Nama Barang
+                                            <span class="required-star">*</span>
+                                        </label>
+                                        <input type="text" class="form-control" id="nama_barang_pengadaan" 
+                                               name="nama_barang" placeholder="Masukkan nama barang">
+                                    </div>
                                 </div>
-                                <div class="col-md-4">
-                                    <label for="stok_minimal" class="form-label">
-                                        Stok Minimal
-                                        <span class="required-star">*</span>
-                                    </label>
-                                    <input type="number" class="form-control" id="stok_minimal" name="stok_minimal" 
-                                           min="1" placeholder="10" required>
-                                    <div class="form-text">Akan muncul notifikasi jika stok mencapai angka ini</div>
-                                </div>
-                                <div class="col-md-4">
-                                    <label for="harga_beli" class="form-label">Harga Beli (Rp)</label>
-                                    <input type="number" class="form-control" id="harga_beli" name="harga_beli" 
-                                           min="0" step="100" placeholder="0">
+                                
+                                <div class="row g-3 mt-3">
+                                    <div class="col-md-6">
+                                        <label for="kategori_id_pengadaan" class="form-label">
+                                            Kategori
+                                            <span class="required-star">*</span>
+                                        </label>
+                                        <select class="form-select select2-category-pengadaan" id="kategori_id_pengadaan" 
+                                                name="kategori_id" style="width: 100%;">
+                                            <option value="">Pilih Kategori</option>
+                                            @if(isset($categories) && $categories->count() > 0)
+                                                @foreach($categories as $category)
+                                                <option value="{{ $category->id }}">{{ $category->nama_kategori }}</option>
+                                                @endforeach
+                                            @endif
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="satuan_id_pengadaan" class="form-label">
+                                            Satuan
+                                            <span class="required-star">*</span>
+                                        </label>
+                                        <select class="form-select select2-satuan-pengadaan" id="satuan_id_pengadaan" 
+                                                name="satuan_id">
+                                            <option value="">Pilih Satuan</option>
+                                            @if(isset($units) && $units->count() > 0)
+                                                @foreach($units as $unit)
+                                                <option value="{{ $unit->id }}">{{ $unit->nama_satuan }}</option>
+                                                @endforeach
+                                            @endif
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="row g-3 mt-2">
-                                <div class="col-md-6">
-                                    <label for="harga_jual" class="form-label">Harga Jual (Rp)</label>
-                                    <input type="number" class="form-control" id="harga_jual" name="harga_jual" 
-                                           min="0" step="100" placeholder="0">
+                            
+                            <!-- Untuk Restock Barang -->
+                            <div id="formRestock" style="display: none;">
+                                <div class="row g-3">
+                                    <div class="col-md-12">
+                                        <label for="barang_restock" class="form-label">
+                                            Pilih Barang
+                                            <span class="required-star">*</span>
+                                        </label>
+                                        <select class="form-select select2-barang-restock" id="barang_restock" 
+                                                name="barang_id" style="width: 100%;">
+                                            <option value="">Pilih Barang yang akan direstock</option>
+                                            <!-- Data barang akan diisi via JavaScript -->
+                                        </select>
+                                        <div class="form-text">Pilih barang yang akan dilakukan restock</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row g-3 mt-3">
+                                    <div class="col-md-4">
+                                        <label class="form-label">Kode Barang</label>
+                                        <input type="text" class="form-control" id="restock_kode_barang" readonly>
+                                    </div>
+                                    <div class="col-md-8">
+                                        <label class="form-label">Nama Barang</label>
+                                        <input type="text" class="form-control" id="restock_nama_barang" readonly>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         
-                        <!-- Bagian Keterangan Tambahan -->
+                        <!-- Bagian Detail Pengadaan -->
+                        <div class="form-section">
+                            <div class="form-section-title">
+                                <i class="bi bi-cart-plus"></i>
+                                Detail Pengadaan
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label for="jumlah_pengadaan" class="form-label">
+                                        Jumlah
+                                        <span class="required-star">*</span>
+                                    </label>
+                                    <input type="number" class="form-control" id="jumlah_pengadaan" 
+                                           name="jumlah" min="1" placeholder="0" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="harga_perkiraan" class="form-label">
+                                        Harga Perkiraan (Rp)
+                                        <span class="required-star">*</span>
+                                    </label>
+                                    <input type="number" class="form-control" id="harga_perkiraan" 
+                                           name="harga_perkiraan" min="0" step="100" placeholder="0" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="prioritas" class="form-label">
+                                        Prioritas
+                                        <span class="required-star">*</span>
+                                    </label>
+                                    <select class="form-select" id="prioritas" name="prioritas" required>
+                                        <option value="normal">Normal</option>
+                                        <option value="tinggi">Tinggi</option>
+                                        <option value="mendesak">Mendesak</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Bagian Keterangan -->
                         <div class="form-section">
                             <div class="form-section-title">
                                 <i class="bi bi-card-text"></i>
-                                Keterangan Tambahan
+                                Keterangan Pengadaan
                             </div>
-                            <div class="mb-3">
-                                <label for="keterangan" class="form-label">Keterangan</label>
-                                <textarea class="form-control" id="keterangan" name="keterangan" 
-                                          rows="3" placeholder="Masukkan keterangan tambahan jika ada"></textarea>
+                            <div class="row g-3">
+                                <div class="col-md-12">
+                                    <label for="alasan_pengadaan" class="form-label">
+                                        Alasan Pengadaan
+                                        <span class="required-star">*</span>
+                                    </label>
+                                    <textarea class="form-control" id="alasan_pengadaan" name="alasan_pengadaan" 
+                                              rows="3" placeholder="Jelaskan alasan pengadaan barang ini..." required></textarea>
+                                </div>
+                            </div>
+                            <div class="row g-3 mt-3">
+                                <div class="col-md-12">
+                                    <label for="catatan" class="form-label">Catatan Tambahan</label>
+                                    <textarea class="form-control" id="catatan" name="catatan" 
+                                              rows="2" placeholder="Masukkan catatan tambahan jika ada"></textarea>
+                                </div>
                             </div>
                         </div>
                         
@@ -971,15 +1072,15 @@
                             <div class="d-flex align-items-start">
                                 <i class="bi bi-info-circle fs-5 me-2"></i>
                                 <div>
-                                    <small><strong>Catatan:</strong> Field dengan tanda <span class="required-star">*</span> wajib diisi. Stok minimal tidak boleh lebih besar dari stok awal.</small>
+                                    <small><strong>Catatan:</strong> Pengajuan pengadaan akan diverifikasi terlebih dahulu sebelum diproses. Field dengan tanda <span class="required-star">*</span> wajib diisi.</small>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-save me-1"></i> Simpan
+                        <button type="submit" class="btn btn-primary" id="submitPengadaanBtn">
+                            <i class="bi bi-send me-1"></i> Ajukan Pengadaan
                         </button>
                     </div>
                 </form>
@@ -1042,48 +1143,6 @@
         </div>
     </div>
     
-    <!-- Restock Modal -->
-    <div class="modal fade" id="restockModal" tabindex="-1" aria-labelledby="restockModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="restockModalLabel">Restock Barang</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <form method="POST" id="restockForm">
-                    @csrf
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label for="restock_jumlah" class="form-label">
-                                Jumlah Restock
-                                <span class="required-star">*</span>
-                            </label>
-                            <input type="number" class="form-control" id="restock_jumlah" name="jumlah" 
-                                   min="1" placeholder="Masukkan jumlah" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="restock_harga_beli" class="form-label">Harga Beli (Opsional)</label>
-                            <input type="number" class="form-control" id="restock_harga_beli" name="harga_beli" 
-                                   min="0" step="100" placeholder="0">
-                            <div class="form-text">Diisi jika harga beli berbeda dengan sebelumnya</div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="restock_keterangan" class="form-label">Keterangan</label>
-                            <textarea class="form-control" id="restock_keterangan" name="keterangan" 
-                                      rows="2" placeholder="Misal: Restock dari supplier A, tanggal ..."></textarea>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
-                        <button type="submit" class="btn btn-success">
-                            <i class="bi bi-plus-circle me-1"></i> Restock
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-    
     <!-- Detail Modal -->
     <div class="modal fade" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
@@ -1139,13 +1198,15 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<!-- SweetAlert2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
 <script>
     $(document).ready(function() {
-        // Inisialisasi Select2 untuk kategori di modal tambah barang
-        $('#kategori_id').select2({
+        // Inisialisasi Select2 untuk kategori di modal pengadaan
+        $('.select2-category-pengadaan').select2({
             placeholder: "Pilih Kategori",
             allowClear: true,
-            dropdownParent: $('#addItemModal'),
+            dropdownParent: $('#pengadaanModal'),
             tags: true,
             createTag: function (params) {
                 var term = params.term.trim();
@@ -1160,18 +1221,46 @@
             }
         });
         
-        // Inisialisasi Select2 untuk satuan di modal tambah barang
-        $('#satuan_id').select2({
+        // Inisialisasi Select2 untuk satuan di modal pengadaan
+        $('.select2-satuan-pengadaan').select2({
             placeholder: "Pilih Satuan",
             allowClear: true,
-            dropdownParent: $('#addItemModal')
+            dropdownParent: $('#pengadaanModal')
         });
         
-        // Inisialisasi Select2 untuk gudang di modal tambah barang
-        $('#gudang_id').select2({
-            placeholder: "Pilih Gudang",
+        // Inisialisasi Select2 untuk barang restock
+        $('.select2-barang-restock').select2({
+            placeholder: "Pilih Barang",
             allowClear: true,
-            dropdownParent: $('#addItemModal')
+            dropdownParent: $('#pengadaanModal'),
+            ajax: {
+                // PERBAIKAN: Menggunakan route yang benar dari controller
+                url: '{{ route("admin.inventory.get.barang.procurement") }}',
+                dataType: 'json',
+                delay: 250,
+                data: function (params) {
+                    return {
+                        q: params.term,
+                        page: params.page
+                    };
+                },
+                processResults: function (data) {
+                    return {
+                        results: data.map(function(item) {
+                            return {
+                                id: item.id,
+                                text: item.kode_barang + ' - ' + item.nama_barang + ' (Stok: ' + item.stok + ')',
+                                kode: item.kode_barang,
+                                nama: item.nama_barang,
+                                stok: item.stok,
+                                stok_minimal: item.stok_minimal
+                            };
+                        })
+                    };
+                },
+                cache: true
+            },
+            minimumInputLength: 0
         });
         
         // Inisialisasi Select2 untuk filter kategori
@@ -1180,8 +1269,90 @@
             allowClear: true
         });
         
-        // Tangkap ketika user memilih "Tambah baru" di modal tambah barang
-        $('#kategori_id').on('select2:select', function (e) {
+        // Toggle form berdasarkan tipe pengadaan
+        $('input[name="tipe_pengadaan"]').change(function() {
+            const tipe = $(this).val();
+            
+            if (tipe === 'baru') {
+                $('#formBarangBaru').show();
+                $('#formRestock').hide();
+                
+                // Reset form restock
+                $('#barang_restock').val(null).trigger('change');
+                $('#restock_kode_barang').val('');
+                $('#restock_nama_barang').val('');
+                
+                // Validasi untuk barang baru
+                $('#kode_barang_pengadaan').prop('required', true);
+                $('#nama_barang_pengadaan').prop('required', true);
+                $('#kategori_id_pengadaan').prop('required', true);
+                $('#satuan_id_pengadaan').prop('required', true);
+                $('#barang_restock').prop('required', false);
+            } else {
+                $('#formBarangBaru').hide();
+                $('#formRestock').show();
+                
+                // Reset form barang baru
+                $('#kode_barang_pengadaan').val('');
+                $('#nama_barang_pengadaan').val('');
+                $('#kategori_id_pengadaan').val(null).trigger('change');
+                $('#satuan_id_pengadaan').val(null).trigger('change');
+                
+                // Validasi untuk restock
+                $('#kode_barang_pengadaan').prop('required', false);
+                $('#nama_barang_pengadaan').prop('required', false);
+                $('#kategori_id_pengadaan').prop('required', false);
+                $('#satuan_id_pengadaan').prop('required', false);
+                $('#barang_restock').prop('required', true);
+            }
+        });
+        
+        // Handler ketika memilih barang untuk restock
+        $('#barang_restock').change(function() {
+            const selectedOption = $(this).find(':selected');
+            const kodeBarang = selectedOption.data('kode');
+            const namaBarang = selectedOption.data('nama');
+            
+            // Jika ada data, tampilkan
+            if (kodeBarang && namaBarang) {
+                $('#restock_kode_barang').val(kodeBarang);
+                $('#restock_nama_barang').val(namaBarang);
+            } else {
+                // Jika tidak ada data di option, fetch dari API
+                const barangId = $(this).val();
+                if (barangId) {
+                    fetchBarangDetail(barangId);
+                } else {
+                    $('#restock_kode_barang').val('');
+                    $('#restock_nama_barang').val('');
+                }
+            }
+        });
+        
+        // Fungsi untuk fetch detail barang
+        function fetchBarangDetail(barangId) {
+            // PERBAIKAN: Menggunakan route yang benar
+            $.ajax({
+                url: '{{ route("admin.inventory.show", "") }}/' + barangId,
+                type: 'GET',
+                success: function(response) {
+                    if (response.barang) {
+                        $('#restock_kode_barang').val(response.barang.kode_barang);
+                        $('#restock_nama_barang').val(response.barang.nama_barang);
+                    } else {
+                        showAlert('Gagal mengambil data barang', 'danger');
+                        $('#barang_restock').val(null).trigger('change');
+                    }
+                },
+                error: function() {
+                    showAlert('Gagal mengambil data barang', 'danger');
+                    $('#barang_restock').val(null).trigger('change');
+                }
+            });
+        }
+        
+        // Tangkap ketika user memilih "Tambah baru" di kategori pengadaan
+        $('.select2-category-pengadaan').on('select2:select', function (e) {
             var data = e.params.data;
             
             // Jika ini adalah kategori baru
@@ -1220,19 +1391,20 @@
             $(this).prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Menyimpan...');
             
             $.ajax({
-                url: '{{ route("admin.categories.quick-store") }}',
+                url: '{{ route("admin.inventory.category.quick-store") }}',
                 type: 'POST',
                 data: {
                     _token: '{{ csrf_token() }}',
-                    nama_kategori: categoryName
+                    nama_kategori: categoryName,
+                    deskripsi: ''
                 },
                 success: function(response) {
                     if (response.success) {
                         // Tambahkan opsi baru ke semua select kategori
                         var newOption = new Option(response.category.nama_kategori, response.category.id, true, true);
                         
-                        // Tambahkan ke modal tambah barang
-                        $('#kategori_id').append(newOption).trigger('change');
+                        // Tambahkan ke modal pengadaan
+                        $('.select2-category-pengadaan').append(newOption).trigger('change');
                         
                         // Tambahkan ke filter kategori
                         $('#categoryFilter').append(new Option(response.category.nama_kategori, response.category.id));
@@ -1292,522 +1464,649 @@
             }
         });
         
-        // Reset Select2 saat modal tambah barang ditutup
-        $('#addItemModal').on('hidden.bs.modal', function() {
-            $('#kategori_id').val(null).trigger('change');
-            $('#satuan_id').val(null).trigger('change');
-            $('#gudang_id').val(null).trigger('change');
-            $('#addItemForm')[0].reset();
+        // Reset modal pengadaan saat ditutup
+        $('#pengadaanModal').on('hidden.bs.modal', function() {
+            $('#pengadaanForm')[0].reset();
+            $('.select2-category-pengadaan').val(null).trigger('change');
+            $('.select2-satuan-pengadaan').val(null).trigger('change');
+            $('.select2-barang-restock').val(null).trigger('change');
+            $('#formBarangBaru').show();
+            $('#formRestock').hide();
+            $('#tipe_baru').prop('checked', true);
+            $('#restock_kode_barang').val('');
+            $('#restock_nama_barang').val('');
+            
+            // Reset validasi
+            $('.is-invalid').removeClass('is-invalid');
+            $('.invalid-feedback').remove();
+            
+            // Reset button state
+            $('#submitPengadaanBtn').prop('disabled', false).html('<i class="bi bi-send me-1"></i> Ajukan Pengadaan');
         });
         
-        // Focus ke input pertama saat modal tambah barang dibuka
-        $('#addItemModal').on('shown.bs.modal', function() {
-            $('#kode_barang').focus();
-        });
-        
-        // Validasi form tambah barang
-        $('#addItemForm').submit(function(e) {
+        // Validasi form pengadaan sebelum submit
+        $('#pengadaanForm').submit(function(e) {
             // Reset validasi
             $('.is-invalid').removeClass('is-invalid');
             $('.invalid-feedback').remove();
             
             let isValid = true;
             
-            // Validasi stok minimal harus <= stok
-            const stok = parseInt($('#stok').val()) || 0;
-            const stokMinimal = parseInt($('#stok_minimal').val()) || 0;
+            const tipePengadaan = $('input[name="tipe_pengadaan"]:checked').val();
             
-            if (stokMinimal > stok) {
-                showAlert('Stok minimal tidak boleh lebih besar dari stok awal', 'danger');
-                $('#stok_minimal').addClass('is-invalid');
+            if (tipePengadaan === 'restock') {
+                const barangId = $('#barang_restock').val();
+                if (!barangId) {
+                    showAlert('Silakan pilih barang yang akan direstock', 'danger');
+                    $('#barang_restock').addClass('is-invalid');
+                    isValid = false;
+                }
+            } else if (tipePengadaan === 'baru') {
+                const kodeBarang = $('#kode_barang_pengadaan').val();
+                const namaBarang = $('#nama_barang_pengadaan').val();
+                const kategoriId = $('#kategori_id_pengadaan').val();
+                const satuanId = $('#satuan_id_pengadaan').val();
+                
+                if (!kodeBarang) {
+                    showAlert('Kode barang harus diisi', 'danger');
+                    $('#kode_barang_pengadaan').addClass('is-invalid');
+                    isValid = false;
+                }
+                
+                if (!namaBarang) {
+                    showAlert('Nama barang harus diisi', 'danger');
+                    $('#nama_barang_pengadaan').addClass('is-invalid');
+                    isValid = false;
+                }
+                
+                if (!kategoriId) {
+                    showAlert('Kategori harus dipilih', 'danger');
+                    $('#kategori_id_pengadaan').next('.select2-container').find('.select2-selection').addClass('is-invalid');
+                    isValid = false;
+                }
+                
+                if (!satuanId) {
+                    showAlert('Satuan harus dipilih', 'danger');
+                    $('#satuan_id_pengadaan').addClass('is-invalid');
+                    isValid = false;
+                }
+            }
+            
+            const jumlah = parseInt($('#jumlah_pengadaan').val()) || 0;
+            if (jumlah <= 0) {
+                showAlert('Jumlah pengadaan harus lebih dari 0', 'danger');
+                $('#jumlah_pengadaan').addClass('is-invalid');
                 isValid = false;
             }
             
-            // Validasi harga jual tidak boleh kurang dari harga beli
-            const hargaBeli = parseFloat($('#harga_beli').val()) || 0;
-            const hargaJual = parseFloat($('#harga_jual').val()) || 0;
+            const harga = parseFloat($('#harga_perkiraan').val()) || 0;
+            if (harga <= 0) {
+                showAlert('Harga perkiraan harus lebih dari 0', 'danger');
+                $('#harga_perkiraan').addClass('is-invalid');
+                isValid = false;
+            }
             
-            if (hargaJual > 0 && hargaBeli > 0 && hargaJual < hargaBeli) {
-                showAlert('Harga jual tidak boleh kurang dari harga beli', 'danger');
-                $('#harga_jual').addClass('is-invalid');
+            const alasan = $('#alasan_pengadaan').val();
+            if (!alasan || alasan.trim().length < 10) {
+                showAlert('Alasan pengadaan minimal 10 karakter', 'danger');
+                $('#alasan_pengadaan').addClass('is-invalid');
                 isValid = false;
             }
             
             if (!isValid) {
                 e.preventDefault();
+                e.stopPropagation();
+                return false;
             }
+            
+            // Show loading state
+            $('#submitPengadaanBtn').prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Mengirim...');
+            
+            return true;
         });
-    });
-    
-    // Edit Item Handler
-    $('.edit-item').click(function() {
-        const itemId = $(this).data('item-id');
         
-        // Fetch item data via AJAX
-        fetch(`/admin/inventory/${itemId}/edit`)
-            .then(response => response.json())
-            .then(data => {
-                const item = data.item || data.barang;
-                const categories = data.categories || [];
-                const units = data.units || [];
-                const warehouses = data.warehouses || [];
-                
-                let html = `
-                    <div class="form-section">
-                        <div class="form-section-title">
-                            <i class="bi bi-info-circle"></i>
-                            Informasi Dasar Barang
-                        </div>
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label for="edit_kode_barang" class="form-label">
-                                    Kode Barang
-                                    <span class="required-star">*</span>
-                                </label>
-                                <input type="text" class="form-control" id="edit_kode_barang" name="kode_barang" 
-                                       value="${item.kode_barang}" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="edit_nama_barang" class="form-label">
-                                    Nama Barang
-                                    <span class="required-star">*</span>
-                                </label>
-                                <input type="text" class="form-control" id="edit_nama_barang" name="nama_barang" 
-                                       value="${item.nama_barang}" required>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="form-section">
-                        <div class="form-section-title">
-                            <i class="bi bi-tags"></i>
-                            Klasifikasi Barang
-                        </div>
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label for="edit_kategori_id" class="form-label">
-                                    Kategori
-                                    <span class="required-star">*</span>
-                                </label>
-                                <select class="form-select select2-category-edit" id="edit_kategori_id" name="kategori_id" 
-                                        style="width: 100%;" required>
-                                    <option value="">Pilih Kategori</option>
-                                    ${categories.map(cat => 
-                                        `<option value="${cat.id}" ${cat.id == item.kategori_id ? 'selected' : ''}>${cat.nama_kategori}</option>`
-                                    ).join('')}
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="edit_satuan_id" class="form-label">
-                                    Satuan
-                                    <span class="required-star">*</span>
-                                </label>
-                                <select class="form-select select2-satuan-edit" id="edit_satuan_id" name="satuan_id" required>
-                                    <option value="">Pilih Satuan</option>
-                                    ${units.map(unit => 
-                                        `<option value="${unit.id}" ${unit.id == item.satuan_id ? 'selected' : ''}>${unit.nama_satuan}</option>`
-                                    ).join('')}
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="form-section">
-                        <div class="form-section-title">
-                            <i class="bi bi-geo-alt"></i>
-                            Lokasi Penyimpanan
-                        </div>
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label for="edit_gudang_id" class="form-label">Gudang</label>
-                                <select class="form-select select2-gudang-edit" id="edit_gudang_id" name="gudang_id">
-                                    <option value="">Pilih Gudang</option>
-                                    ${warehouses.map(wh => 
-                                        `<option value="${wh.id}" ${wh.id == item.gudang_id ? 'selected' : ''}>${wh.nama_gudang}</option>`
-                                    ).join('')}
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="edit_lokasi" class="form-label">Lokasi Spesifik</label>
-                                <input type="text" class="form-control" id="edit_lokasi" name="lokasi" 
-                                       value="${item.lokasi || ''}">
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="form-section">
-                        <div class="form-section-title">
-                            <i class="bi bi-box"></i>
-                            Stok & Harga
-                        </div>
-                        <div class="row g-3">
-                            <div class="col-md-4">
-                                <label for="edit_stok" class="form-label">
-                                    Stok
-                                    <span class="required-star">*</span>
-                                </label>
-                                <input type="number" class="form-control" id="edit_stok" name="stok" 
-                                       value="${item.stok}" min="0" required>
-                            </div>
-                            <div class="col-md-4">
-                                <label for="edit_stok_minimal" class="form-label">
-                                    Stok Minimal
-                                    <span class="required-star">*</span>
-                                </label>
-                                <input type="number" class="form-control" id="edit_stok_minimal" name="stok_minimal" 
-                                       value="${item.stok_minimal}" min="1" required>
-                            </div>
-                            <div class="col-md-4">
-                                <label for="edit_harga_beli" class="form-label">Harga Beli (Rp)</label>
-                                <input type="number" class="form-control" id="edit_harga_beli" name="harga_beli" 
-                                       value="${item.harga_beli || ''}" min="0" step="100">
-                            </div>
-                        </div>
-                        <div class="row g-3 mt-2">
-                            <div class="col-md-6">
-                                <label for="edit_harga_jual" class="form-label">Harga Jual (Rp)</label>
-                                <input type="number" class="form-control" id="edit_harga_jual" name="harga_jual" 
-                                       value="${item.harga_jual || ''}" min="0" step="100">
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="form-section">
-                        <div class="form-section-title">
-                            <i class="bi bi-card-text"></i>
-                            Keterangan Tambahan
-                        </div>
-                        <div class="mb-3">
-                            <label for="edit_keterangan" class="form-label">Keterangan</label>
-                            <textarea class="form-control" id="edit_keterangan" name="keterangan" rows="3">${item.keterangan || ''}</textarea>
-                        </div>
-                    </div>
-                    
-                    <div class="alert alert-info mt-4 mb-0">
-                        <div class="d-flex align-items-start">
-                            <i class="bi bi-info-circle fs-5 me-2"></i>
-                            <div>
-                                <small><strong>Catatan:</strong> Field dengan tanda <span class="required-star">*</span> wajib diisi. Stok minimal tidak boleh lebih besar dari stok.</small>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                
-                $('#editModalBody').html(html);
-                
-                // Inisialisasi Select2 untuk kategori di modal edit
-                $('#edit_kategori_id').select2({
-                    placeholder: "Pilih Kategori",
-                    allowClear: true,
-                    dropdownParent: $('#editItemModal'),
-                    tags: true,
-                    createTag: function (params) {
-                        var term = params.term.trim();
-                        if (term === '') {
-                            return null;
-                        }
-                        return {
-                            id: term,
-                            text: term + ' (Tambah baru)',
-                            isNew: true
-                        };
-                    }
-                });
-                
-                // Inisialisasi Select2 untuk satuan di modal edit
-                $('#edit_satuan_id').select2({
-                    placeholder: "Pilih Satuan",
-                    allowClear: true,
-                    dropdownParent: $('#editItemModal')
-                });
-                
-                // Inisialisasi Select2 untuk gudang di modal edit
-                $('#edit_gudang_id').select2({
-                    placeholder: "Pilih Gudang",
-                    allowClear: true,
-                    dropdownParent: $('#editItemModal')
-                });
-                
-                // Handle tambah kategori baru di modal edit
-                $('#edit_kategori_id').on('select2:select', function (e) {
-                    var data = e.params.data;
-                    
-                    if (data.isNew) {
-                        $('#newCategoryName').val(data.text.replace(' (Tambah baru)', ''));
-                        $('#quickAddCategoryModal').modal('show');
-                        $(this).val(null).trigger('change');
-                    }
-                });
-                
-                // Validasi form edit
-                $('#editItemForm').submit(function(e) {
-                    const editStok = parseInt($('#edit_stok').val()) || 0;
-                    const editStokMinimal = parseInt($('#edit_stok_minimal').val()) || 0;
-                    const editHargaBeli = parseFloat($('#edit_harga_beli').val()) || 0;
-                    const editHargaJual = parseFloat($('#edit_harga_jual').val()) || 0;
-                    
-                    if (editStokMinimal > editStok) {
-                        showAlert('Stok minimal tidak boleh lebih besar dari stok', 'danger');
-                        e.preventDefault();
-                        return false;
-                    }
-                    
-                    if (editHargaJual > 0 && editHargaBeli > 0 && editHargaJual < editHargaBeli) {
-                        showAlert('Harga jual tidak boleh kurang dari harga beli', 'danger');
-                        e.preventDefault();
-                        return false;
-                    }
-                });
-                
-                // Update form action
-                $('#editItemForm').attr('action', `/admin/inventory/${itemId}`);
-                
-                // Tampilkan modal edit
-                const editModal = new bootstrap.Modal(document.getElementById('editItemModal'));
-                editModal.show();
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showAlert('Terjadi kesalahan saat mengambil data barang', 'danger');
-            });
-    });
-    
-    // Restock Item Handler
-    $('.restock-item').click(function() {
-        const itemId = $(this).data('item-id');
+        // Handler untuk tombol "Ajukan Pengadaan" di tabel
+        $('.ajukan-pengadaan').click(function() {
+            const itemId = $(this).data('item-id');
+            const kodeBarang = $(this).data('item-kode');
+            const namaBarang = $(this).data('item-nama');
+            
+            // Set tipe pengadaan ke restock
+            $('#tipe_restock').prop('checked', true).trigger('change');
+            
+            // Buat option untuk barang yang dipilih
+            const selectElement = $('#barang_restock');
+            
+            // Clear existing options
+            selectElement.empty();
+            
+            // Tambahkan option yang dipilih
+            const option = new Option(
+                kodeBarang + ' - ' + namaBarang, 
+                itemId, 
+                true, 
+                true
+            );
+            
+            selectElement.append(option).trigger('change');
+            
+            // Tampilkan kode dan nama barang
+            $('#restock_kode_barang').val(kodeBarang);
+            $('#restock_nama_barang').val(namaBarang);
+            
+            // Tampilkan modal pengadaan
+            const pengadaanModal = new bootstrap.Modal(document.getElementById('pengadaanModal'));
+            pengadaanModal.show();
+        });
         
-        // Update form action
-        $('#restockForm').attr('action', `/admin/inventory/${itemId}/restock`);
-        $('#restockForm')[0].reset();
-        
-        // Tampilkan modal restock
-        const restockModal = new bootstrap.Modal(document.getElementById('restockModal'));
-        restockModal.show();
-    });
-    
-    // Detail Modal Handler - PERBAIKAN: Tampilkan detail dengan layout yang rapi
-    const detailModal = document.getElementById('detailModal');
-    detailModal.addEventListener('show.bs.modal', function(event) {
-        const button = event.relatedTarget;
-        const itemId = button.getAttribute('data-item-id');
-        
-        // Tampilkan loading state
-        $('#detailModalBody').html(`
-            <div class="text-center py-4">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-                <p class="mt-2 text-muted">Memuat data barang...</p>
-            </div>
-        `);
-        
-        // Fetch item data via AJAX
-        fetch(`/admin/inventory/${itemId}`)
-            .then(response => response.json())
-            .then(data => {
-                const item = data.item || data.barang;
-                
-                // Tentukan status stok
-                let statusText, statusClass, statusBadge;
-                if (item.stok <= 0) {
-                    statusText = 'Habis';
-                    statusClass = 'text-danger';
-                    statusBadge = 'badge-danger';
-                } else if (item.stok <= item.stok_minimal) {
-                    statusText = 'Kritis';
-                    statusClass = 'text-warning';
-                    statusBadge = 'badge-warning';
-                } else if (item.stok <= (item.stok_minimal * 2)) {
-                    statusText = 'Rendah';
-                    statusClass = 'text-warning';
-                    statusBadge = 'badge-warning';
-                } else {
-                    statusText = 'Baik';
-                    statusClass = 'text-success';
-                    statusBadge = 'badge-success';
+        // Edit Item Handler dengan konfirmasi
+        $('.edit-item').click(function() {
+            const itemId = $(this).data('item-id');
+            const kodeBarang = $(this).data('item-kode');
+            const namaBarang = $(this).data('item-nama');
+            
+            // Tampilkan SweetAlert konfirmasi
+            Swal.fire({
+                title: 'Konfirmasi Edit Barang',
+                html: `
+                    <div class="text-start">
+                        <p>Anda akan mengedit data barang berikut:</p>
+                        <div class="alert alert-info mb-0 mt-2">
+                            <table class="table table-sm mb-0">
+                                <tr>
+                                    <td width="120"><strong>Kode Barang:</strong></td>
+                                    <td>${kodeBarang}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Nama Barang:</strong></td>
+                                    <td>${namaBarang}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="alert alert-warning mb-0 mt-2">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            <strong>Perhatian:</strong> Pastikan data yang diubah sudah benar. Perubahan data barang dapat mempengaruhi laporan dan transaksi yang terkait.
+                        </div>
+                    </div>
+                `,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Ya, Edit Data',
+                cancelButtonText: 'Batal',
+                showClass: {
+                    popup: 'animate__animated animate__fadeInDown'
+                },
+                hideClass: {
+                    popup: 'animate__animated animate__fadeOutUp'
+                },
+                preConfirm: () => {
+                    // Return a promise that resolves when the edit process should proceed
+                    return new Promise((resolve) => {
+                        // Setelah user mengkonfirmasi, lanjutkan dengan proses edit
+                        resolve();
+                    });
                 }
-                
-                let html = `
-                    <!-- Bagian Informasi Dasar -->
-                    <div class="detail-section">
-                        <div class="detail-section-title">
-                            <i class="bi bi-info-circle"></i>
-                            Informasi Dasar Barang
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 detail-row">
-                                <div class="detail-label">Kode Barang</div>
-                                <div class="detail-value">${item.kode_barang || '-'}</div>
-                            </div>
-                            <div class="col-md-6 detail-row">
-                                <div class="detail-label">Nama Barang</div>
-                                <div class="detail-value">${item.nama_barang || '-'}</div>
-                            </div>
-                        </div>
-                    </div>
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Jika user mengkonfirmasi, lanjutkan dengan fetch data untuk edit
+                    fetchEditData(itemId);
+                }
+            });
+        });
+        
+        // Fungsi untuk fetch data edit setelah konfirmasi
+        function fetchEditData(itemId) {
+            // Fetch item data via AJAX
+            fetch(`/admin/inventory/${itemId}/edit`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const item = data.barang;
+                    const categories = data.categories || [];
+                    const units = data.units || [];
+                    const warehouses = data.warehouses || [];
                     
-                    <!-- Bagian Klasifikasi -->
-                    <div class="detail-section">
-                        <div class="detail-section-title">
-                            <i class="bi bi-tags"></i>
-                            Klasifikasi Barang
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 detail-row">
-                                <div class="detail-label">Kategori</div>
-                                <div class="detail-value">${item.kategori?.nama_kategori || '-'}</div>
+                    let html = `
+                        <div class="form-section">
+                            <div class="form-section-title">
+                                <i class="bi bi-info-circle"></i>
+                                Informasi Dasar Barang
                             </div>
-                            <div class="col-md-6 detail-row">
-                                <div class="detail-label">Satuan</div>
-                                <div class="detail-value">${item.satuan?.nama_satuan || '-'}</div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Bagian Lokasi Penyimpanan -->
-                    <div class="detail-section">
-                        <div class="detail-section-title">
-                            <i class="bi bi-geo-alt"></i>
-                            Lokasi Penyimpanan
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 detail-row">
-                                <div class="detail-label">Gudang</div>
-                                <div class="detail-value">${item.gudang?.nama_gudang || '-'}</div>
-                            </div>
-                            <div class="col-md-6 detail-row">
-                                <div class="detail-label">Lokasi Spesifik</div>
-                                <div class="detail-value">${item.lokasi || '-'}</div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Bagian Stok & Status -->
-                    <div class="detail-section">
-                        <div class="detail-section-title">
-                            <i class="bi bi-box"></i>
-                            Stok & Status
-                        </div>
-                        <div class="row">
-                            <div class="col-md-3 detail-row">
-                                <div class="detail-label">Stok Tersedia</div>
-                                <div class="detail-value">
-                                    <span class="badge ${item.stok <= 0 ? 'badge-danger' : (item.stok <= item.stok_minimal ? 'badge-warning' : 'badge-success')}">
-                                        <strong>${item.stok || 0}</strong>
-                                    </span>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="edit_kode_barang" class="form-label">
+                                        Kode Barang
+                                        <span class="required-star">*</span>
+                                    </label>
+                                    <input type="text" class="form-control" id="edit_kode_barang" name="kode_barang" 
+                                           value="${item.kode_barang}" required>
                                 </div>
-                            </div>
-                            <div class="col-md-3 detail-row">
-                                <div class="detail-label">Stok Minimal</div>
-                                <div class="detail-value">${item.stok_minimal || 0}</div>
-                            </div>
-                            <div class="col-md-3 detail-row">
-                                <div class="detail-label">Status Stok</div>
-                                <div class="detail-value">
-                                    <span class="badge ${statusBadge}">${statusText}</span>
-                                </div>
-                            </div>
-                            <div class="col-md-3 detail-row">
-                                <div class="detail-label">Sisa Stok</div>
-                                <div class="detail-value">
-                                    <div class="progress" style="height: 10px;">
-                                        <div class="progress-bar ${item.stok <= 0 ? 'bg-danger' : (item.stok <= item.stok_minimal ? 'bg-warning' : 'bg-success')}" 
-                                             role="progressbar" 
-                                             style="width: ${item.stok_minimal > 0 ? Math.min(100, (item.stok / item.stok_minimal) * 50) : 0}%;">
-                                        </div>
-                                    </div>
-                                    <small class="text-muted">${item.stok} / ${item.stok_minimal * 2} (ideal)</small>
+                                <div class="col-md-6">
+                                    <label for="edit_nama_barang" class="form-label">
+                                        Nama Barang
+                                        <span class="required-star">*</span>
+                                    </label>
+                                    <input type="text" class="form-control" id="edit_nama_barang" name="nama_barang" 
+                                           value="${item.nama_barang}" required>
                                 </div>
                             </div>
                         </div>
+                        
+                        <div class="form-section">
+                            <div class="form-section-title">
+                                <i class="bi bi-tags"></i>
+                                Klasifikasi Barang
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="edit_kategori_id" class="form-label">
+                                        Kategori
+                                        <span class="required-star">*</span>
+                                    </label>
+                                    <select class="form-select select2-category-edit" id="edit_kategori_id" name="kategori_id" 
+                                            style="width: 100%;" required>
+                                        <option value="">Pilih Kategori</option>
+                                        ${categories.map(cat => 
+                                            `<option value="${cat.id}" ${cat.id == item.kategori_id ? 'selected' : ''}>${cat.nama_kategori}</option>`
+                                        ).join('')}
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="edit_satuan_id" class="form-label">
+                                        Satuan
+                                        <span class="required-star">*</span>
+                                    </label>
+                                    <select class="form-select select2-satuan-edit" id="edit_satuan_id" name="satuan_id" required>
+                                        <option value="">Pilih Satuan</option>
+                                        ${units.map(unit => 
+                                            `<option value="${unit.id}" ${unit.id == item.satuan_id ? 'selected' : ''}>${unit.nama_satuan}</option>`
+                                        ).join('')}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-section">
+                            <div class="form-section-title">
+                                <i class="bi bi-geo-alt"></i>
+                                Lokasi Penyimpanan
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="edit_gudang_id" class="form-label">Gudang</label>
+                                    <select class="form-select select2-gudang-edit" id="edit_gudang_id" name="gudang_id">
+                                        <option value="">Pilih Gudang</option>
+                                        ${warehouses.map(wh => 
+                                            `<option value="${wh.id}" ${wh.id == item.gudang_id ? 'selected' : ''}>${wh.nama_gudang}</option>`
+                                        ).join('')}
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="edit_lokasi" class="form-label">Lokasi Spesifik</label>
+                                    <input type="text" class="form-control" id="edit_lokasi" name="lokasi" 
+                                           value="${item.lokasi || ''}">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-section">
+                            <div class="form-section-title">
+                                <i class="bi bi-box"></i>
+                                Stok & Harga
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label for="edit_stok" class="form-label">
+                                        Stok
+                                        <span class="required-star">*</span>
+                                    </label>
+                                    <input type="number" class="form-control" id="edit_stok" name="stok" 
+                                           value="${item.stok}" min="0" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="edit_stok_minimal" class="form-label">
+                                        Stok Minimal
+                                        <span class="required-star">*</span>
+                                    </label>
+                                    <input type="number" class="form-control" id="edit_stok_minimal" name="stok_minimal" 
+                                           value="${item.stok_minimal}" min="1" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="edit_harga_beli" class="form-label">Harga Beli (Rp)</label>
+                                    <input type="number" class="form-control" id="edit_harga_beli" name="harga_beli" 
+                                           value="${item.harga_beli || ''}" min="0" step="100">
+                                </div>
+                            </div>
+                            <div class="row g-3 mt-2">
+                                <div class="col-md-6">
+                                    <label for="edit_harga_jual" class="form-label">Harga Jual (Rp)</label>
+                                    <input type="number" class="form-control" id="edit_harga_jual" name="harga_jual" 
+                                           value="${item.harga_jual || ''}" min="0" step="100">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-section">
+                            <div class="form-section-title">
+                                <i class="bi bi-card-text"></i>
+                                Keterangan Tambahan
+                            </div>
+                            <div class="mb-3">
+                                <label for="edit_keterangan" class="form-label">Keterangan</label>
+                                <textarea class="form-control" id="edit_keterangan" name="keterangan" rows="3">${item.keterangan || ''}</textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info mt-4 mb-0">
+                            <div class="d-flex align-items-start">
+                                <i class="bi bi-info-circle fs-5 me-2"></i>
+                                <div>
+                                    <small><strong>Catatan:</strong> Field dengan tanda <span class="required-star">*</span> wajib diisi. Stok minimal tidak boleh lebih besar dari stok.</small>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    $('#editModalBody').html(html);
+                    
+                    // Inisialisasi Select2 untuk kategori di modal edit
+                    $('#edit_kategori_id').select2({
+                        placeholder: "Pilih Kategori",
+                        allowClear: true,
+                        dropdownParent: $('#editItemModal'),
+                        tags: true,
+                        createTag: function (params) {
+                            var term = params.term.trim();
+                            if (term === '') {
+                                return null;
+                            }
+                            return {
+                                id: term,
+                                text: term + ' (Tambah baru)',
+                                isNew: true
+                            };
+                        }
+                    });
+                    
+                    // Inisialisasi Select2 untuk satuan di modal edit
+                    $('#edit_satuan_id').select2({
+                        placeholder: "Pilih Satuan",
+                        allowClear: true,
+                        dropdownParent: $('#editItemModal')
+                    });
+                    
+                    // Inisialisasi Select2 untuk gudang di modal edit
+                    $('#edit_gudang_id').select2({
+                        placeholder: "Pilih Gudang",
+                        allowClear: true,
+                        dropdownParent: $('#editItemModal')
+                    });
+                    
+                    // Handle tambah kategori baru di modal edit
+                    $('#edit_kategori_id').on('select2:select', function (e) {
+                        var data = e.params.data;
+                        
+                        if (data.isNew) {
+                            $('#newCategoryName').val(data.text.replace(' (Tambah baru)', ''));
+                            $('#quickAddCategoryModal').modal('show');
+                            $(this).val(null).trigger('change');
+                        }
+                    });
+                    
+                    // Update form action
+                    $('#editItemForm').attr('action', `/admin/inventory/${itemId}`);
+                    
+                    // Tampilkan modal edit
+                    const editModal = new bootstrap.Modal(document.getElementById('editItemModal'));
+                    editModal.show();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal Memuat Data',
+                        text: 'Terjadi kesalahan saat mengambil data barang',
+                        confirmButtonColor: '#3085d6'
+                    });
+                });
+        }
+        
+        // Detail Modal Handler
+        const detailModal = document.getElementById('detailModal');
+        detailModal.addEventListener('show.bs.modal', function(event) {
+            const button = event.relatedTarget;
+            const itemId = button.getAttribute('data-item-id');
+            
+            // Tampilkan loading state
+            $('#detailModalBody').html(`
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
                     </div>
-                `;
-                
-                // Bagian Harga (jika ada)
-                if (item.harga_beli || item.harga_jual) {
-                    html += `
+                    <p class="mt-2 text-muted">Memuat data barang...</p>
+                </div>
+            `);
+            
+            // Fetch item data via AJAX menggunakan route yang benar
+            fetch(`/admin/inventory/${itemId}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const item = data.barang;
+                    
+                    // Tentukan status stok
+                    let statusText, statusClass, statusBadge;
+                    if (item.stok <= 0) {
+                        statusText = 'Habis';
+                        statusClass = 'text-danger';
+                        statusBadge = 'badge-danger';
+                    } else if (item.stok <= item.stok_minimal) {
+                        statusText = 'Kritis';
+                        statusClass = 'text-warning';
+                        statusBadge = 'badge-warning';
+                    } else if (item.stok <= (item.stok_minimal * 2)) {
+                        statusText = 'Rendah';
+                        statusClass = 'text-warning';
+                        statusBadge = 'badge-warning';
+                    } else {
+                        statusText = 'Baik';
+                        statusClass = 'text-success';
+                        statusBadge = 'badge-success';
+                    }
+                    
+                    let html = `
+                        <!-- Bagian Informasi Dasar -->
                         <div class="detail-section">
                             <div class="detail-section-title">
-                                <i class="bi bi-currency-dollar"></i>
-                                Informasi Harga
+                                <i class="bi bi-info-circle"></i>
+                                Informasi Dasar Barang
                             </div>
                             <div class="row">
                                 <div class="col-md-6 detail-row">
-                                    <div class="detail-label">Harga Beli</div>
-                                    <div class="detail-value">${item.harga_beli ? 'Rp ' + formatNumber(item.harga_beli) : '-'}</div>
+                                    <div class="detail-label">Kode Barang</div>
+                                    <div class="detail-value">${item.kode_barang || '-'}</div>
                                 </div>
                                 <div class="col-md-6 detail-row">
-                                    <div class="detail-label">Harga Jual</div>
-                                    <div class="detail-value">${item.harga_jual ? 'Rp ' + formatNumber(item.harga_jual) : '-'}</div>
+                                    <div class="detail-label">Nama Barang</div>
+                                    <div class="detail-value">${item.nama_barang || '-'}</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Bagian Klasifikasi -->
+                        <div class="detail-section">
+                            <div class="detail-section-title">
+                                <i class="bi bi-tags"></i>
+                                Klasifikasi Barang
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 detail-row">
+                                    <div class="detail-label">Kategori</div>
+                                    <div class="detail-value">${item.kategori?.nama_kategori || '-'}</div>
+                                </div>
+                                <div class="col-md-6 detail-row">
+                                    <div class="detail-label">Satuan</div>
+                                    <div class="detail-value">${item.satuan?.nama_satuan || '-'}</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Bagian Lokasi Penyimpanan -->
+                        <div class="detail-section">
+                            <div class="detail-section-title">
+                                <i class="bi bi-geo-alt"></i>
+                                Lokasi Penyimpanan
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 detail-row">
+                                    <div class="detail-label">Gudang</div>
+                                    <div class="detail-value">${item.gudang?.nama_gudang || '-'}</div>
+                                </div>
+                                <div class="col-md-6 detail-row">
+                                    <div class="detail-label">Lokasi Spesifik</div>
+                                    <div class="detail-value">${item.lokasi || '-'}</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Bagian Stok & Status -->
+                        <div class="detail-section">
+                            <div class="detail-section-title">
+                                <i class="bi bi-box"></i>
+                                Stok & Status
+                            </div>
+                            <div class="row">
+                                <div class="col-md-3 detail-row">
+                                    <div class="detail-label">Stok Tersedia</div>
+                                    <div class="detail-value">
+                                        <span class="badge ${item.stok <= 0 ? 'badge-danger' : (item.stok <= item.stok_minimal ? 'badge-warning' : 'badge-success')}">
+                                            <strong>${item.stok || 0}</strong>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 detail-row">
+                                    <div class="detail-label">Stok Minimal</div>
+                                    <div class="detail-value">${item.stok_minimal || 0}</div>
+                                </div>
+                                <div class="col-md-3 detail-row">
+                                    <div class="detail-label">Status Stok</div>
+                                    <div class="detail-value">
+                                        <span class="badge ${statusBadge}">${statusText}</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 detail-row">
+                                    <div class="detail-label">Sisa Stok</div>
+                                    <div class="detail-value">
+                                        <div class="progress" style="height: 10px;">
+                                            <div class="progress-bar ${item.stok <= 0 ? 'bg-danger' : (item.stok <= item.stok_minimal ? 'bg-warning' : 'bg-success')}" 
+                                                 role="progressbar" 
+                                                 style="width: ${item.stok_minimal > 0 ? Math.min(100, (item.stok / item.stok_minimal) * 50) : 0}%;">
+                                            </div>
+                                        </div>
+                                        <small class="text-muted">${item.stok} / ${item.stok_minimal * 2} (ideal)</small>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     `;
-                }
-                
-                // Bagian Keterangan (jika ada)
-                if (item.keterangan) {
+                    
+                    // Bagian Harga (jika ada)
+                    if (item.harga_beli || item.harga_jual) {
+                        html += `
+                            <div class="detail-section">
+                                <div class="detail-section-title">
+                                    <i class="bi bi-currency-dollar"></i>
+                                    Informasi Harga
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 detail-row">
+                                        <div class="detail-label">Harga Beli</div>
+                                        <div class="detail-value">${item.harga_beli ? 'Rp ' + formatNumber(item.harga_beli) : '-'}</div>
+                                    </div>
+                                    <div class="col-md-6 detail-row">
+                                        <div class="detail-label">Harga Jual</div>
+                                        <div class="detail-value">${item.harga_jual ? 'Rp ' + formatNumber(item.harga_jual) : '-'}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    
+                    // Bagian Keterangan (jika ada)
+                    if (item.keterangan) {
+                        html += `
+                            <div class="detail-section">
+                                <div class="detail-section-title">
+                                    <i class="bi bi-card-text"></i>
+                                    Keterangan
+                                </div>
+                                <div class="detail-row">
+                                    <div class="detail-label">Keterangan Tambahan</div>
+                                    <div class="detail-value">
+                                        <p class="mb-0">${item.keterangan}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    
+                    // Bagian Informasi Sistem
                     html += `
                         <div class="detail-section">
                             <div class="detail-section-title">
-                                <i class="bi bi-card-text"></i>
-                                Keterangan
+                                <i class="bi bi-clock-history"></i>
+                                Informasi Sistem
                             </div>
-                            <div class="detail-row">
-                                <div class="detail-label">Keterangan Tambahan</div>
-                                <div class="detail-value">
-                                    <p class="mb-0">${item.keterangan}</p>
+                            <div class="row">
+                                <div class="col-md-6 detail-row">
+                                    <div class="detail-label">Tanggal Dibuat</div>
+                                    <div class="detail-value">${item.created_at ? new Date(item.created_at).toLocaleDateString('id-ID') : '-'}</div>
+                                </div>
+                                <div class="col-md-6 detail-row">
+                                    <div class="detail-label">Terakhir Diperbarui</div>
+                                    <div class="detail-value">${item.updated_at ? new Date(item.updated_at).toLocaleDateString('id-ID') : '-'}</div>
                                 </div>
                             </div>
                         </div>
                     `;
-                }
-                
-                // Bagian Informasi Sistem
-                html += `
-                    <div class="detail-section">
-                        <div class="detail-section-title">
-                            <i class="bi bi-clock-history"></i>
-                            Informasi Sistem
+                    
+                    $('#detailModalBody').html(html);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    $('#detailModalBody').html(`
+                        <div class="text-center py-4">
+                            <i class="bi bi-exclamation-triangle text-danger display-4"></i>
+                            <p class="mt-2 text-danger">Gagal memuat data barang</p>
+                            <button class="btn btn-primary btn-sm mt-2" onclick="location.reload()">
+                                <i class="bi bi-arrow-clockwise"></i> Coba Lagi
+                            </button>
                         </div>
-                        <div class="row">
-                            <div class="col-md-6 detail-row">
-                                <div class="detail-label">Tanggal Dibuat</div>
-                                <div class="detail-value">${item.created_at ? new Date(item.created_at).toLocaleDateString('id-ID') : '-'}</div>
-                            </div>
-                            <div class="col-md-6 detail-row">
-                                <div class="detail-label">Terakhir Diperbarui</div>
-                                <div class="detail-value">${item.updated_at ? new Date(item.updated_at).toLocaleDateString('id-ID') : '-'}</div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                
-                $('#detailModalBody').html(html);
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                $('#detailModalBody').html(`
-                    <div class="text-center py-4">
-                        <i class="bi bi-exclamation-triangle text-danger display-4"></i>
-                        <p class="mt-2 text-danger">Gagal memuat data barang</p>
-                        <button class="btn btn-primary btn-sm mt-2" onclick="location.reload()">
-                            <i class="bi bi-arrow-clockwise"></i> Coba Lagi
-                        </button>
-                    </div>
-                `);
-            });
-    });
-    
-    // Delete Modal Handler
-    const deleteModal = document.getElementById('deleteModal');
-    deleteModal.addEventListener('show.bs.modal', function(event) {
-        const button = event.relatedTarget;
-        const itemId = button.getAttribute('data-item-id');
+                    `);
+                });
+        });
         
-        // Update form action
-        const form = deleteModal.querySelector('#deleteForm');
-        form.action = `/admin/inventory/${itemId}`;
+        // Delete Item Handler
+        $('.delete-item').click(function() {
+            const itemId = $(this).data('item-id');
+            
+            // Update form action
+            $('#deleteForm').attr('action', `/admin/inventory/${itemId}`);
+            
+            // Tampilkan modal delete
+            const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            deleteModal.show();
+        });
     });
     
     // Fungsi untuk menampilkan alert

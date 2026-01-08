@@ -18,4 +18,9 @@ class Kategori extends Model
     {
         return $this->hasMany(Barang::class, 'kategori_id');
     }
+
+    public function procurements()
+    {
+        return $this->hasMany(Procurement::class, 'kategori_id');
+    }
 }

@@ -19,6 +19,7 @@
             --light: #f8fafc;
             --delivered-color: #8b5cf6;
             --sidebar-width: 250px;
+            --procurement-color: #10b981;
         }
         
         * {
@@ -177,6 +178,7 @@
         .report-icon.inventory { background-color: var(--primary); }
         .report-icon.requests { background-color: var(--warning); }
         .report-icon.expenditures { background-color: var(--info); }
+        .report-icon.procurement { background-color: var(--procurement-color); }
         
         .charts-container {
             background: white;
@@ -231,6 +233,18 @@
             border-color: #60a5fa;
         }
         
+        .badge-completed {
+            background-color: #10b981 !important;
+            color: white !important;
+            border-color: #059669;
+        }
+        
+        .badge-cancelled {
+            background-color: #f87171 !important;
+            color: #7f1d1d !important;
+            border-color: #dc2626;
+        }
+        
         .badge-multi {
             background-color: #8b5cf6 !important;
             color: white !important;
@@ -241,6 +255,36 @@
             background-color: #6b7280 !important;
             color: white !important;
             border-color: #4b5563;
+        }
+        
+        .badge-new-item {
+            background-color: #0ea5e9 !important;
+            color: white !important;
+            border-color: #0284c7;
+        }
+        
+        .badge-restock {
+            background-color: #8b5cf6 !important;
+            color: white !important;
+            border-color: #7c3aed;
+        }
+        
+        .badge-priority-normal {
+            background-color: #d1fae5 !important;
+            color: #065f46 !important;
+            border-color: #10b981;
+        }
+        
+        .badge-priority-tinggi {
+            background-color: #fef3c7 !important;
+            color: #92400e !important;
+            border-color: #fbbf24;
+        }
+        
+        .badge-priority-mendesak {
+            background-color: #fee2e2 !important;
+            color: #991b1b !important;
+            border-color: #ef4444;
         }
         
         .table-card {
@@ -296,6 +340,52 @@
                 grid-template-columns: repeat(2, 1fr);
             }
         }
+        
+        /* Progress Bar for Procurement Status */
+        .procurement-progress {
+            height: 6px;
+            background-color: #e5e7eb;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+        
+        .procurement-progress-bar {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+        
+        .progress-pending { background-color: #fbbf24; }
+        .progress-approved { background-color: #10b981; }
+        .progress-processing { background-color: #60a5fa; }
+        .progress-completed { background-color: #8b5cf6; }
+        .progress-cancelled { background-color: #ef4444; }
+        .progress-rejected { background-color: #dc2626; }
+        
+        /* Budget Indicator */
+        .budget-indicator {
+            font-size: 0.8rem;
+            padding: 2px 6px;
+            border-radius: 3px;
+            background-color: #f3f4f6;
+            color: #6b7280;
+        }
+        
+        .budget-high {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .budget-medium {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+        
+        .budget-low {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
     </style>
 </head>
 <body>
@@ -318,6 +408,13 @@
                 <a href="{{ route('admin.inventory') }}" class="nav-link">
                     <i class="bi bi-box-seam"></i>
                     <span>Manajemen Barang</span>
+                </a>
+            </div>
+
+            <div class="nav-item">
+                <a href="{{ route('admin.procurement') }}" class="nav-link">
+                    <i class="bi bi-cart-plus"></i>
+                    <span>Pengadaan Barang</span>
                 </a>
             </div>
             
@@ -407,8 +504,13 @@
         
         <!-- Stats Cards -->
         <div class="stats-grid">
-            @foreach(['total_items' => 'Total Barang', 'total_categories' => 'Total Kategori', 
-                    'critical_stock' => 'Stok Kritis', 'out_of_stock' => 'Stok Habis'] as $key => $label)
+            @foreach([
+                'total_items' => 'Total Barang', 
+                'critical_stock' => 'Stok Kritis', 
+                'out_of_stock' => 'Stok Habis',
+                'total_procurements' => 'Total Pengadaan',
+                'pending_procurements' => 'Pengadaan Pending'
+            ] as $key => $label)
             <div class="stat-card">
                 <div class="stat-content">
                     <h5>{{ $stats[$key] ?? 0 }}</h5>
@@ -424,14 +526,15 @@
                 $reportData = [
                     ['type' => 'inventory', 'value' => $stats['total_items'] ?? 0, 'label' => 'Total Barang', 'desc' => 'Data stok barang saat ini'],
                     ['type' => 'requests', 'value' => $stats['total_requests'] ?? 0, 'label' => 'Permintaan Barang', 'desc' => 'Total permintaan bulan ini'],
-                    ['type' => 'expenditures', 'value' => $stats['total_expenditures'] ?? 0, 'label' => 'Pengeluaran', 'desc' => 'Pengeluaran barang bulan ini']
+                    ['type' => 'expenditures', 'value' => $stats['total_expenditures'] ?? 0, 'label' => 'Pengeluaran', 'desc' => 'Pengeluaran barang bulan ini'],
+                    ['type' => 'procurement', 'value' => $stats['total_procurements'] ?? 0, 'label' => 'Pengadaan', 'desc' => 'Total pengadaan bulan ini']
                 ];
             @endphp
             
             @foreach($reportData as $report)
             <div class="report-card">
                 <div class="report-icon {{ $report['type'] }}">
-                    <i class="bi bi-{{ $report['type'] == 'inventory' ? 'box' : ($report['type'] == 'requests' ? 'clipboard-check' : 'cash-stack') }}"></i>
+                    <i class="bi bi-{{ $report['type'] == 'inventory' ? 'box' : ($report['type'] == 'requests' ? 'clipboard-check' : ($report['type'] == 'procurement' ? 'cart-plus' : 'cash-stack')) }}"></i>
                 </div>
                 <div class="report-content">
                     <h5>{{ $report['value'] }}</h5>
@@ -450,8 +553,8 @@
                     <canvas id="monthlyRequestsChart" height="250"></canvas>
                 </div>
                 <div class="col-md-6">
-                    <h6 class="mb-3">Distribusi Status Permintaan</h6>
-                    <canvas id="requestStatusChart" height="250"></canvas>
+                    <h6 class="mb-3">Distribusi Status Pengadaan</h6>
+                    <canvas id="procurementStatusChart" height="250"></canvas>
                 </div>
             </div>
         </div>
@@ -502,15 +605,24 @@
                                 <th>Periode</th>
                                 <th>Total Data</th>
                                 <th>Detail Status</th>
+                                <th>Total Anggaran</th>
                                 <th>Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
                             @php
+                                // Helper function untuk menentukan level budget
+                                function getBudgetLevel($amount) {
+                                    if ($amount > 100000000) return 'budget-high';
+                                    if ($amount > 50000000) return 'budget-medium';
+                                    return 'budget-low';
+                                }
+                                
                                 $reportTypes = [
                                     ['type' => 'inventory', 'name' => 'Laporan Stok Barang'],
                                     ['type' => 'requests', 'name' => 'Laporan Permintaan'],
-                                    ['type' => 'expenditures', 'name' => 'Laporan Pengeluaran']
+                                    ['type' => 'expenditures', 'name' => 'Laporan Pengeluaran'],
+                                    ['type' => 'procurement', 'name' => 'Laporan Pengadaan']
                                 ];
                             @endphp
                             
@@ -525,6 +637,11 @@
                                         {{ $monthlyStats['total_requests'] ?? 0 }} permintaan
                                         <br><small class="text-muted">
                                             {{ $monthlyStats['total_items_in_requests'] ?? 0 }} item barang
+                                        </small>
+                                    @elseif($report['type'] == 'procurement')
+                                        {{ $monthlyStats['total_procurements'] ?? 0 }} pengadaan
+                                        <br><small class="text-muted">
+                                            {{ $monthlyStats['total_items_in_procurements'] ?? 0 }} item barang
                                         </small>
                                     @else
                                         {{ $monthlyStats['total_expenditures'] ?? 0 }} pengeluaran
@@ -553,8 +670,43 @@
                                         {{ $monthlyStats['single_barang_requests'] ?? 0 }} Single Barang
                                     </span>
                                     @endif
+                                    @elseif($report['type'] == 'procurement')
+                                    <span class="badge badge-pending">{{ $monthlyStats['pending_procurements'] ?? 0 }} Pending</span>
+                                    <span class="badge badge-approved">{{ $monthlyStats['approved_procurements'] ?? 0 }} Disetujui</span>
+                                    <span class="badge badge-rejected">{{ $monthlyStats['rejected_procurements'] ?? 0 }} Ditolak</span>
+                                    <span class="badge badge-processing">{{ $monthlyStats['processing_procurements'] ?? 0 }} Diproses</span>
+                                    <span class="badge badge-completed">{{ $monthlyStats['completed_procurements'] ?? 0 }} Selesai</span>
+                                    <span class="badge badge-cancelled">{{ $monthlyStats['cancelled_procurements'] ?? 0 }} Dibatalkan</span>
+                                    <br>
+                                    <span class="badge badge-new-item mt-1">
+                                        {{ $monthlyStats['new_item_procurements'] ?? 0 }} Barang Baru
+                                    </span>
+                                    <span class="badge badge-restock mt-1">
+                                        {{ $monthlyStats['restock_procurements'] ?? 0 }} Restock
+                                    </span>
                                     @else
                                     <span class="badge bg-info">Pengeluaran Barang</span>
+                                    @endif
+                                </td>
+                                <td id="budget_{{ $report['type'] }}_monthly">
+                                    @if($report['type'] == 'procurement')
+                                    @php
+                                        $budgetAmount = $monthlyStats['total_budget_procurements'] ?? 0;
+                                        $budgetClass = getBudgetLevel($budgetAmount);
+                                    @endphp
+                                    <span class="budget-indicator {{ $budgetClass }}">
+                                        Rp {{ number_format($budgetAmount, 0, ',', '.') }}
+                                    </span>
+                                    <br>
+                                    <small class="text-muted">
+                                        Rp {{ number_format($monthlyStats['avg_budget_per_procurement'] ?? 0, 0, ',', '.') }} / pengadaan
+                                    </small>
+                                    @elseif($report['type'] == 'expenditures')
+                                    <span class="budget-indicator budget-high">
+                                        Rp {{ number_format($monthlyStats['total_expenditures_value'] ?? 0, 0, ',', '.') }}
+                                    </span>
+                                    @else
+                                    <span class="text-muted">-</span>
                                     @endif
                                 </td>
                                 <td>
@@ -601,6 +753,7 @@
                             <option value="inventory">Laporan Stok Barang</option>
                             <option value="requests">Laporan Permintaan</option>
                             <option value="expenditures">Laporan Pengeluaran</option>
+                            <option value="procurement">Laporan Pengadaan</option>
                         </select>
                     </div>
                     <div class="mb-3">
@@ -663,6 +816,7 @@
     });
     
     function initCharts() {
+        // Monthly Requests Chart
         new Chart(document.getElementById('monthlyRequestsChart').getContext('2d'), {
             type: 'bar',
             data: {
@@ -681,18 +835,28 @@
             }
         });
         
-        new Chart(document.getElementById('requestStatusChart').getContext('2d'), {
-            type: 'doughnut',
+        // Procurement Status Chart
+        new Chart(document.getElementById('procurementStatusChart').getContext('2d'), {
+            type: 'pie',
             data: {
-                labels: ['Pending', 'Disetujui', 'Ditolak', 'Terkirim'],
+                labels: ['Pending', 'Disetujui', 'Diproses', 'Selesai', 'Dibatalkan', 'Ditolak'],
                 datasets: [{
                     data: [
-                        {{ $requestStatusData['pending']['count'] ?? 0 }},
-                        {{ $requestStatusData['approved']['count'] ?? 0 }},
-                        {{ $requestStatusData['rejected']['count'] ?? 0 }},
-                        {{ $requestStatusData['delivered']['count'] ?? 0 }}
+                        {{ $procurementStatusData['pending']['count'] ?? 0 }},
+                        {{ $procurementStatusData['approved']['count'] ?? 0 }},
+                        {{ $procurementStatusData['processing']['count'] ?? 0 }},
+                        {{ $procurementStatusData['completed']['count'] ?? 0 }},
+                        {{ $procurementStatusData['cancelled']['count'] ?? 0 }},
+                        {{ $procurementStatusData['rejected']['count'] ?? 0 }}
                     ],
-                    backgroundColor: ['#fbbf24', '#10b981', '#ef4444', '#8b5cf6'],
+                    backgroundColor: [
+                        '#fbbf24', // Pending - yellow
+                        '#10b981', // Approved - green
+                        '#60a5fa', // Processing - blue
+                        '#8b5cf6', // Completed - purple
+                        '#f87171', // Cancelled - red
+                        '#dc2626'  // Rejected - dark red
+                    ],
                     borderWidth: 1
                 }]
             },
@@ -778,6 +942,7 @@
     }
     
     function updateStats(data) {
+        // Update inventory stats
         $('#total_inventory_monthly').text(data.total_items + ' barang');
         $('#status_inventory_monthly').html(`
             <span class="badge bg-success">${data.good_stock} Baik</span>
@@ -786,6 +951,7 @@
             <span class="badge bg-secondary">${data.out_of_stock} Habis</span>
         `);
         
+        // Update requests stats
         $('#total_requests_monthly').html(`${data.total_requests} permintaan<br>
             <small class="text-muted">${data.total_items_in_requests} item barang</small>`);
         $('#status_requests_monthly').html(`
@@ -798,18 +964,65 @@
             <span class="badge badge-single mt-1">${data.single_barang_requests} Single Barang</span>` : ''}
         `);
         
+        // Update procurement stats
+        $('#total_procurement_monthly').html(`${data.total_procurements} pengadaan<br>
+            <small class="text-muted">${data.total_items_in_procurements} item barang</small>`);
+        $('#status_procurement_monthly').html(`
+            <span class="badge badge-pending">${data.pending_procurements} Pending</span>
+            <span class="badge badge-approved">${data.approved_procurements} Disetujui</span>
+            <span class="badge badge-rejected">${data.rejected_procurements} Ditolak</span>
+            <span class="badge badge-processing">${data.processing_procurements} Diproses</span>
+            <span class="badge badge-completed">${data.completed_procurements} Selesai</span>
+            <span class="badge badge-cancelled">${data.cancelled_procurements} Dibatalkan</span>
+            <br>
+            <span class="badge badge-new-item mt-1">
+                ${data.new_item_procurements} Barang Baru
+            </span>
+            <span class="badge badge-restock mt-1">
+                ${data.restock_procurements} Restock
+            </span>
+        `);
+        
+        // Update procurement budget
+        const budgetClass = getBudgetLevelClass(data.total_budget_procurements || 0);
+        $('#budget_procurement_monthly').html(`
+            <span class="budget-indicator ${budgetClass}">
+                Rp ${formatCurrency(data.total_budget_procurements || 0)}
+            </span>
+            <br>
+            <small class="text-muted">
+                Rp ${formatCurrency(data.avg_budget_per_procurement || 0)} / pengadaan
+            </small>
+        `);
+        
+        // Update expenditures stats
         $('#total_expenditures_monthly').html(`${data.total_expenditures} pengeluaran<br>
             <small class="text-muted">${data.total_items_in_expenditures} item terkirim</small>`);
+        $('#budget_expenditures_monthly').html(`
+            <span class="budget-indicator budget-high">
+                Rp ${formatCurrency(data.total_expenditures_value || 0)}
+            </span>
+        `);
+    }
+    
+    function formatCurrency(amount) {
+        return new Intl.NumberFormat('id-ID').format(amount);
+    }
+    
+    function getBudgetLevelClass(amount) {
+        if (amount > 100000000) return 'budget-high';
+        if (amount > 50000000) return 'budget-medium';
+        return 'budget-low';
     }
     
     function updateButtons(selectedMonth) {
         $('button[onclick*="viewReport("]').attr('onclick', function(i, old) {
-            return old.replace(/viewReport\('(inventory|requests|expenditures)'.*?\)/, 
+            return old.replace(/viewReport\('(inventory|requests|expenditures|procurement)'.*?\)/, 
                 "viewReport('$1', '" + selectedMonth + "')");
         });
         
         $('button[onclick*="exportReportWithPeriod("]').attr('onclick', function(i, old) {
-            return old.replace(/exportReportWithPeriod\('(inventory|requests|expenditures)'.*?\)/, 
+            return old.replace(/exportReportWithPeriod\('(inventory|requests|expenditures|procurement)'.*?\)/, 
                 "exportReportWithPeriod('$1', '" + selectedMonth + "')");
         });
     }
@@ -919,56 +1132,73 @@
     }
     
     function getTableHeaders(type) {
-    switch(type) {
-        case 'inventory':
-            return `<tr>
-                <th class="text-center">No</th>
-                <th>Kode Barang</th>
-                <th>Nama Barang</th>
-                <th>Kategori</th>
-                <th class="text-center">Stok</th>
-                <th class="text-center">Stok Minimal</th>
-                <th>Satuan</th>
-                <th>Gudang</th>
-                <th class="text-center">Status</th>
-            </tr>`;
-            
-        case 'requests':
-            return `<tr>
-                <th class="text-center">No</th>
-                <th>Kode Permintaan</th>
-                <th>Tanggal</th>
-                <th>Pemohon</th>
-                <th>Satker</th>
-                <th class="text-center">Jenis Permintaan</th>
-                <th class="text-center">Jumlah Barang</th>
-                <th class="text-center">Total Item</th>
-                <th class="text-center">Status</th>
-                <th class="text-center">Detail</th>
-            </tr>`;
-            
-        case 'expenditures':
-            return `<tr>
-                <th class="text-center">No</th>
-                <th>Kode Permintaan</th>
-                <th>Tanggal Pengiriman</th>
-                <th class="text-center">Jenis</th>
-                <th class="text-center">Jumlah Barang</th>
-                <th class="text-center">Total Item</th>
-                <th>Penerima</th>
-                <th>Keperluan</th>
-            </tr>`;
-            
-        default:
-            return `<tr><th>Data</th></tr>`;
+        switch(type) {
+            case 'inventory':
+                return `<tr>
+                    <th class="text-center">No</th>
+                    <th>Kode Barang</th>
+                    <th>Nama Barang</th>
+                    <th>Kategori</th>
+                    <th class="text-center">Stok</th>
+                    <th class="text-center">Stok Minimal</th>
+                    <th>Satuan</th>
+                    <th>Gudang</th>
+                    <th class="text-center">Status</th>
+                </tr>`;
+                
+            case 'requests':
+                return `<tr>
+                    <th class="text-center">No</th>
+                    <th>Kode Permintaan</th>
+                    <th>Tanggal</th>
+                    <th>Pemohon</th>
+                    <th>Satker</th>
+                    <th class="text-center">Jenis Permintaan</th>
+                    <th class="text-center">Jumlah Barang</th>
+                    <th class="text-center">Total Item</th>
+                    <th class="text-center">Status</th>
+                    <th class="text-center">Detail</th>
+                </tr>`;
+                
+            case 'expenditures':
+                return `<tr>
+                    <th class="text-center">No</th>
+                    <th>Kode Permintaan</th>
+                    <th>Tanggal Pengiriman</th>
+                    <th class="text-center">Jenis</th>
+                    <th class="text-center">Jumlah Barang</th>
+                    <th class="text-center">Total Item</th>
+                    <th>Penerima</th>
+                    <th>Keperluan</th>
+                </tr>`;
+                
+            case 'procurement':
+                return `<tr>
+                    <th class="text-center">No</th>
+                    <th>Kode/Nama Barang</th>
+                    <th>Tipe Pengadaan</th>
+                    <th class="text-center">Jumlah</th>
+                    <th>Harga Perkiraan</th>
+                    <th class="text-center">Total</th>
+                    <th>Prioritas</th>
+                    <th>Status</th>
+                    <th>Diajukan Oleh</th>
+                    <th>Tanggal</th>
+                    <th class="text-center">Progress</th>
+                    <th class="text-center">Aksi</th>
+                </tr>`;
+                
+            default:
+                return `<tr><th>Data</th></tr>`;
+        }
     }
-}
     
     function getColumnCount(type) {
         switch(type) {
             case 'inventory': return 9;
             case 'requests': return 10;
             case 'expenditures': return 8;
+            case 'procurement': return 12;
             default: return 1;
         }
     }
@@ -1014,7 +1244,8 @@
         const types = {
             'inventory': 'Stok Barang',
             'requests': 'Permintaan Barang',
-            'expenditures': 'Pengeluaran'
+            'expenditures': 'Pengeluaran',
+            'procurement': 'Pengadaan Barang'
         };
         return types[type] || type;
     }

@@ -46,6 +46,12 @@ class Barang extends Model
         return $this->hasMany(Pengeluaran::class);
     }
 
+    public function procurements()
+    {
+        return $this->hasMany(Procurement::class, 'barang_id');
+    }
+
+
     // Scope untuk barang dengan stok rendah
     public function scopeLowStock($query)
     {
