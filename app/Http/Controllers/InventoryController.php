@@ -7,6 +7,7 @@ use App\Models\Kategori;
 use App\Models\Satuan;
 use App\Models\Gudang;
 use App\Models\Procurement;
+use App\Models\ProcurementItem;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -24,7 +25,11 @@ class InventoryController extends Controller
         $user = auth()->user();
         
         // Query dasar dengan relasi
-        $query = Barang::with('kategori', 'satuan', 'gudang');
+        $query = Barang::with([
+            'kategori:id,nama_kategori',
+            'satuan:id,nama_satuan',
+            'gudang:id,nama_gudang,lokasi'
+        ]);
         
         // Filter berdasarkan pencarian
         if ($request->has('search') && !empty($request->search)) {
@@ -34,6 +39,12 @@ class InventoryController extends Controller
                   ->orWhere('kode_barang', 'like', '%' . $search . '%')
                   ->orWhereHas('kategori', function($query) use ($search) {
                       $query->where('nama_kategori', 'like', '%' . $search . '%');
+                  })
+                  ->orWhereHas('satuan', function($query) use ($search) {
+                      $query->where('nama_satuan', 'like', '%' . $search . '%');
+                  })
+                  ->orWhereHas('gudang', function($query) use ($search) {
+                      $query->where('nama_gudang', 'like', '%' . $search . '%');
                   });
             });
         }
@@ -64,17 +75,17 @@ class InventoryController extends Controller
         }
         
         // Sorting dan pagination
-        $items = $query->latest()->paginate(10)->withQueryString();
+        $items = $query->orderBy('created_at', 'desc')->paginate(10)->withQueryString();
         
-        // Ambil data untuk filter dropdown
-        $categories = Kategori::all();
-        $units = Satuan::all();
-        $warehouses = Gudang::all();
+        // Data untuk filter dropdown
+        $categories = Kategori::select('id', 'nama_kategori')->get();
+        $units = Satuan::select('id', 'nama_satuan')->get();
+        $warehouses = Gudang::select('id', 'nama_gudang')->get();
         
         // Hitung stats
         $stats = [
             'total_items' => Barang::count(),
-            'total_categories' => Kategori::count(),
+            'total_categories' => $categories->count(),
             'critical_stock' => Barang::where('stok', '>', 0)
                                   ->whereRaw('stok <= stok_minimal')
                                   ->count(),
@@ -136,13 +147,17 @@ class InventoryController extends Controller
             })->count();
         }
         
+        // Data untuk view modal pengadaan
+        $procurements = Procurement::where('status', 'pending')->count();
+        
         return view('admin.inventory', compact(
             'user', 
             'items', 
             'categories', 
             'units', 
             'warehouses', 
-            'stats'
+            'stats',
+            'procurements'
         ));
     }
     
@@ -156,6 +171,10 @@ class InventoryController extends Controller
     
     public function store(Request $request)
     {
+        // DEBUG: Tampilkan semua data yang masuk
+        \Log::info('=== STORE BARANG REQUEST DATA ===');
+        \Log::info('Request Data:', $request->all());
+        
         $request->validate([
             'kode_barang' => 'required|unique:barangs,kode_barang',
             'nama_barang' => 'required',
@@ -170,19 +189,51 @@ class InventoryController extends Controller
             'keterangan' => 'nullable',
         ]);
         
-        $data = $request->all();
+        $data = $request->only([
+            'kode_barang',
+            'nama_barang',
+            'kategori_id',
+            'satuan_id',
+            'gudang_id',
+            'stok',
+            'stok_minimal',
+            'harga_beli',
+            'harga_jual',
+            'lokasi',
+            'keterangan'
+        ]);
         
-        $barang = Barang::create($data);
+        // DEBUG: Tampilkan data yang akan disimpan
+        \Log::info('Data untuk disimpan:', $data);
         
-        // Log aktivitas tambah barang
-        $this->logActivity(
-            'Tambah Barang',
-            "Barang baru berhasil ditambahkan: {$barang->kode_barang} - {$barang->nama_barang}",
-            $barang
-        );
-        
-        return redirect()->route('admin.inventory')
-            ->with('success', 'Barang berhasil ditambahkan.');
+        try {
+            $barang = Barang::create($data);
+            
+            // DEBUG: Tampilkan data yang berhasil disimpan
+            \Log::info('Barang berhasil disimpan:', $barang->toArray());
+            \Log::info('Barang ID: ' . $barang->id);
+            \Log::info('Kategori ID: ' . $barang->kategori_id);
+            \Log::info('Satuan ID: ' . $barang->satuan_id);
+            \Log::info('Gudang ID: ' . $barang->gudang_id);
+            
+            // Log aktivitas tambah barang
+            $this->logActivity(
+                'Tambah Barang',
+                "Barang baru berhasil ditambahkan: {$barang->kode_barang} - {$barang->nama_barang}",
+                $barang
+            );
+            
+            return redirect()->route('admin.inventory')
+                ->with('success', 'Barang berhasil ditambahkan.');
+                
+        } catch (\Exception $e) {
+            \Log::error('Error menyimpan barang: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Gagal menyimpan barang: ' . $e->getMessage());
+        }
     }
     
     public function edit(Barang $barang)
@@ -191,8 +242,11 @@ class InventoryController extends Controller
         $units = Satuan::all();
         $warehouses = Gudang::all();
         
+        // Load relasi untuk JSON response
+        $barang->load(['kategori:id,nama_kategori', 'satuan:id,nama_satuan', 'gudang:id,nama_gudang']);
+        
         return response()->json([
-            'barang' => $barang->load('kategori', 'satuan', 'gudang'),
+            'barang' => $barang,
             'categories' => $categories,
             'units' => $units,
             'warehouses' => $warehouses
@@ -201,6 +255,12 @@ class InventoryController extends Controller
     
     public function update(Request $request, Barang $barang)
     {
+        // DEBUG: Tampilkan data update
+        \Log::info('=== UPDATE BARANG REQUEST DATA ===');
+        \Log::info('Barang ID: ' . $barang->id);
+        \Log::info('Data Lama:', $barang->toArray());
+        \Log::info('Request Data:', $request->all());
+        
         $request->validate([
             'kode_barang' => 'required|unique:barangs,kode_barang,' . $barang->id,
             'nama_barang' => 'required',
@@ -229,36 +289,53 @@ class InventoryController extends Controller
             'keterangan' => $barang->keterangan,
         ];
         
-        $newData = $request->all();
+        $newData = $request->only([
+            'kode_barang',
+            'nama_barang',
+            'kategori_id',
+            'satuan_id',
+            'gudang_id',
+            'stok',
+            'stok_minimal',
+            'harga_beli',
+            'harga_jual',
+            'lokasi',
+            'keterangan'
+        ]);
         
-        $barang->update($newData);
+        // DEBUG: Tampilkan data baru
+        \Log::info('Data baru untuk update:', $newData);
         
-        // Log aktivitas ubah barang
-        $this->logActivity(
-            'Update Barang',
-            "Barang berhasil diperbarui: {$barang->kode_barang} - {$barang->nama_barang}",
-            $barang,
-            json_encode(['old_data' => $oldData, 'new_data' => $newData])
-        );
-        
-        return redirect()->route('admin.inventory')
-            ->with('success', 'Barang berhasil diperbarui.');
+        try {
+            $barang->update($newData);
+            
+            // DEBUG: Tampilkan hasil update
+            $barang->refresh();
+            \Log::info('Barang setelah update:', $barang->toArray());
+            
+            // Log aktivitas ubah barang
+            $this->logActivity(
+                'Update Barang',
+                "Barang berhasil diperbarui: {$barang->kode_barang} - {$barang->nama_barang}",
+                $barang,
+                json_encode(['old_data' => $oldData, 'new_data' => $newData])
+            );
+            
+            return redirect()->route('admin.inventory')
+                ->with('success', 'Barang berhasil diperbarui.');
+                
+        } catch (\Exception $e) {
+            \Log::error('Error update barang: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Gagal mengupdate barang: ' . $e->getMessage());
+        }
     }
     
     public function destroy(Barang $barang)
     {
-        $barangData = [
-            'id' => $barang->id,
-            'kode_barang' => $barang->kode_barang,
-            'nama_barang' => $barang->nama_barang,
-            'kategori_id' => $barang->kategori_id,
-            'satuan_id' => $barang->satuan_id,
-            'stok' => $barang->stok,
-            'stok_minimal' => $barang->stok_minimal,
-            'harga_beli' => $barang->harga_beli,
-            'harga_jual' => $barang->harga_jual,
-        ];
-        
         // Log aktivitas hapus barang
         $this->logActivity(
             'Hapus Barang',
@@ -274,8 +351,15 @@ class InventoryController extends Controller
     
     public function show(Barang $barang)
     {
+        // Load semua relasi yang dibutuhkan untuk detail
+        $barang->load([
+            'kategori:id,nama_kategori',
+            'satuan:id,nama_satuan', 
+            'gudang:id,nama_gudang,lokasi'
+        ]);
+        
         return response()->json([
-            'barang' => $barang->load('kategori', 'satuan', 'gudang')
+            'barang' => $barang
         ]);
     }
     
@@ -315,9 +399,13 @@ class InventoryController extends Controller
     
     public function getBarangByKode($kode)
     {
-        $barang = Barang::with('kategori', 'satuan', 'gudang')
-            ->where('kode_barang', $kode)
-            ->first();
+        $barang = Barang::with([
+            'kategori:id,nama_kategori',
+            'satuan:id,nama_satuan',
+            'gudang:id,nama_gudang'
+        ])
+        ->where('kode_barang', $kode)
+        ->first();
             
         if (!$barang) {
             return response()->json([
@@ -334,7 +422,7 @@ class InventoryController extends Controller
     {
         $search = $request->input('search');
         
-        $items = Barang::with('kategori', 'satuan', 'gudang')
+        $items = Barang::with(['kategori:id,nama_kategori', 'satuan:id,nama_satuan', 'gudang:id,nama_gudang'])
             ->where('kode_barang', 'like', "%{$search}%")
             ->orWhere('nama_barang', 'like', "%{$search}%")
             ->orWhereHas('kategori', function($query) use ($search) {
@@ -343,7 +431,11 @@ class InventoryController extends Controller
             ->latest()
             ->paginate(10);
             
-        return view('admin.inventory', compact('items'));
+        $categories = Kategori::select('id', 'nama_kategori')->get();
+        $units = Satuan::select('id', 'nama_satuan')->get();
+        $warehouses = Gudang::select('id', 'nama_gudang')->get();
+        
+        return view('admin.inventory', compact('items', 'categories', 'units', 'warehouses'));
     }
     
     public function quickStoreCategory(Request $request)
@@ -374,37 +466,59 @@ class InventoryController extends Controller
     }
     
     /**
-     * Menangani pengajuan pengadaan barang dari modal
+     * Menangani pengajuan pengadaan multi-barang
      */
     public function storePengadaan(Request $request)
     {
-        // Log data yang diterima
-        Log::info('StorePengadaan Request Data:', $request->all());
-        
-        // Validasi berdasarkan tipe pengadaan
+        // Validasi data umum pengadaan
         $validator = Validator::make($request->all(), [
-            'tipe_pengadaan' => 'required|in:baru,restock',
-            'kode_barang' => 'required_if:tipe_pengadaan,baru|string|max:50|nullable',
-            'nama_barang' => 'required_if:tipe_pengadaan,baru|string|max:255|nullable',
-            'kategori_id' => 'required_if:tipe_pengadaan,baru|exists:kategoris,id|nullable',
-            'satuan_id' => 'required_if:tipe_pengadaan,baru|exists:satuans,id|nullable',
-            'barang_id' => 'required_if:tipe_pengadaan,restock|exists:barangs,id|nullable',
-            'jumlah' => 'required|integer|min:1',
-            'harga_perkiraan' => 'required|numeric|min:0',
             'prioritas' => 'required|in:normal,tinggi,mendesak',
             'alasan_pengadaan' => 'required|string|min:10',
             'catatan' => 'nullable|string',
+            'barang' => 'required|array|min:1',
+            'barang.*.tipe_pengadaan' => 'required|in:restock,baru',
+            'barang.*.jumlah' => 'required|integer|min:1',
+            'barang.*.harga_perkiraan' => 'required|numeric|min:0',
+            'barang.*.keterangan' => 'nullable|string',
         ], [
-            'kode_barang.required_if' => 'Kode barang wajib diisi untuk pengadaan barang baru',
-            'nama_barang.required_if' => 'Nama barang wajib diisi untuk pengadaan barang baru',
-            'kategori_id.required_if' => 'Kategori wajib dipilih untuk pengadaan barang baru',
-            'satuan_id.required_if' => 'Satuan wajib dipilih untuk pengadaan barang baru',
-            'barang_id.required_if' => 'Barang wajib dipilih untuk pengadaan restock',
-            'barang_id.exists' => 'Barang yang dipilih tidak valid',
+            'alasan_pengadaan.required' => 'Alasan pengadaan wajib diisi',
+            'alasan_pengadaan.min' => 'Alasan pengadaan minimal 10 karakter',
+            'barang.required' => 'Minimal 1 barang harus ditambahkan',
+            'barang.array' => 'Format data barang tidak valid',
+            'barang.min' => 'Minimal 1 barang harus ditambahkan',
+            'barang.*.jumlah.required' => 'Jumlah barang wajib diisi',
+            'barang.*.jumlah.min' => 'Jumlah barang minimal 1',
+            'barang.*.harga_perkiraan.required' => 'Harga perkiraan wajib diisi',
+            'barang.*.harga_perkiraan.min' => 'Harga perkiraan minimal 0',
         ]);
         
+        // Validasi tambahan untuk barang baru
+        $validator->sometimes('barang.*.kode_barang', 'required|string|max:50|unique:barangs,kode_barang', function($input, $item) {
+            return $item['tipe_pengadaan'] == 'baru';
+        });
+        
+        $validator->sometimes('barang.*.nama_barang', 'required|string|max:255', function($input, $item) {
+            return $item['tipe_pengadaan'] == 'baru';
+        });
+        
+        $validator->sometimes('barang.*.kategori_id', 'required|exists:kategoris,id', function($input, $item) {
+            return $item['tipe_pengadaan'] == 'baru';
+        });
+        
+        $validator->sometimes('barang.*.satuan_id', 'required|exists:satuans,id', function($input, $item) {
+            return $item['tipe_pengadaan'] == 'baru';
+        });
+        
+        $validator->sometimes('barang.*.stok_minimal', 'nullable|integer|min:1', function($input, $item) {
+            return $item['tipe_pengadaan'] == 'baru';
+        });
+        
+        // Validasi tambahan untuk restock barang
+        $validator->sometimes('barang.*.barang_id', 'required|exists:barangs,id', function($input, $item) {
+            return $item['tipe_pengadaan'] == 'restock';
+        });
+        
         if ($validator->fails()) {
-            Log::error('Validation failed:', $validator->errors()->toArray());
             return redirect()->route('admin.inventory')
                 ->withErrors($validator)
                 ->withInput()
@@ -414,100 +528,168 @@ class InventoryController extends Controller
         try {
             DB::beginTransaction();
             
-            $data = $request->all();
-            $data['user_id'] = Auth::id();
-            $data['status'] = 'pending';
+            $barangData = $request->input('barang', []);
+            $totalHarga = 0;
+            $totalJumlah = 0;
+            $barangBaruCount = 0;
+            $restockCount = 0;
             
-            Log::info('Process Pengadaan - Tipe: ' . $request->tipe_pengadaan);
+            // Tentukan tipe pengadaan utama berdasarkan barang yang diajukan
+            $tipePengadaan = 'multi';
             
-            // Handle berdasarkan tipe pengadaan
-            if ($request->tipe_pengadaan == 'restock' && $request->filled('barang_id')) {
-                $barang = Barang::with('kategori', 'satuan')->find($request->barang_id);
-                
-                if (!$barang) {
-                    throw new \Exception('Barang tidak ditemukan untuk restock');
-                }
-                
-                // Isi data dari barang yang ada
-                $data['kode_barang'] = $barang->kode_barang;
-                $data['nama_barang'] = $barang->nama_barang;
-                $data['kategori_id'] = $barang->kategori_id;
-                $data['satuan_id'] = $barang->satuan_id;
-                $data['barang_id'] = $barang->id; // Simpan ID barang
-                
-                Log::info('Restock data prepared:', [
-                    'barang_id' => $barang->id,
-                    'kode_barang' => $barang->kode_barang,
-                    'nama_barang' => $barang->nama_barang,
-                    'kategori_id' => $barang->kategori_id,
-                    'satuan_id' => $barang->satuan_id,
-                ]);
+            // Cek apakah semua barang adalah barang baru
+            $allBarangBaru = collect($barangData)->every(function($item) {
+                return $item['tipe_pengadaan'] == 'baru';
+            });
+            
+            // Cek apakah semua barang adalah restock
+            $allRestock = collect($barangData)->every(function($item) {
+                return $item['tipe_pengadaan'] == 'restock';
+            });
+            
+            // Tentukan tipe pengadaan berdasarkan komposisi barang
+            if ($allBarangBaru) {
+                $tipePengadaan = 'baru';
+            } elseif ($allRestock) {
+                $tipePengadaan = 'restock';
             } else {
-                // Untuk barang baru, barang_id null
-                $data['barang_id'] = null;
+                $tipePengadaan = 'multi';
+            }
+            
+            // Buat procurement utama dengan tipe pengadaan yang benar
+            $procurement = new Procurement();
+            $procurement->user_id = Auth::id();
+            $procurement->prioritas = $request->prioritas;
+            $procurement->alasan_pengadaan = $request->alasan_pengadaan;
+            $procurement->catatan = $request->catatan;
+            $procurement->status = 'pending';
+            $procurement->tipe_pengadaan = $tipePengadaan; // Tipe pengadaan utama
+            $procurement->is_multi_item = (count($barangData) > 1);
+            
+            // Simpan procurement utama
+            $procurement->save();
+            
+            // Simpan items ke procurement_items
+            foreach ($barangData as $index => $item) {
+                $procurementItem = new ProcurementItem();
+                $procurementItem->procurement_id = $procurement->id;
+                $procurementItem->jumlah = $item['jumlah'];
+                $procurementItem->harga_perkiraan = $item['harga_perkiraan'];
+                $procurementItem->deskripsi = $item['keterangan'] ?? null;
+                $procurementItem->status = 'pending';
+                $procurementItem->tipe_pengadaan = $item['tipe_pengadaan']; // Tipe per item
                 
-                // Cek jika kode_barang sudah ada untuk barang baru
-                if ($request->filled('kode_barang')) {
-                    $existing = Barang::where('kode_barang', $request->kode_barang)->first();
-                    if ($existing) {
-                        throw new \Exception('Kode barang sudah digunakan');
+                if ($item['tipe_pengadaan'] == 'baru') {
+                    // Barang baru
+                    $procurementItem->kode_barang = $item['kode_barang'];
+                    $procurementItem->nama_barang = $item['nama_barang'];
+                    
+                    // Jika ada kategori_id dan satuan_id, ambil namanya
+                    if (!empty($item['kategori_id'])) {
+                        $kategori = Kategori::find($item['kategori_id']);
+                        if ($kategori) {
+                            $procurementItem->kategori = $kategori->nama_kategori;
+                            $procurementItem->kategori_id = $kategori->id;
+                        }
                     }
+                    
+                    if (!empty($item['satuan_id'])) {
+                        $satuan = Satuan::find($item['satuan_id']);
+                        if ($satuan) {
+                            $procurementItem->satuan = $satuan->nama_satuan;
+                            $procurementItem->satuan_id = $satuan->id;
+                        }
+                    }
+                    
+                    // Default gudang jika tidak ada
+                    $defaultGudang = Gudang::first();
+                    if ($defaultGudang) {
+                        $procurementItem->gudang = $defaultGudang->nama_gudang;
+                        $procurementItem->gudang_id = $defaultGudang->id;
+                    } else {
+                        $procurementItem->gudang = 'Gudang Utama';
+                    }
+                    
+                    // Untuk barang baru, barang_id = null
+                    $procurementItem->barang_id = null;
+                    $procurementItem->stok_minimal = $item['stok_minimal'] ?? 10;
+                    
+                    $barangBaruCount++;
+                } else {
+                    // Restock barang yang sudah ada
+                    $barang = Barang::with(['kategori', 'satuan', 'gudang'])->find($item['barang_id']);
+                    if (!$barang) {
+                        throw new \Exception("Barang dengan ID {$item['barang_id']} tidak ditemukan");
+                    }
+                    
+                    $procurementItem->barang_id = $barang->id;
+                    $procurementItem->kode_barang = $barang->kode_barang;
+                    $procurementItem->nama_barang = $barang->nama_barang;
+                    $procurementItem->kategori = $barang->kategori->nama_kategori ?? 'Umum';
+                    $procurementItem->kategori_id = $barang->kategori_id;
+                    $procurementItem->satuan = $barang->satuan->nama_satuan ?? 'Unit';
+                    $procurementItem->satuan_id = $barang->satuan_id;
+                    $procurementItem->gudang = $barang->gudang->nama_gudang ?? 'Gudang Utama';
+                    $procurementItem->gudang_id = $barang->gudang_id;
+                    $procurementItem->stok_minimal = $barang->stok_minimal;
+                    
+                    $restockCount++;
                 }
                 
-                Log::info('Barang baru data prepared:', [
-                    'kode_barang' => $data['kode_barang'] ?? 'N/A',
-                    'nama_barang' => $data['nama_barang'] ?? 'N/A',
-                    'kategori_id' => $data['kategori_id'] ?? 'N/A',
-                    'satuan_id' => $data['satuan_id'] ?? 'N/A',
-                ]);
+                // Hitung subtotal
+                $procurementItem->subtotal = $item['jumlah'] * $item['harga_perkiraan'];
+                
+                // Simpan item
+                $procurementItem->save();
+                
+                // Update total
+                $totalHarga += $procurementItem->subtotal;
+                $totalJumlah += $item['jumlah'];
             }
             
-            // Pastikan semua field yang diperlukan ada
-            if (empty($data['kategori_id']) || empty($data['satuan_id'])) {
-                throw new \Exception('Kategori dan Satuan harus diisi');
+            // Update procurement dengan total
+            $procurement->total_perkiraan = $totalHarga;
+            $procurement->total_jumlah = $totalJumlah;
+            $procurement->save();
+            
+            // Log aktivitas pengajuan pengadaan multi-barang
+            $logDetails = [
+                'kode_pengadaan' => $procurement->kode_pengadaan,
+                'tipe_pengadaan' => $tipePengadaan,
+                'total_barang' => count($barangData),
+                'barang_baru' => $barangBaruCount,
+                'restock' => $restockCount,
+                'total_jumlah' => $totalJumlah,
+                'total_harga' => $totalHarga,
+                'prioritas' => $request->prioritas
+            ];
+            
+            if ($tipePengadaan == 'multi') {
+                $logDetails['komposisi'] = 'Campuran (Baru dan Restock)';
             }
             
-            // Hilangkan field yang tidak diperlukan
-            unset($data['_token']);
-            
-            // Debug: Cek data sebelum disimpan
-            Log::info('Final data to save:', $data);
-            
-            // Simpan data pengadaan
-            $procurement = Procurement::create($data);
-            
-            Log::info('Procurement created successfully:', [
-                'id' => $procurement->id,
-                'kode_barang' => $procurement->kode_barang,
-                'nama_barang' => $procurement->nama_barang,
-            ]);
-            
-            // Log aktivitas pengajuan pengadaan
             $this->logActivity(
-                'Pengajuan Pengadaan',
-                "Pengajuan pengadaan diajukan: {$procurement->kode_barang} - {$procurement->nama_barang}",
+                'Pengajuan Pengadaan ' . ucfirst($tipePengadaan),
+                "Pengajuan pengadaan {$tipePengadaan} diajukan: {$procurement->kode_pengadaan}",
                 $procurement,
-                json_encode([
-                    'procurement_id' => $procurement->id,
-                    'tipe' => $procurement->tipe_pengadaan,
-                    'jumlah' => $procurement->jumlah,
-                    'harga_perkiraan' => $procurement->harga_perkiraan,
-                    'prioritas' => $procurement->prioritas
-                ])
+                json_encode($logDetails)
             );
             
             DB::commit();
             
+            $summaryMessage = "Pengajuan pengadaan <strong>{$tipePengadaan}</strong> dengan kode <strong>{$procurement->kode_pengadaan}</strong> berhasil dikirim. ";
+            $summaryMessage .= "Total: " . count($barangData) . " barang (" . $barangBaruCount . " baru, " . $restockCount . " restock), ";
+            $summaryMessage .= $totalJumlah . " unit, Rp " . number_format($totalHarga, 0, ',', '.') . ". Menunggu persetujuan.";
+            
             return redirect()->route('admin.inventory')
-                ->with('success', 'Pengajuan pengadaan berhasil dikirim. Menunggu persetujuan.')
+                ->with('success', $summaryMessage)
                 ->with('procurement_id', $procurement->id);
                 
         } catch (\Exception $e) {
             DB::rollBack();
             
-            Log::error('Error storePengadaan: ' . $e->getMessage());
+            Log::error('Error storePengadaan Multi-Barang: ' . $e->getMessage());
             Log::error('Stack trace: ' . $e->getTraceAsString());
-            Log::error('Request data: ', $request->all());
             
             return redirect()->route('admin.inventory')
                 ->with('error', 'Terjadi kesalahan: ' . $e->getMessage())
@@ -515,19 +697,105 @@ class InventoryController extends Controller
         }
     }
     
-    public function getBarangForProcurement()
+    /**
+     * Generate kode barang otomatis
+     */
+    public function generateKodeBarang()
     {
-        $barang = Barang::select('id', 'kode_barang', 'nama_barang', 'stok', 'stok_minimal')
+        $prefix = 'BRG';
+        $year = date('Y');
+        $month = date('m');
+        
+        // Cari nomor urut terakhir untuk bulan ini
+        $lastBarang = Barang::whereYear('created_at', $year)
+            ->whereMonth('created_at', $month)
+            ->orderBy('id', 'desc')
+            ->first();
+        
+        if ($lastBarang && $lastBarang->kode_barang) {
+            // Coba ekstrak nomor urut dari kode terakhir
+            if (preg_match('/-(\d+)$/', $lastBarang->kode_barang, $matches)) {
+                $lastNumber = (int)$matches[1];
+                $nextNumber = $lastNumber + 1;
+            } else {
+                // Jika format tidak sesuai, hitung jumlah untuk bulan ini
+                $countBarang = Barang::whereYear('created_at', $year)
+                    ->whereMonth('created_at', $month)
+                    ->count();
+                $nextNumber = $countBarang + 1;
+            }
+        } else {
+            $nextNumber = 1;
+        }
+        
+        // Format: BRG-YYYYMM-XXXX
+        $kodeBarang = sprintf('%s-%s%02d-%04d', $prefix, $year, $month, $nextNumber);
+        
+        return response()->json([
+            'success' => true,
+            'kode_barang' => $kodeBarang,
+            'message' => 'Kode barang berhasil digenerate'
+        ]);
+    }
+    
+    /**
+     * Get barang untuk pengadaan (AJAX)
+     */
+    public function getBarangForProcurement(Request $request)
+    {
+        $search = $request->input('q', '');
+        
+        $barang = Barang::with(['kategori:id,nama_kategori', 'satuan:id,nama_satuan'])
+            ->select('id', 'kode_barang', 'nama_barang', 'stok', 'stok_minimal', 'kategori_id', 'satuan_id')
+            ->when($search, function($query, $search) {
+                return $query->where(function($q) use ($search) {
+                    $q->where('kode_barang', 'like', "%{$search}%")
+                      ->orWhere('nama_barang', 'like', "%{$search}%")
+                      ->orWhereHas('kategori', function($q) use ($search) {
+                          $q->where('nama_kategori', 'like', "%{$search}%");
+                      });
+                });
+            })
             ->orderBy('nama_barang')
+            ->limit(20)
             ->get();
             
-        return response()->json($barang);
+        $results = $barang->map(function($item) {
+            $status = '';
+            if ($item->stok <= 0) {
+                $status = ' (Habis)';
+            } elseif ($item->stok <= $item->stok_minimal) {
+                $status = ' (Kritis)';
+            } elseif ($item->stok <= ($item->stok_minimal * 2)) {
+                $status = ' (Rendah)';
+            }
+            
+            return [
+                'id' => $item->id,
+                'text' => $item->kode_barang . ' - ' . $item->nama_barang . ' (Stok: ' . $item->stok . $status . ')',
+                'kode' => $item->kode_barang,
+                'nama' => $item->nama_barang,
+                'stok' => $item->stok,
+                'stok_minimal' => $item->stok_minimal,
+                'kategori' => $item->kategori ? $item->kategori->nama_kategori : 'Umum',
+                'satuan' => $item->satuan ? $item->satuan->nama_satuan : 'Unit',
+                'status' => $status
+            ];
+        });
+        
+        return response()->json([
+            'results' => $results,
+            'pagination' => ['more' => false]
+        ]);
     }
     
     public function getBarangDetail($id)
     {
-        $barang = Barang::with('kategori', 'satuan')
-            ->find($id);
+        $barang = Barang::with([
+            'kategori:id,nama_kategori',
+            'satuan:id,nama_satuan'
+        ])
+        ->find($id);
             
         if (!$barang) {
             return response()->json([
@@ -545,7 +813,7 @@ class InventoryController extends Controller
      */
     public function getRecentProcurements()
     {
-        $procurements = Procurement::with('user', 'kategori', 'satuan')
+        $procurements = Procurement::with(['user:id,name,email', 'procurementItems'])
             ->where('status', 'pending')
             ->latest()
             ->take(5)
@@ -562,37 +830,41 @@ class InventoryController extends Controller
      */
     private function logActivity($action, $description, $relatedModel = null, $details = null)
     {
-        $activityData = [
-            'user_id' => Auth::id(),
-            'action' => $action,
-            'description' => $description,
-            'details' => $details,
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-            'created_at' => now(),
-            'updated_at' => now(),
-        ];
-        
-        // Tambahkan informasi terkait model
-        if ($relatedModel) {
-            $modelType = get_class($relatedModel);
-            $modelId = $relatedModel->id;
+        try {
+            $activityData = [
+                'user_id' => Auth::id(),
+                'action' => $action,
+                'description' => $description,
+                'details' => $details,
+                'ip_address' => request()->ip(),
+                'user_agent' => request()->userAgent(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
             
-            $activityData['model_type'] = $modelType;
-            $activityData['model_id'] = $modelId;
+            // Tambahkan informasi terkait model
+            if ($relatedModel) {
+                $modelType = get_class($relatedModel);
+                $modelId = $relatedModel->id;
+                
+                $activityData['model_type'] = $modelType;
+                $activityData['model_id'] = $modelId;
+            }
+            
+            // Simpan ke database
+            ActivityLog::create($activityData);
+            
+            // Juga log ke file untuk backup
+            Log::info('Activity Log: ' . $action, [
+                'user_id' => Auth::id(),
+                'description' => $description,
+                'model_type' => $modelType ?? null,
+                'model_id' => $modelId ?? null,
+                'details' => $details,
+                'ip' => request()->ip(),
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to log activity: ' . $e->getMessage());
         }
-        
-        // Simpan ke database
-        ActivityLog::create($activityData);
-        
-        // Juga log ke file untuk backup
-        Log::info('Activity Log: ' . $action, [
-            'user_id' => Auth::id(),
-            'description' => $description,
-            'model_type' => $modelType ?? null,
-            'model_id' => $modelId ?? null,
-            'details' => $details,
-            'ip' => request()->ip(),
-        ]);
     }
 }

@@ -673,12 +673,12 @@
             </div>
             
             <div class="stat-card">
-                <div class="stat-icon" style="background-color: #fef3c7; color: var(--warning);">
-                    <i class="bi bi-clock-history"></i>
+                <div class="stat-icon" style="background-color: #fee2e2; color: #dc2626;">
+                    <i class="bi bi-x-circle"></i>
                 </div>
                 <div class="stat-content">
-                    <h3>{{ $stats['total_permintaan'] ?? 0 }}</h3>
-                    <p>Total Permintaan</p>
+                    <h3>{{ ($stats['total_satker'] ?? 0) - ($stats['satker_aktif'] ?? 0) }}</h3>
+                    <p>Satker Tidak Aktif</p>
                 </div>
             </div>
             

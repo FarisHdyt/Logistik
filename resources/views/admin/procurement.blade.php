@@ -9,7 +9,6 @@
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <style>
         :root {
             --primary: #1e3a8a;
@@ -278,6 +277,12 @@
             border-color: #fbbf24;
         }
         
+        .badge-multi {
+            background-color: #8b5cf6 !important;
+            color: white !important;
+            border-color: #7c3aed;
+        }
+        
         /* Prioritas badges */
         .badge-priority-normal {
             background-color: #d1fae5 !important;
@@ -295,6 +300,17 @@
             background-color: #fee2e2 !important;
             color: #991b1b !important;
             border-color: #f87171;
+        }
+        
+        /* Multi Item Badge */
+        .multi-item-badge {
+            background-color: #0ea5e9;
+            color: white;
+            padding: 0.1rem 0.4rem;
+            border-radius: 3px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-right: 0.5rem;
         }
         
         /* Tables */
@@ -330,135 +346,197 @@
             min-width: 300px;
         }
         
-        /* Select2 Custom Styling */
-        .select2-container--default .select2-selection--single {
-            border: 1px solid #dee2e6;
-            height: calc(1.5em + 0.75rem + 2px);
-            border-radius: 0.375rem;
-            padding: 0.375rem 0.75rem;
-        }
-        
-        .select2-container--default .select2-selection--single .select2-selection__rendered {
-            line-height: 1.5;
-            color: #212529;
-        }
-        
-        .select2-container--default .select2-selection--single .select2-selection__arrow {
-            height: calc(1.5em + 0.75rem + 2px);
-        }
-        
-        /* Form Section Styling */
-        .form-section {
-            background: #f8fafc;
-            border-radius: 8px;
-            padding: 1.25rem;
-            margin-bottom: 1.5rem;
-            border-left: 4px solid var(--primary);
-        }
-        
-        .detail-section {
-            background: #f8fafc;
-            border-radius: 8px;
-            padding: 1.25rem;
-            margin-bottom: 1.5rem;
-            border-left: 4px solid var(--info);
-        }
-        
-        .form-section-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: var(--primary);
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .detail-section-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: var(--info);
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .detail-label {
-            font-weight: 600;
-            color: var(--primary);
-            margin-bottom: 0.4rem;
-            display: block;
-        }
-        
-        .detail-value {
-            background: white;
-            border: 1px solid #e5e7eb;
+        /* Multi Item Container */
+        .multi-item-container {
+            border: 1px solid #e2e8f0;
             border-radius: 6px;
-            padding: 0.75rem 1rem;
-            margin-bottom: 1rem;
-            min-height: 44px;
+            padding: 0.75rem;
+            background-color: #f8fafc;
+            margin-top: 0.5rem;
+        }
+        
+        .multi-item-header {
             display: flex;
             align-items: center;
-            color: #374151;
+            margin-bottom: 0.5rem;
         }
         
-        .detail-row {
-            margin-bottom: 0.75rem;
-        }
-        
-        /* Multi Item Barang Styling */
-        .multi-barang-list {
+        .multi-item-list {
             list-style: none;
             padding: 0;
             margin: 0;
-        }
-        
-        .multi-barang-list li {
-            padding: 0.25rem 0;
-            border-bottom: 1px solid #f1f1f1;
             font-size: 0.85rem;
         }
         
-        .multi-barang-list li:last-child {
+        .multi-item-list li {
+            padding: 0.25rem 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .multi-item-list li:last-child {
             border-bottom: none;
         }
         
-        .barang-kode {
-            background-color: #e8f4fd;
+        .item-kode {
+            background-color: #e0f2fe;
             color: #0369a1;
-            padding: 0.15rem 0.4rem;
+            padding: 0.1rem 0.3rem;
             border-radius: 3px;
+            font-family: monospace;
             font-size: 0.75rem;
             margin-right: 0.3rem;
-            font-family: monospace;
         }
         
-        .barang-info {
-            color: #666;
+        .item-detail {
+            color: #64748b;
             font-size: 0.8rem;
             display: block;
         }
         
-        /* Modal Form Styling */
-        .modal-form {
-            max-height: 70vh;
-            overflow-y: auto;
-            padding-right: 0.5rem;
+        /* Item Status Badges in Multi Item List */
+        .item-status-badge {
+            font-size: 0.65rem;
+            padding: 0.1rem 0.3rem;
+            border-radius: 3px;
+            margin-left: 0.5rem;
+            font-weight: 600;
         }
         
-        .modal-form::-webkit-scrollbar {
-            width: 6px;
+        .item-status-completed {
+            background-color: #d1fae5;
+            color: #065f46;
+            border: 1px solid #10b981;
         }
         
-        .modal-form::-webkit-scrollbar-track {
-            background: #f1f1f1;
+        .item-status-rejected {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #f87171;
+        }
+        
+        .item-status-cancelled {
+            background-color: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fbbf24;
+        }
+        
+        .item-status-pending {
+            background-color: #e0f2fe;
+            color: #0369a1;
+            border: 1px solid #0ea5e9;
+        }
+        
+        .item-status-approved {
+            background-color: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #60a5fa;
+        }
+        
+        /* Rejected/Cancelled Item Styling */
+        .item-rejected {
+            opacity: 0.7;
+            text-decoration: line-through;
+            color: #991b1b;
+        }
+        
+        .item-cancelled {
+            opacity: 0.7;
+            color: #92400e;
+        }
+        
+        .item-rejected .item-detail,
+        .item-cancelled .item-detail {
+            color: inherit;
+        }
+        
+        .rejection-reason {
+            background-color: #fee2e2;
+            border: 1px solid #f87171;
+            border-radius: 4px;
+            padding: 0.25rem 0.5rem;
+            margin-top: 0.25rem;
+            font-size: 0.75rem;
+            color: #991b1b;
+        }
+        
+        .total-summary {
+            background-color: #f0f9ff;
+            border: 1px solid #e0f2fe;
+            border-radius: 4px;
+            padding: 0.5rem;
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+        }
+        
+        .total-summary span {
+            font-weight: 600;
+            color: #0369a1;
+        }
+        
+        /* Summary Stats in Multi Item */
+        .summary-stats {
+            display: flex;
+            gap: 1rem;
+            margin-top: 0.5rem;
+            font-size: 0.8rem;
+        }
+        
+        .stat-approved {
+            color: #065f46;
+            background-color: #d1fae5;
+            padding: 0.2rem 0.5rem;
             border-radius: 3px;
         }
         
-        .modal-form::-webkit-scrollbar-thumb {
-            background: #c1c1c1;
+        .stat-rejected {
+            color: #991b1b;
+            background-color: #fee2e2;
+            padding: 0.2rem 0.5rem;
             border-radius: 3px;
+        }
+        
+        .stat-cancelled {
+            color: #92400e;
+            background-color: #fef3c7;
+            padding: 0.2rem 0.5rem;
+            border-radius: 3px;
+        }
+        
+        /* Timeline Styles */
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+        
+        .timeline-item {
+            position: relative;
+            padding-bottom: 20px;
+        }
+        
+        .timeline-marker {
+            position: absolute;
+            left: -30px;
+            top: 5px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #dee2e6;
+        }
+        
+        .timeline-marker.bg-success { 
+            background-color: var(--success) !important; 
+        }
+        
+        .timeline-marker.bg-primary { 
+            background-color: var(--primary) !important; 
+        }
+        
+        .timeline-marker.bg-danger { 
+            background-color: var(--secondary) !important; 
+        }
+        
+        .timeline-content {
+            margin-left: 0;
         }
         
         /* Required Star */
@@ -466,20 +544,19 @@
             color: #dc2626;
         }
         
-        /* Karakter counter styling */
+        /* Character Counter */
         .char-counter {
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             text-align: right;
             margin-top: 0.25rem;
-            color: #6c757d;
-        }
-        
-        .char-counter.warning {
-            color: #f59e0b;
         }
         
         .char-counter.danger {
             color: #dc2626;
+        }
+        
+        .char-counter.warning {
+            color: #f59e0b;
         }
         
         /* Responsive */
@@ -607,7 +684,7 @@
             </div>
         </div>
         
-        <!-- Alert Container (SELALU ADA) -->
+        <!-- Alert Container -->
         <div class="alert-container" id="alertContainer"></div>
         
         <!-- Alert Messages dari Session -->
@@ -665,8 +742,8 @@
             </div>
             <div class="stat-card">
                 <div class="stat-content">
-                    <h5>Rp {{ number_format($stats['total_value'] ?? 0, 0, ',', '.') }}</h5>
-                    <p>Total Nilai</p>
+                    <h5>{{ $stats['approved'] ?? 0 }}</h5>
+                    <p>Disetujui</p>
                 </div>
             </div>
             <div class="stat-card">
@@ -677,7 +754,7 @@
             </div>
         </div>
         
-        <!-- Filter Bar (DIMODIFIKASI: Menghapus kolom filter status) -->
+        <!-- Filter Bar -->
         <div class="filter-bar">
             <form method="GET" action="{{ route('admin.procurement') }}" id="filterForm">
                 <div class="row g-3">
@@ -706,7 +783,7 @@
             </form>
         </div>
         
-        <!-- Status Tabs (DIMODIFIKASI: Menambahkan tab "Ditolak") -->
+        <!-- Status Tabs -->
         <div class="status-tabs">
             <a href="{{ route('admin.procurement', ['status' => 'all']) }}" class="status-tab {{ !request('status') || request('status') == 'all' ? 'active' : '' }}">Semua</a>
             <a href="{{ route('admin.procurement', ['status' => 'pending']) }}" class="status-tab {{ request('status') == 'pending' ? 'active' : '' }}">Menunggu</a>
@@ -723,10 +800,11 @@
                     <thead>
                         <tr>
                             <th>No</th>
-                            <th>Kode/Nama Barang</th>
+                            <th>Kode Pengadaan</th>
+                            <th>Item Barang</th>
                             <th>Tipe</th>
                             <th>Jumlah</th>
-                            <th>Harga Perkiraan</th>
+                            <th>Total Nilai</th>
                             <th>Prioritas</th>
                             <th>Status</th>
                             <th>Tanggal Diajukan</th>
@@ -736,19 +814,214 @@
                     <tbody>
                         @if(isset($procurements) && $procurements->count() > 0)
                             @foreach($procurements as $index => $procurement)
+                            @php
+                                $items = $procurement->items ?? [];
+                                $isMultiItem = $procurement->is_multi_item && count($items) > 0;
+                                $firstItem = count($items) > 0 ? $items->first() : null;
+                                
+                                // PERBAIKAN: Cek tipe pengadaan yang benar untuk multi-item
+                                $tipePengadaan = $procurement->tipe_pengadaan;
+                                // Jika ini multi-item, tipe harus "multi"
+                                if ($isMultiItem) {
+                                    $tipePengadaan = 'multi';
+                                }
+                                
+                                // Hitung total jumlah dan nilai HANYA untuk item yang tidak ditolak/dibatalkan
+                                $approvedItems = $items->filter(function($item) {
+                                    return !in_array($item->status, ['rejected', 'cancelled']);
+                                });
+                                
+                                $totalJumlah = $isMultiItem ? $approvedItems->sum('jumlah') : 
+                                              ($firstItem && !in_array($firstItem->status, ['rejected', 'cancelled']) ? 
+                                               $firstItem->jumlah : 0);
+                                
+                                $totalNilai = $isMultiItem ? $approvedItems->sum(function($item) {
+                                    return ($item->jumlah ?? 0) * ($item->harga_perkiraan ?? 0);
+                                }) : ($firstItem && !in_array($firstItem->status, ['rejected', 'cancelled']) ? 
+                                     (($firstItem->jumlah ?? 0) * ($firstItem->harga_perkiraan ?? 0)) : 0);
+                                
+                                // Hitung statistik item
+                                $itemStats = [
+                                    'total' => $items->count(),
+                                    'approved' => $items->where('status', 'approved')->count(),
+                                    'completed' => $items->where('status', 'completed')->count(),
+                                    'rejected' => $items->where('status', 'rejected')->count(),
+                                    'cancelled' => $items->where('status', 'cancelled')->count(),
+                                    'pending' => $items->where('status', 'pending')->count(),
+                                ];
+                            @endphp
                             <tr>
                                 <td>{{ ($procurements->currentPage() - 1) * $procurements->perPage() + $index + 1 }}</td>
                                 <td>
-                                    <strong>{{ $procurement->kode_barang }}</strong><br>
-                                    <small>{{ $procurement->nama_barang }}</small>
+                                    <strong>{{ $procurement->kode_pengadaan ?? 'P-' . str_pad($procurement->id, 6, '0', STR_PAD_LEFT) }}</strong>
                                 </td>
                                 <td>
-                                    <span class="badge badge-{{ $procurement->tipe_pengadaan }}">
-                                        {{ $procurement->tipe_pengadaan == 'baru' ? 'Baru' : 'Restock' }}
-                                    </span>
+                                    @if($isMultiItem)
+                                        <!-- Tampilan Multi Item dengan status -->
+                                        <div class="multi-item-container">
+                                            <div class="multi-item-header">
+                                                <span class="multi-item-badge">{{ $items->count() }} ITEM</span>
+                                                <strong>Pengadaan Multi Item</strong>
+                                            </div>
+                                            <ul class="multi-item-list">
+                                                @foreach($items as $item)
+                                                @php
+                                                    $itemClass = '';
+                                                    $statusClass = '';
+                                                    $statusText = '';
+                                                    
+                                                    switch($item->status) {
+                                                        case 'completed':
+                                                            $itemClass = '';
+                                                            $statusClass = 'item-status-completed';
+                                                            $statusText = 'Selesai';
+                                                            break;
+                                                        case 'rejected':
+                                                            $itemClass = 'item-rejected';
+                                                            $statusClass = 'item-status-rejected';
+                                                            $statusText = 'Ditolak';
+                                                            break;
+                                                        case 'cancelled':
+                                                            $itemClass = 'item-cancelled';
+                                                            $statusClass = 'item-status-cancelled';
+                                                            $statusText = 'Dibatalkan';
+                                                            break;
+                                                        case 'approved':
+                                                            $itemClass = '';
+                                                            $statusClass = 'item-status-approved';
+                                                            $statusText = 'Disetujui';
+                                                            break;
+                                                        case 'pending':
+                                                            $itemClass = '';
+                                                            $statusClass = 'item-status-pending';
+                                                            $statusText = 'Menunggu';
+                                                            break;
+                                                    }
+                                                @endphp
+                                                <li class="{{ $itemClass }}">
+                                                    <span class="item-kode">{{ $item->kode_barang ?? 'N/A' }}</span>
+                                                    <strong>{{ $item->nama_barang ?? 'Item' }}</strong>
+                                                    <span class="item-status-badge {{ $statusClass }}">
+                                                        {{ $statusText }}
+                                                    </span>
+                                                    <span class="item-detail">
+                                                        {{ $item->jumlah ?? 0 }} unit @ Rp {{ number_format($item->harga_perkiraan ?? 0, 0, ',', '.') }} per unit
+                                                    </span>
+                                                    @if(in_array($item->status, ['rejected', 'cancelled']) && $item->alasan_penolakan)
+                                                    <div class="rejection-reason">
+                                                        <small><strong>Alasan:</strong> {{ $item->alasan_penolakan }}</small>
+                                                    </div>
+                                                    @endif
+                                                </li>
+                                                @endforeach
+                                            </ul>
+                                            
+                                            <!-- Summary Stats -->
+                                            @if($itemStats['rejected'] > 0 || $itemStats['cancelled'] > 0)
+                                            <div class="summary-stats">
+                                                @if($itemStats['approved'] > 0)
+                                                <span class="stat-approved">
+                                                    <i class="bi bi-check-circle"></i> {{ $itemStats['approved'] }} Disetujui
+                                                </span>
+                                                @endif
+                                                @if($itemStats['completed'] > 0)
+                                                <span class="stat-approved">
+                                                    <i class="bi bi-check-circle-fill"></i> {{ $itemStats['completed'] }} Selesai
+                                                </span>
+                                                @endif
+                                                @if($itemStats['rejected'] > 0)
+                                                <span class="stat-rejected">
+                                                    <i class="bi bi-x-circle"></i> {{ $itemStats['rejected'] }} Ditolak
+                                                </span>
+                                                @endif
+                                                @if($itemStats['cancelled'] > 0)
+                                                <span class="stat-cancelled">
+                                                    <i class="bi bi-x-circle-fill"></i> {{ $itemStats['cancelled'] }} Dibatalkan
+                                                </span>
+                                                @endif
+                                                @if($itemStats['pending'] > 0)
+                                                <span class="stat-pending">
+                                                    <i class="bi bi-clock"></i> {{ $itemStats['pending'] }} Menunggu
+                                                </span>
+                                                @endif
+                                            </div>
+                                            @endif
+                                            
+                                            <div class="total-summary">
+                                                Total Disetujui: <span>{{ $totalJumlah }} unit</span> • 
+                                                Nilai: <span>Rp {{ number_format($totalNilai, 0, ',', '.') }}</span>
+                                            </div>
+                                        </div>
+                                    @elseif($firstItem)
+                                        <!-- Tampilan Single Item dari relasi items -->
+                                        @php
+                                            $itemClass = '';
+                                            $statusText = '';
+                                            
+                                            if(in_array($firstItem->status, ['rejected', 'cancelled'])) {
+                                                $itemClass = 'item-rejected';
+                                            }
+                                            
+                                            switch($firstItem->status) {
+                                                case 'completed':
+                                                    $statusText = 'Selesai';
+                                                    break;
+                                                case 'rejected':
+                                                    $statusText = 'Ditolak';
+                                                    break;
+                                                case 'cancelled':
+                                                    $statusText = 'Dibatalkan';
+                                                    break;
+                                                case 'approved':
+                                                    $statusText = 'Disetujui';
+                                                    break;
+                                                case 'pending':
+                                                    $statusText = 'Menunggu';
+                                                    break;
+                                            }
+                                        @endphp
+                                        <div class="{{ $itemClass }}">
+                                            <strong>{{ $firstItem->kode_barang ?? 'N/A' }}</strong><br>
+                                            <small>{{ $firstItem->nama_barang ?? 'Barang' }}</small>
+                                            @if($statusText)
+                                            <br><small class="item-status-badge item-status-{{ $firstItem->status }}">
+                                                {{ $statusText }}
+                                            </small>
+                                            @endif
+                                            @if(in_array($firstItem->status, ['rejected', 'cancelled']) && $firstItem->alasan_penolakan)
+                                            <div class="rejection-reason mt-1">
+                                                <small><strong>Alasan:</strong> {{ $firstItem->alasan_penolakan }}</small>
+                                            </div>
+                                            @endif
+                                        </div>
+                                    @else
+                                        <!-- Fallback jika tidak ada items -->
+                                        <strong>{{ $procurement->kode_barang ?? 'N/A' }}</strong><br>
+                                        <small>{{ $procurement->nama_barang ?? 'Barang' }}</small>
+                                    @endif
                                 </td>
-                                <td class="text-center">{{ $procurement->jumlah }}</td>
-                                <td>Rp {{ number_format($procurement->harga_perkiraan, 0, ',', '.') }}</td>
+                                <td>
+                                    <!-- PERBAIKAN: Tampilkan badge yang benar berdasarkan tipe pengadaan -->
+                                    @if($tipePengadaan == 'multi')
+                                    <span class="badge badge-multi">
+                                        Multi Item
+                                    </span>
+                                    @elseif($tipePengadaan == 'baru')
+                                    <span class="badge badge-baru">
+                                        Baru
+                                    </span>
+                                    @else
+                                    <span class="badge badge-restock">
+                                        Restock
+                                    </span>
+                                    @endif
+                                </td>
+                                <td class="text-center">
+                                    {{ $totalJumlah }}
+                                </td>
+                                <td>
+                                    Rp {{ number_format($totalNilai, 0, ',', '.') }}
+                                </td>
                                 <td>
                                     <span class="badge badge-priority-{{ $procurement->prioritas }}">
                                         {{ ucfirst($procurement->prioritas) }}
@@ -779,7 +1052,6 @@
                                             <i class="bi bi-eye"></i>
                                         </button>
                                         
-                                        {{-- Hanya tampilkan tombol Selesai untuk pengadaan yang sudah disetujui --}}
                                         @if($procurement->status == 'approved')
                                         <button type="button" class="btn btn-primary btn-sm complete-procurement" 
                                                 data-id="{{ $procurement->id }}" title="Tandai Selesai">
@@ -787,7 +1059,6 @@
                                         </button>
                                         @endif
                                         
-                                        {{-- Hanya tampilkan tombol Cancel untuk pengadaan yang masih pending atau approved --}}
                                         @if($procurement->status == 'pending' || $procurement->status == 'approved')
                                         <button type="button" class="btn btn-warning btn-sm cancel-procurement" 
                                                 data-id="{{ $procurement->id }}" title="Batalkan">
@@ -800,7 +1071,7 @@
                             @endforeach
                         @else
                             <tr>
-                                <td colspan="9" class="text-center">
+                                <td colspan="10" class="text-center">
                                     <div class="py-4">
                                         <i class="bi bi-cart-plus display-6 text-muted"></i>
                                         <p class="mt-2">Tidak ada data pengadaan ditemukan</p>
@@ -886,9 +1157,6 @@
                     <!-- Detail akan diisi dengan JavaScript -->
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" onclick="printDetail()">
-                        <i class="bi bi-printer me-1"></i> Cetak
-                    </button>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
                 </div>
             </div>
@@ -953,7 +1221,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
     $(document).ready(function() {
         // Submit form filter dengan Enter
@@ -988,8 +1255,37 @@
                 .then(data => {
                     const procurement = data.procurement;
                     
+                    // Pastikan kode_pengadaan ada, gunakan fallback jika tidak
+                    const kodePengadaan = procurement.kode_pengadaan || 
+                                          'P-' + procurement.id.toString().padStart(6, '0');
+                    
+                    // Validasi data sebelum digunakan
+                    const items = procurement.items || [];
+                    const isMultiItem = items.length > 1;
+                    
+                    // PERBAIKAN: Tentukan tipe pengadaan yang benar
+                    const tipePengadaan = isMultiItem ? 'multi' : procurement.tipe_pengadaan;
+                    
+                    // Hitung statistik item
+                    const itemStats = {
+                        approved: items.filter(item => item.status === 'approved').length,
+                        completed: items.filter(item => item.status === 'completed').length,
+                        rejected: items.filter(item => item.status === 'rejected').length,
+                        cancelled: items.filter(item => item.status === 'cancelled').length,
+                        pending: items.filter(item => item.status === 'pending').length,
+                        total: items.length
+                    };
+                    
+                    // Hitung total hanya untuk item yang tidak ditolak/dibatalkan
+                    const validItems = items.filter(item => !['rejected', 'cancelled'].includes(item.status));
+                    const totalJumlah = validItems.reduce((sum, item) => sum + (parseInt(item.jumlah) || 0), 0);
+                    const totalNilai = validItems.reduce((sum, item) => {
+                        const jumlah = parseInt(item.jumlah) || 0;
+                        const harga = parseFloat(item.harga_perkiraan) || 0;
+                        return sum + (jumlah * harga);
+                    }, 0);
+                    
                     let html = `
-                        <!-- Informasi Umum -->
                         <div class="row mb-4">
                             <div class="col-md-6">
                                 <div class="card">
@@ -998,28 +1294,46 @@
                                             <i class="bi bi-info-circle me-2"></i>Informasi Pengadaan
                                         </h6>
                                         <div class="row mb-2">
-                                            <div class="col-5 fw-bold">Kode Barang:</div>
-                                            <div class="col-7">${procurement.kode_barang || '-'}</div>
-                                        </div>
-                                        <div class="row mb-2">
-                                            <div class="col-5 fw-bold">Nama Barang:</div>
-                                            <div class="col-7">${procurement.nama_barang || '-'}</div>
+                                            <div class="col-5 fw-bold">Kode Pengadaan:</div>
+                                            <div class="col-7">
+                                                <code>${kodePengadaan}</code>
+                                            </div>
                                         </div>
                                         <div class="row mb-2">
                                             <div class="col-5 fw-bold">Tipe Pengadaan:</div>
                                             <div class="col-7">
-                                                <span class="badge badge-${procurement.tipe_pengadaan}">
-                                                    ${procurement.tipe_pengadaan_display || procurement.tipe_pengadaan}
+                                                ${tipePengadaan === 'multi' ? `
+                                                <span class="badge badge-multi">Multi Item</span>
+                                                ` : tipePengadaan === 'baru' ? `
+                                                <span class="badge badge-baru">Baru</span>
+                                                ` : `
+                                                <span class="badge badge-restock">Restock</span>
+                                                `}
+                                            </div>
+                                        </div>
+                                        <div class="row mb-2">
+                                            <div class="col-5 fw-bold">Status:</div>
+                                            <div class="col-7">
+                                                <span class="badge badge-${procurement.status}">
+                                                    ${getStatusDisplay(procurement.status)}
                                                 </span>
                                             </div>
                                         </div>
                                         <div class="row mb-2">
-                                            <div class="col-5 fw-bold">Kategori:</div>
-                                            <div class="col-7">${procurement.kategori?.nama_kategori || '-'}</div>
+                                            <div class="col-5 fw-bold">Prioritas:</div>
+                                            <div class="col-7">
+                                                <span class="badge badge-priority-${procurement.prioritas}">
+                                                    ${procurement.prioritas.charAt(0).toUpperCase() + procurement.prioritas.slice(1)}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="row mb-2">
+                                            <div class="col-5 fw-bold">Tanggal Diajukan:</div>
+                                            <div class="col-7">${formatDate(procurement.created_at)}</div>
                                         </div>
                                         <div class="row">
-                                            <div class="col-5 fw-bold">Satuan:</div>
-                                            <div class="col-7">${procurement.satuan?.nama_satuan || '-'}</div>
+                                            <div class="col-5 fw-bold">Alasan Pengadaan:</div>
+                                            <div class="col-7">${procurement.alasan_pengadaan || '-'}</div>
                                         </div>
                                     </div>
                                 </div>
@@ -1028,79 +1342,167 @@
                                 <div class="card">
                                     <div class="card-body">
                                         <h6 class="card-title text-primary mb-3">
-                                            <i class="bi bi-clipboard-check me-2"></i>Status Pengadaan
+                                            <i class="bi bi-calculator me-2"></i>Ringkasan
                                         </h6>
                                         <div class="row mb-2">
-                                            <div class="col-5 fw-bold">Status:</div>
+                                            <div class="col-5 fw-bold">Jumlah Item:</div>
                                             <div class="col-7">
-                                                <span class="badge badge-${procurement.status}">
-                                                    ${procurement.status_display || procurement.status}
-                                                </span>
+                                                ${itemStats.total} item 
+                                                ${isMultiItem ? `(${itemStats.approved} disetujui, ${itemStats.completed} selesai, ${itemStats.rejected} ditolak, ${itemStats.cancelled} dibatalkan)` : ''}
                                             </div>
                                         </div>
                                         <div class="row mb-2">
-                                            <div class="col-5 fw-bold">Prioritas:</div>
+                                            <div class="col-5 fw-bold">Total Jumlah:</div>
                                             <div class="col-7">
-                                                <span class="badge badge-priority-${procurement.prioritas}">
-                                                    ${procurement.prioritas_display || procurement.prioritas}
-                                                </span>
+                                                ${totalJumlah} unit
                                             </div>
                                         </div>
                                         <div class="row mb-2">
-                                            <div class="col-5 fw-bold">Jumlah:</div>
-                                            <div class="col-7">${procurement.jumlah}</div>
+                                            <div class="col-5 fw-bold">Total Nilai:</div>
+                                            <div class="col-7 fw-bold text-primary">
+                                                Rp ${formatNumber(totalNilai)}
+                                            </div>
                                         </div>
-                                        <div class="row mb-2">
-                                            <div class="col-5 fw-bold">Harga Perkiraan:</div>
-                                            <div class="col-7">Rp ${formatNumber(procurement.harga_perkiraan)}</div>
-                                        </div>
-                                        <div class="row mb-2">
-                                            <div class="col-5 fw-bold">Total Perkiraan:</div>
-                                            <div class="col-7 fw-bold text-primary">Rp ${formatNumber(procurement.jumlah * procurement.harga_perkiraan)}</div>
-                                        </div>
+                                        ${procurement.catatan ? `
                                         <div class="row">
-                                            <div class="col-5 fw-bold">Tanggal Diajukan:</div>
-                                            <div class="col-7">${new Date(procurement.created_at).toLocaleDateString('id-ID', {
-                                                day: '2-digit',
-                                                month: 'long',
-                                                year: 'numeric'
-                                            })}</div>
+                                            <div class="col-5 fw-bold">Catatan:</div>
+                                            <div class="col-7">${procurement.catatan}</div>
                                         </div>
+                                        ` : ''}
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        
-                        <!-- Alasan Pengadaan -->
+                    `;
+                    
+                    // Daftar Barang dengan status
+                    html += `
                         <div class="card mb-4">
-                            <div class="card-header bg-light">
+                            <div class="card-header bg-light d-flex justify-content-between align-items-center">
                                 <h6 class="mb-0">
-                                    <i class="bi bi-card-text me-2"></i>Alasan Pengadaan
+                                    <i class="bi bi-list-check me-2"></i>Daftar Barang
+                                    ${isMultiItem ? '<span class="badge bg-info">' + items.length + ' Item</span>' : ''}
                                 </h6>
+                                ${itemStats.rejected > 0 || itemStats.cancelled > 0 ? `
+                                <div class="summary-stats">
+                                    ${itemStats.approved > 0 ? `<span class="stat-approved"><i class="bi bi-check-circle"></i> ${itemStats.approved} Disetujui</span>` : ''}
+                                    ${itemStats.completed > 0 ? `<span class="stat-approved"><i class="bi bi-check-circle-fill"></i> ${itemStats.completed} Selesai</span>` : ''}
+                                    ${itemStats.rejected > 0 ? `<span class="stat-rejected"><i class="bi bi-x-circle"></i> ${itemStats.rejected} Ditolak</span>` : ''}
+                                    ${itemStats.cancelled > 0 ? `<span class="stat-cancelled"><i class="bi bi-x-circle-fill"></i> ${itemStats.cancelled} Dibatalkan</span>` : ''}
+                                    ${itemStats.pending > 0 ? `<span class="stat-pending"><i class="bi bi-clock"></i> ${itemStats.pending} Menunggu</span>` : ''}
+                                </div>
+                                ` : ''}
                             </div>
-                            <div class="card-body">
-                                <p class="mb-0">${procurement.alasan_pengadaan || 'Tidak ada alasan yang dicantumkan'}</p>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>No</th>
+                                                <th>Status</th>
+                                                <th>Kode Barang</th>
+                                                <th>Nama Barang</th>
+                                                <th class="text-center">Jumlah</th>
+                                                <th class="text-end">Harga/Unit</th>
+                                                <th class="text-end">Subtotal</th>
+                                                <th>Keterangan</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                    `;
+                    
+                    // Tampilkan items dengan status
+                    if (items && items.length > 0) {
+                        items.forEach((item, index) => {
+                            const jumlah = item.jumlah || 0;
+                            const harga = item.harga_perkiraan || 0;
+                            const subtotal = jumlah * harga;
+                            const statusClass = getItemStatusClass(item.status);
+                            const statusText = getItemStatusText(item.status);
+                            
+                            let rowClass = '';
+                            if (item.status === 'rejected') rowClass = 'table-danger';
+                            else if (item.status === 'cancelled') rowClass = 'table-warning';
+                            else if (item.status === 'completed') rowClass = 'table-success';
+                            else if (item.status === 'approved') rowClass = 'table-primary';
+                            
+                            html += `
+                                <tr class="${rowClass}">
+                                    <td>${index + 1}</td>
+                                    <td>
+                                        <span class="item-status-badge ${statusClass}">
+                                            ${statusText}
+                                        </span>
+                                    </td>
+                                    <td><code>${item.kode_barang || '-'}</code></td>
+                                    <td>${item.nama_barang || '-'}</td>
+                                    <td class="text-center">${jumlah}</td>
+                                    <td class="text-end">Rp ${formatNumber(harga)}</td>
+                                    <td class="text-end fw-bold">Rp ${formatNumber(subtotal)}</td>
+                                    <td>
+                                        ${item.alasan_penolakan ? `<small class="text-danger"><strong>Alasan:</strong> ${item.alasan_penolakan}</small>` : ''}
+                                        ${item.deskripsi ? `<br><small>${item.deskripsi}</small>` : ''}
+                                    </td>
+                                </tr>
+                            `;
+                        });
+                        
+                        html += `
+                                        </tbody>
+                                        <tfoot class="table-light">
+                                            <tr>
+                                                <th colspan="4" class="text-end">TOTAL (Item yang disetujui):</th>
+                                                <th class="text-center">${totalJumlah}</th>
+                                                <th></th>
+                                                <th class="text-end fw-bold text-primary">Rp ${formatNumber(totalNilai)}</th>
+                                                <th></th>
+                                            </tr>
+                                        </tfoot>
+                        `;
+                    } else {
+                        // Untuk single item (tanpa items array)
+                        const jumlah = procurement.jumlah || 0;
+                        const harga = procurement.harga_perkiraan || 0;
+                        const subtotal = jumlah * harga;
+                        
+                        html += `
+                            <tr>
+                                <td>1</td>
+                                <td>
+                                    <span class="item-status-badge item-status-${procurement.status}">
+                                        ${getStatusDisplay(procurement.status)}
+                                    </span>
+                                </td>
+                                <td><code>${procurement.kode_barang || '-'}</code></td>
+                                <td>${procurement.nama_barang || '-'}</td>
+                                <td class="text-center">${jumlah}</td>
+                                <td class="text-end">Rp ${formatNumber(harga)}</td>
+                                <td class="text-end fw-bold">Rp ${formatNumber(subtotal)}</td>
+                                <td>
+                                    ${procurement.alasan_penolakan ? `<small class="text-danger"><strong>Alasan:</strong> ${procurement.alasan_penolakan}</small>` : ''}
+                                </td>
+                            </tr>
+                            </tbody>
+                            <tfoot class="table-light">
+                                <tr>
+                                    <th colspan="4" class="text-end">TOTAL:</th>
+                                    <th class="text-center">${jumlah}</th>
+                                    <th></th>
+                                    <th class="text-end fw-bold text-primary">Rp ${formatNumber(subtotal)}</th>
+                                    <th></th>
+                                </tr>
+                            </tfoot>
+                        `;
+                    }
+                    
+                    html += `
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     `;
                     
-                    // Catatan jika ada
-                    if (procurement.catatan) {
-                        html += `
-                            <div class="card mb-4">
-                                <div class="card-header bg-light">
-                                    <h6 class="mb-0">
-                                        <i class="bi bi-sticky me-2"></i>Catatan
-                                    </h6>
-                                </div>
-                                <div class="card-body">
-                                    <p class="mb-0">${procurement.catatan}</p>
-                                </div>
-                            </div>
-                        `;
-                    }
-                    
-                    // Informasi timeline jika ada
+                    // Timeline
                     html += `
                         <div class="card">
                             <div class="card-header bg-light">
@@ -1115,7 +1517,7 @@
                                         <div class="timeline-content">
                                             <strong>Diajukan</strong>
                                             <div class="text-muted small">
-                                                ${new Date(procurement.created_at).toLocaleDateString('id-ID')}
+                                                ${formatDateTime(procurement.created_at)}
                                             </div>
                                         </div>
                                     </div>
@@ -1128,8 +1530,7 @@
                                 <div class="timeline-content">
                                     <strong>Disetujui</strong>
                                     <div class="text-muted small">
-                                        ${new Date(procurement.approved_at).toLocaleDateString('id-ID')}
-                                        ${procurement.disetujui_oleh_user ? `oleh ${procurement.disetujui_oleh_user.name}` : ''}
+                                        ${formatDateTime(procurement.approved_at)}
                                     </div>
                                 </div>
                             </div>
@@ -1143,7 +1544,7 @@
                                 <div class="timeline-content">
                                     <strong>Selesai</strong>
                                     <div class="text-muted small">
-                                        ${new Date(procurement.completed_at).toLocaleDateString('id-ID')}
+                                        ${formatDateTime(procurement.completed_at)}
                                     </div>
                                 </div>
                             </div>
@@ -1157,7 +1558,7 @@
                                 <div class="timeline-content">
                                     <strong>Dibatalkan</strong>
                                     <div class="text-muted small">
-                                        ${new Date(procurement.cancelled_at).toLocaleDateString('id-ID')}
+                                        ${formatDateTime(procurement.cancelled_at)}
                                     </div>
                                     ${procurement.alasan_pembatalan ? `
                                     <div class="alert alert-danger mt-2 mb-0 p-2">
@@ -1176,7 +1577,7 @@
                                 <div class="timeline-content">
                                     <strong>Ditolak</strong>
                                     <div class="text-muted small">
-                                        ${new Date(procurement.rejected_at).toLocaleDateString('id-ID')}
+                                        ${formatDateTime(procurement.rejected_at)}
                                     </div>
                                     ${procurement.alasan_penolakan ? `
                                     <div class="alert alert-danger mt-2 mb-0 p-2">
@@ -1192,32 +1593,6 @@
                                 </div>
                             </div>
                         </div>
-                        
-                        <style>
-                            .timeline {
-                                position: relative;
-                                padding-left: 30px;
-                            }
-                            .timeline-item {
-                                position: relative;
-                                padding-bottom: 20px;
-                            }
-                            .timeline-marker {
-                                position: absolute;
-                                left: -30px;
-                                top: 5px;
-                                width: 12px;
-                                height: 12px;
-                                border-radius: 50%;
-                                background-color: #dee2e6;
-                            }
-                            .timeline-marker.bg-success { background-color: var(--success); }
-                            .timeline-marker.bg-primary { background-color: var(--primary); }
-                            .timeline-marker.bg-danger { background-color: var(--secondary); }
-                            .timeline-content {
-                                margin-left: 0;
-                            }
-                        </style>
                     `;
                     
                     $('#detailProcurementBody').html(html);
@@ -1231,7 +1606,7 @@
                         <div class="text-center py-4">
                             <i class="bi bi-exclamation-triangle text-danger display-4"></i>
                             <h5 class="mt-3 text-danger">Gagal memuat data pengadaan</h5>
-                            <p class="text-muted">Silakan coba lagi atau hubungi administrator</p>
+                            <p class="text-muted">${error.message}</p>
                             <button class="btn btn-primary btn-sm mt-2" onclick="location.reload()">
                                 <i class="bi bi-arrow-clockwise"></i> Coba Lagi
                             </button>
@@ -1263,13 +1638,20 @@
             })
             .then(response => {
                 if (response.ok) {
-                    showAlert('Pengadaan berhasil ditandai selesai', 'success');
+                    return response.json();
+                } else {
+                    throw new Error('Terjadi kesalahan');
+                }
+            })
+            .then(data => {
+                if (data.success) {
+                    showAlert(data.message, 'success');
                     $('#completeProcurementModal').modal('hide');
                     setTimeout(() => {
                         location.reload();
                     }, 1500);
                 } else {
-                    showAlert('Terjadi kesalahan saat menandai selesai', 'danger');
+                    showAlert(data.message || 'Terjadi kesalahan saat menandai selesai', 'danger');
                 }
             })
             .catch(error => {
@@ -1377,22 +1759,89 @@
                 $('#submitCancelBtn').prop('disabled', false).text('Konfirmasi Pembatalan');
             });
         });
+        
+        // Helper functions untuk item status
+        function getItemStatusClass(status) {
+            const classMap = {
+                'pending': 'item-status-pending',
+                'approved': 'item-status-approved',
+                'completed': 'item-status-completed',
+                'rejected': 'item-status-rejected',
+                'cancelled': 'item-status-cancelled'
+            };
+            return classMap[status] || 'item-status-pending';
+        }
+        
+        function getItemStatusText(status) {
+            const textMap = {
+                'pending': 'Menunggu',
+                'approved': 'Disetujui',
+                'completed': 'Selesai',
+                'rejected': 'Ditolak',
+                'cancelled': 'Dibatalkan'
+            };
+            return textMap[status] || status.charAt(0).toUpperCase() + status.slice(1);
+        }
+        
+        function getStatusDisplay(status) {
+            const statusMap = {
+                'pending': 'Menunggu',
+                'approved': 'Disetujui',
+                'completed': 'Selesai',
+                'cancelled': 'Dibatalkan',
+                'rejected': 'Ditolak'
+            };
+            return statusMap[status] || status.charAt(0).toUpperCase() + status.slice(1);
+        }
+        
+        function calculateTotalJumlah(items) {
+            if (!items || !Array.isArray(items)) return 0;
+            const validItems = items.filter(item => !['rejected', 'cancelled'].includes(item.status));
+            return validItems.reduce((sum, item) => sum + (parseInt(item.jumlah) || 0), 0);
+        }
+        
+        function calculateTotalNilai(items) {
+            if (!items || !Array.isArray(items)) return 0;
+            const validItems = items.filter(item => !['rejected', 'cancelled'].includes(item.status));
+            return validItems.reduce((sum, item) => {
+                const jumlah = parseInt(item.jumlah) || 0;
+                const harga = parseFloat(item.harga_perkiraan) || 0;
+                return sum + (jumlah * harga);
+            }, 0);
+        }
+        
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('id-ID', {
+                day: '2-digit',
+                month: 'long',
+                year: 'numeric'
+            });
+        }
+        
+        function formatDateTime(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('id-ID') + ' ' + date.toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'});
+        }
+        
+        function formatNumber(num) {
+            return new Intl.NumberFormat('id-ID').format(num);
+        }
     });
     
     // Fungsi untuk menampilkan alert
     function showAlert(message, type = 'success') {
-        // Pastikan alert container ada
         let alertContainer = document.getElementById('alertContainer');
         
         if (!alertContainer) {
-            // Buat alert container jika tidak ada
             alertContainer = document.createElement('div');
             alertContainer.className = 'alert-container';
             alertContainer.id = 'alertContainer';
             document.body.appendChild(alertContainer);
         }
         
-        // Hapus alert sebelumnya
         const existingAlerts = alertContainer.querySelectorAll('.alert');
         existingAlerts.forEach(alert => {
             const bsAlert = bootstrap.Alert.getInstance(alert);
@@ -1420,10 +1869,8 @@
         
         alertContainer.appendChild(alert);
         
-        // Inisialisasi Bootstrap alert
         const bsAlert = new bootstrap.Alert(alert);
         
-        // Auto dismiss setelah 5 detik
         setTimeout(() => {
             if (alert.parentNode === alertContainer) {
                 bsAlert.close();
@@ -1431,19 +1878,13 @@
         }, 5000);
     }
     
-    function formatNumber(num) {
-        return new Intl.NumberFormat('id-ID').format(num);
-    }
-    
     // Print Function
     function printTable() {
-        // Sembunyikan elemen yang tidak perlu dicetak
         const elementsToHide = document.querySelectorAll('.sidebar, .topbar, .page-header, .stats-grid, .filter-bar, .status-tabs, .action-buttons, .btn-group');
         elementsToHide.forEach(el => {
             if (el) el.style.display = 'none';
         });
         
-        // Perlebar tabel untuk cetak
         const tableCard = document.querySelector('.table-card');
         if (tableCard) {
             const originalStyles = {
@@ -1453,7 +1894,6 @@
             tableCard.style.boxShadow = 'none';
             tableCard.style.padding = '0';
             
-            // Tambahkan judul cetak
             const printTitle = document.createElement('h4');
             printTitle.textContent = 'Laporan Pengadaan Barang - SILOG Polres';
             printTitle.style.textAlign = 'center';
@@ -1461,7 +1901,6 @@
             printTitle.style.fontWeight = 'bold';
             tableCard.parentNode.insertBefore(printTitle, tableCard);
             
-            // Tambahkan tanggal cetak
             const printDate = document.createElement('p');
             printDate.textContent = 'Tanggal: ' + new Date().toLocaleDateString('id-ID');
             printDate.style.textAlign = 'center';
@@ -1469,7 +1908,6 @@
             printDate.style.color = '#666';
             printTitle.parentNode.insertBefore(printDate, printTitle.nextSibling);
             
-            // Tambahkan filter info jika ada
             let filterInfo = '';
             const searchInput = document.getElementById('searchInput');
             const tipeFilter = document.getElementById('tipeFilter');
@@ -1492,10 +1930,8 @@
                 printTitle.parentNode.insertBefore(filterElement, printTitle.nextSibling.nextSibling);
             }
             
-            // Cetak
             window.print();
             
-            // Kembalikan tampilan normal setelah cetak
             setTimeout(() => {
                 elementsToHide.forEach(el => {
                     if (el) el.style.display = '';
@@ -1504,7 +1940,6 @@
                 tableCard.style.boxShadow = originalStyles.boxShadow;
                 tableCard.style.padding = originalStyles.padding;
                 
-                // Hapus elemen yang ditambahkan
                 [printTitle, printDate, filterElement].forEach(el => {
                     if (el && el.parentNode) {
                         el.parentNode.removeChild(el);
@@ -1512,110 +1947,6 @@
                 });
             }, 500);
         }
-    }
-    
-    // Print Detail Function
-    function printDetail() {
-        const detailContent = document.getElementById('detailProcurementBody');
-        if (!detailContent) {
-            showAlert('Tidak ada konten untuk dicetak', 'warning');
-            return;
-        }
-        
-        const clonedContent = detailContent.cloneNode(true);
-        const printWindow = window.open('', '_blank');
-        
-        const title = document.createElement('h4');
-        title.textContent = 'Detail Pengadaan Barang - SILOG Polres';
-        title.style.textAlign = 'center';
-        title.style.marginBottom = '20px';
-        title.style.fontWeight = 'bold';
-        
-        const date = document.createElement('p');
-        date.textContent = 'Tanggal Cetak: ' + new Date().toLocaleDateString('id-ID');
-        date.style.textAlign = 'center';
-        date.style.marginBottom = '30px';
-        date.style.color = '#666';
-        
-        printWindow.document.open();
-        printWindow.document.write(`
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <title>Detail Pengadaan Barang - SILOG Polres</title>
-                <style>
-                    body { 
-                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-                        margin: 40px; 
-                        color: #333;
-                    }
-                    .card { 
-                        margin-bottom: 20px; 
-                        border: 1px solid #ddd; 
-                        border-radius: 8px;
-                    }
-                    .card-header { 
-                        background-color: #f8f9fa; 
-                        padding: 12px 15px; 
-                        border-bottom: 1px solid #ddd;
-                    }
-                    .card-body { 
-                        padding: 15px; 
-                    }
-                    .badge { 
-                        padding: 4px 8px; 
-                        border-radius: 4px; 
-                        font-weight: bold; 
-                        font-size: 0.85em;
-                    }
-                    .badge-pending { background-color: #fef3c7; color: #92400e; border: 1px solid #fbbf24; }
-                    .badge-approved { background-color: #d1fae5; color: #065f46; border: 1px solid #10b981; }
-                    .badge-completed { background-color: #8b5cf6; color: white; border: 1px solid #7c3aed; }
-                    .badge-cancelled { background-color: #fee2e2; color: #991b1b; border: 1px solid #f87171; }
-                    .badge-rejected { background-color: #fee2e2; color: #991b1b; border: 1px solid #f87171; }
-                    .badge-baru { background-color: #dbeafe; color: #1e40af; border: 1px solid #60a5fa; }
-                    .badge-restock { background-color: #fef3c7; color: #92400e; border: 1px solid #fbbf24; }
-                    .badge-priority-normal { background-color: #d1fae5; color: #065f46; border: 1px solid #10b981; }
-                    .badge-priority-tinggi { background-color: #fef3c7; color: #92400e; border: 1px solid #fbbf24; }
-                    .badge-priority-mendesak { background-color: #fee2e2; color: #991b1b; border: 1px solid #f87171; }
-                    .text-primary { color: #0d6efd; }
-                    .text-muted { color: #6c757d; }
-                    .fw-bold { font-weight: 600; }
-                    .row { display: flex; flex-wrap: wrap; margin-right: -15px; margin-left: -15px; }
-                    .col-5, .col-7, .col-md-6 { position: relative; width: 100%; padding-right: 15px; padding-left: 15px; }
-                    .col-5 { flex: 0 0 41.666667%; max-width: 41.666667%; }
-                    .col-7 { flex: 0 0 58.333333%; max-width: 58.333333%; }
-                    .col-md-6 { flex: 0 0 50%; max-width: 50%; }
-                    .mb-2 { margin-bottom: 0.5rem; }
-                    .mb-3 { margin-bottom: 1rem; }
-                    .mb-4 { margin-bottom: 1.5rem; }
-                    .text-center { text-align: center; }
-                    .timeline { position: relative; padding-left: 30px; }
-                    .timeline-item { position: relative; padding-bottom: 20px; }
-                    .timeline-marker { position: absolute; left: -30px; top: 5px; width: 12px; height: 12px; border-radius: 50%; background-color: #dee2e6; }
-                    .timeline-content { margin-left: 0; }
-                    @media print {
-                        body { margin: 0; padding: 20px; }
-                        .card { page-break-inside: avoid; }
-                    }
-                </style>
-            </head>
-            <body>
-                ${title.outerHTML}
-                ${date.outerHTML}
-                ${clonedContent.innerHTML}
-                <script>
-                    window.onload = function() {
-                        window.print();
-                        setTimeout(function() {
-                            window.close();
-                        }, 1000);
-                    }
-                <\/script>
-            </body>
-            </html>
-        `);
-        printWindow.document.close();
     }
     
     // Logout confirmation

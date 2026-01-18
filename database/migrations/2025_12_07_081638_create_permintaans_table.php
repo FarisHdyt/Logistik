@@ -15,6 +15,8 @@ return new class extends Migration
             $table->foreignId('barang_id')->constrained('barangs')->onDelete('cascade');
             $table->foreignId('satker_id')->constrained('satkers')->onDelete('cascade');
             $table->integer('jumlah');
+            $table->integer('total_items')->default(0);
+            $table->decimal('total_harga', 15, 2)->default(0);
             $table->text('keterangan')->nullable();
             $table->date('tanggal_dibutuhkan')->nullable();
             $table->enum('status', ['pending', 'approved', 'rejected', 'delivered'])->default('pending');

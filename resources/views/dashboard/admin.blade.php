@@ -521,26 +521,6 @@
                     <p>Permintaan Terkirim</p>
                 </div>
             </div>
-            
-            <div class="stat-card">
-                <div class="stat-icon" style="background-color: #d1fae5; color: #10b981;">
-                    <i class="bi bi-check-circle"></i>
-                </div>
-                <div class="stat-content">
-                    <h3>{{ $data['total_permintaan'] ?? 0 }}</h3>
-                    <p>Total Permintaan</p>
-                </div>
-            </div>
-            
-            <div class="stat-card">
-                <div class="stat-icon" style="background-color: #fee2e2; color: #ef4444;">
-                    <i class="bi bi-x-circle"></i>
-                </div>
-                <div class="stat-content">
-                    <h3>{{ $data['permintaan_ditolak'] ?? 0 }}</h3>
-                    <p>Permintaan Ditolak</p>
-                </div>
-            </div>
         </div>
         
         <!-- Charts Section -->

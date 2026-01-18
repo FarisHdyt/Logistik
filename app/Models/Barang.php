@@ -51,6 +51,53 @@ class Barang extends Model
         return $this->hasMany(Procurement::class, 'barang_id');
     }
 
+    public function procurementItems()
+    {
+        return $this->hasMany(ProcurementItem::class, 'barang_id');
+    }
+
+
+        // ==================== ACCESSOR METHODS ====================
+    
+    /**
+     * Get nama_kategori attribute
+     */
+    public function getNamaKategoriAttribute()
+    {
+        return $this->kategori ? $this->kategori->nama_kategori : 'Belum Ada Kategori';
+    }
+
+    /**
+     * Get nama_satuan attribute
+     */
+    public function getNamaSatuanAttribute()
+    {
+        return $this->satuan ? $this->satuan->nama_satuan : 'Belum Ada Satuan';
+    }
+
+    /**
+     * Get nama_gudang attribute
+     */
+    public function getNamaGudangAttribute()
+    {
+        return $this->gudang ? $this->gudang->nama_gudang : 'Belum Ada Gudang';
+    }
+
+    /**
+     * Get kode_gudang attribute
+     */
+    public function getKodeGudangAttribute()
+    {
+        return $this->gudang ? $this->gudang->kode_gudang : '-';
+    }
+
+    /**
+     * Get lokasi_gudang attribute
+     */
+    public function getLokasiGudangAttribute()
+    {
+        return $this->gudang ? $this->gudang->lokasi : '-';
+    }
 
     // Scope untuk barang dengan stok rendah
     public function scopeLowStock($query)

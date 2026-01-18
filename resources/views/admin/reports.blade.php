@@ -339,6 +339,11 @@
             text-align: center;
         }
         
+        /* Kolom kiri */
+        .table-report td.text-left {
+            text-align: left;
+        }
+        
         /* Kolom kode */
         .table-report td.code-cell {
             font-family: 'Courier New', monospace;
@@ -451,30 +456,6 @@
         .progress-completed { background-color: #8b5cf6; }
         .progress-cancelled { background-color: #ef4444; }
         .progress-rejected { background-color: #dc2626; }
-        
-        /* Budget Indicator */
-        .budget-indicator {
-            font-size: 0.8rem;
-            padding: 2px 6px;
-            border-radius: 3px;
-            background-color: #f3f4f6;
-            color: #6b7280;
-        }
-        
-        .budget-high {
-            background-color: #fee2e2;
-            color: #991b1b;
-        }
-        
-        .budget-medium {
-            background-color: #fef3c7;
-            color: #92400e;
-        }
-        
-        .budget-low {
-            background-color: #d1fae5;
-            color: #065f46;
-        }
     </style>
 </head>
 <body>
@@ -690,28 +671,21 @@
                     <table class="table table-report table-hover">
                         <thead>
                             <tr>
+                                <th class="text-center">No</th>
                                 <th>Jenis Laporan</th>
-                                <th>Periode</th>
-                                <th>Total Data</th>
-                                <th>Detail Status</th>
-                                <th>Total Anggaran</th>
-                                <th>Aksi</th>
+                                <th class="text-center">Periode</th>
+                                <th class="text-center">Total Data</th>
+                                <th class="text-left">Detail Status</th>
+                                <th class="text-center">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
                             @php
-                                // Helper function untuk menentukan level budget
-                                function getBudgetLevel($amount) {
-                                    if ($amount > 100000000) return 'budget-high';
-                                    if ($amount > 50000000) return 'budget-medium';
-                                    return 'budget-low';
-                                }
-                                
                                 $reportTypes = [
-                                    ['type' => 'inventory', 'name' => 'Laporan Stok Barang'],
-                                    ['type' => 'requests', 'name' => 'Laporan Permintaan'],
-                                    ['type' => 'expenditures', 'name' => 'Laporan Pengeluaran'],
-                                    ['type' => 'procurement', 'name' => 'Laporan Pengadaan']
+                                    ['type' => 'inventory', 'name' => 'Laporan Stok Barang', 'icon' => 'bi-box'],
+                                    ['type' => 'requests', 'name' => 'Laporan Permintaan', 'icon' => 'bi-clipboard-check'],
+                                    ['type' => 'expenditures', 'name' => 'Laporan Pengeluaran', 'icon' => 'bi-cash-stack'],
+                                    ['type' => 'procurement', 'name' => 'Laporan Pengadaan', 'icon' => 'bi-cart-plus']
                                 ];
                             @endphp
                             
@@ -731,15 +705,19 @@
                                     @if($report['type'] == 'inventory')
                                         <span class="fw-bold text-primary">{{ $monthlyStats['total_items'] ?? 0 }}</span> barang
                                     @elseif($report['type'] == 'requests')
-                                        {{ $monthlyStats['total_requests'] ?? 0 }} permintaan
-                                        <br><small class="text-muted">
+                                        <div>
+                                            <span class="fw-bold text-primary">{{ $monthlyStats['total_requests'] ?? 0 }}</span> permintaan
+                                        </div>
+                                        <div class="text-muted small">
                                             {{ $monthlyStats['total_items_in_requests'] ?? 0 }} item barang
-                                        </small>
+                                        </div>
                                     @elseif($report['type'] == 'procurement')
-                                        {{ $monthlyStats['total_procurements'] ?? 0 }} pengadaan
-                                        <br><small class="text-muted">
+                                        <div>
+                                            <span class="fw-bold text-primary">{{ $monthlyStats['total_procurements'] ?? 0 }}</span> pengadaan
+                                        </div>
+                                        <div class="text-muted small">
                                             {{ $monthlyStats['total_items_in_procurements'] ?? 0 }} item barang
-                                        </small>
+                                        </div>
                                     @else
                                         <div>
                                             <span class="fw-bold text-primary">{{ $monthlyStats['total_expenditures'] ?? 0 }}</span> pengeluaran
@@ -749,23 +727,23 @@
                                         </div>
                                     @endif
                                 </td>
-                                <td id="status_{{ $report['type'] }}_monthly">
+                                <td class="text-left" id="status_{{ $report['type'] }}_monthly">
                                     @if($report['type'] == 'inventory')
-                                    <div class="d-flex flex-wrap gap-1">
+                                    <div class="d-flex flex-wrap gap-1 justify-content-start">
                                         <span class="badge bg-success">{{ $monthlyStats['good_stock'] ?? 0 }} Baik</span>
                                         <span class="badge bg-warning">{{ $monthlyStats['low_stock'] ?? 0 }} Rendah</span>
                                         <span class="badge bg-danger">{{ $monthlyStats['critical_stock'] ?? 0 }} Kritis</span>
                                         <span class="badge bg-secondary">{{ $monthlyStats['out_of_stock'] ?? 0 }} Habis</span>
                                     </div>
                                     @elseif($report['type'] == 'requests')
-                                    <div class="d-flex flex-wrap gap-1">
+                                    <div class="d-flex flex-wrap gap-1 justify-content-start">
                                         <span class="badge badge-pending">{{ $monthlyStats['pending_requests'] ?? 0 }}</span>
                                         <span class="badge badge-approved">{{ $monthlyStats['approved_requests'] ?? 0 }}</span>
                                         <span class="badge badge-rejected">{{ $monthlyStats['rejected_requests'] ?? 0 }}</span>
                                         <span class="badge badge-delivered">{{ $monthlyStats['delivered_requests'] ?? 0 }}</span>
                                     </div>
                                     @if(isset($monthlyStats['multi_barang_requests']) && $monthlyStats['multi_barang_requests'] > 0)
-                                    <div class="d-flex gap-1 mt-1">
+                                    <div class="d-flex flex-wrap gap-1 mt-1 justify-content-start">
                                         <span class="badge badge-multi">
                                             <i class="bi bi-layers me-1"></i>{{ $monthlyStats['multi_barang_requests'] ?? 0 }}
                                         </span>
@@ -775,47 +753,29 @@
                                     </div>
                                     @endif
                                     @elseif($report['type'] == 'procurement')
-                                    <span class="badge badge-pending">{{ $monthlyStats['pending_procurements'] ?? 0 }} Pending</span>
-                                    <span class="badge badge-approved">{{ $monthlyStats['approved_procurements'] ?? 0 }} Disetujui</span>
-                                    <span class="badge badge-rejected">{{ $monthlyStats['rejected_procurements'] ?? 0 }} Ditolak</span>
-                                    <span class="badge badge-processing">{{ $monthlyStats['processing_procurements'] ?? 0 }} Diproses</span>
-                                    <span class="badge badge-completed">{{ $monthlyStats['completed_procurements'] ?? 0 }} Selesai</span>
-                                    <span class="badge badge-cancelled">{{ $monthlyStats['cancelled_procurements'] ?? 0 }} Dibatalkan</span>
-                                    <br>
-                                    <span class="badge badge-new-item mt-1">
-                                        {{ $monthlyStats['new_item_procurements'] ?? 0 }} Barang Baru
-                                    </span>
-                                    <span class="badge badge-restock mt-1">
-                                        {{ $monthlyStats['restock_procurements'] ?? 0 }} Restock
-                                    </span>
+                                    <div class="d-flex flex-wrap gap-1 justify-content-start">
+                                        <span class="badge badge-pending">{{ $monthlyStats['pending_procurements'] ?? 0 }} Pending</span>
+                                        <span class="badge badge-approved">{{ $monthlyStats['approved_procurements'] ?? 0 }} Disetujui</span>
+                                        <span class="badge badge-rejected">{{ $monthlyStats['rejected_procurements'] ?? 0 }} Ditolak</span>
+                                        <span class="badge badge-processing">{{ $monthlyStats['processing_procurements'] ?? 0 }} Diproses</span>
+                                        <span class="badge badge-completed">{{ $monthlyStats['completed_procurements'] ?? 0 }} Selesai</span>
+                                        <span class="badge badge-cancelled">{{ $monthlyStats['cancelled_procurements'] ?? 0 }} Dibatalkan</span>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-1 mt-1 justify-content-start">
+                                        <span class="badge badge-new-item">
+                                            {{ $monthlyStats['new_item_procurements'] ?? 0 }} Barang Baru
+                                        </span>
+                                        <span class="badge badge-restock">
+                                            {{ $monthlyStats['restock_procurements'] ?? 0 }} Restock
+                                        </span>
+                                    </div>
                                     @else
                                     <span class="badge bg-info">
                                         <i class="bi bi-arrow-up-right me-1"></i>Pengeluaran Barang
                                     </span>
                                     @endif
                                 </td>
-                                <td id="budget_{{ $report['type'] }}_monthly">
-                                    @if($report['type'] == 'procurement')
-                                    @php
-                                        $budgetAmount = $monthlyStats['total_budget_procurements'] ?? 0;
-                                        $budgetClass = getBudgetLevel($budgetAmount);
-                                    @endphp
-                                    <span class="budget-indicator {{ $budgetClass }}">
-                                        Rp {{ number_format($budgetAmount, 0, ',', '.') }}
-                                    </span>
-                                    <br>
-                                    <small class="text-muted">
-                                        Rp {{ number_format($monthlyStats['avg_budget_per_procurement'] ?? 0, 0, ',', '.') }} / pengadaan
-                                    </small>
-                                    @elseif($report['type'] == 'expenditures')
-                                    <span class="budget-indicator budget-high">
-                                        Rp {{ number_format($monthlyStats['total_expenditures_value'] ?? 0, 0, ',', '.') }}
-                                    </span>
-                                    @else
-                                    <span class="text-muted">-</span>
-                                    @endif
-                                </td>
-                                <td>
+                                <td class="text-center">
                                     <button class="btn btn-sm btn-info" onclick="viewReport('{{ $report['type'] }}', '{{ $selectedMonth }}')" title="Lihat">
                                         <i class="bi bi-eye"></i>
                                     </button>
@@ -1049,9 +1009,13 @@
     
     function updateStats(data) {
         // Update inventory stats
-        $('#total_inventory_monthly').text(data.total_items + ' barang');
+        $('#total_inventory_monthly').html(`
+            <div>
+                <span class="fw-bold text-primary">${data.total_items}</span> barang
+            </div>
+        `);
         $('#status_inventory_monthly').html(`
-            <div class="d-flex flex-wrap gap-1">
+            <div class="d-flex flex-wrap gap-1 justify-content-start">
                 <span class="badge bg-success">${data.good_stock} Baik</span>
                 <span class="badge bg-warning">${data.low_stock} Rendah</span>
                 <span class="badge bg-danger">${data.critical_stock} Kritis</span>
@@ -1065,22 +1029,18 @@
                 <span class="fw-bold text-primary">${data.total_requests}</span> permintaan
             </div>
             <div class="text-muted small">
-                <span class="fw-bold">${data.total_items_in_requests}</span> item barang
+                ${data.total_items_in_requests} item barang
             </div>
         `);
-        
-        // Update requests stats
-        $('#total_requests_monthly').html(`${data.total_requests} permintaan<br>
-            <small class="text-muted">${data.total_items_in_requests} item barang</small>`);
         $('#status_requests_monthly').html(`
-            <div class="d-flex flex-wrap gap-1">
+            <div class="d-flex flex-wrap gap-1 justify-content-start">
                 <span class="badge badge-pending">${data.pending_requests}</span>
                 <span class="badge badge-approved">${data.approved_requests}</span>
                 <span class="badge badge-rejected">${data.rejected_requests}</span>
                 <span class="badge badge-delivered">${data.delivered_requests}</span>
             </div>
             ${data.multi_barang_requests > 0 ? `
-            <div class="d-flex gap-1 mt-1">
+            <div class="d-flex flex-wrap gap-1 mt-1 justify-content-start">
                 <span class="badge badge-multi">
                     <i class="bi bi-layers me-1"></i>${data.multi_barang_requests}
                 </span>
@@ -1091,54 +1051,33 @@
         `);
         
         // Update procurement stats
-        $('#total_procurement_monthly').html(`${data.total_procurements} pengadaan<br>
-            <small class="text-muted">${data.total_items_in_procurements} item barang</small>`);
+        $('#total_procurement_monthly').html(`
+            <div>
+                <span class="fw-bold text-primary">${data.total_procurements}</span> pengadaan
+            </div>
+            <div class="text-muted small">
+                ${data.total_items_in_procurements} item barang
+            </div>
+        `);
         $('#status_procurement_monthly').html(`
-            <span class="badge badge-pending">${data.pending_procurements} Pending</span>
-            <span class="badge badge-approved">${data.approved_procurements} Disetujui</span>
-            <span class="badge badge-rejected">${data.rejected_procurements} Ditolak</span>
-            <span class="badge badge-processing">${data.processing_procurements} Diproses</span>
-            <span class="badge badge-completed">${data.completed_procurements} Selesai</span>
-            <span class="badge badge-cancelled">${data.cancelled_procurements} Dibatalkan</span>
-            <br>
-            <span class="badge badge-new-item mt-1">
-                ${data.new_item_procurements} Barang Baru
-            </span>
-            <span class="badge badge-restock mt-1">
-                ${data.restock_procurements} Restock
-            </span>
+            <div class="d-flex flex-wrap gap-1 justify-content-start">
+                <span class="badge badge-pending">${data.pending_procurements} Pending</span>
+                <span class="badge badge-approved">${data.approved_procurements} Disetujui</span>
+                <span class="badge badge-rejected">${data.rejected_procurements} Ditolak</span>
+                <span class="badge badge-processing">${data.processing_procurements} Diproses</span>
+                <span class="badge badge-completed">${data.completed_procurements} Selesai</span>
+                <span class="badge badge-cancelled">${data.cancelled_procurements} Dibatalkan</span>
+            </div>
+            <div class="d-flex flex-wrap gap-1 mt-1 justify-content-start">
+                <span class="badge badge-new-item">
+                    ${data.new_item_procurements} Barang Baru
+                </span>
+                <span class="badge badge-restock">
+                    ${data.restock_procurements} Restock
+                </span>
+            </div>
         `);
         
-        // Update procurement budget
-        const budgetClass = getBudgetLevelClass(data.total_budget_procurements || 0);
-        $('#budget_procurement_monthly').html(`
-            <span class="budget-indicator ${budgetClass}">
-                Rp ${formatCurrency(data.total_budget_procurements || 0)}
-            </span>
-            <br>
-            <small class="text-muted">
-                Rp ${formatCurrency(data.avg_budget_per_procurement || 0)} / pengadaan
-            </small>
-        `);
-        
-        // Update expenditures stats
-        $('#total_expenditures_monthly').html(`${data.total_expenditures} pengeluaran<br>
-            <small class="text-muted">${data.total_items_in_expenditures} item terkirim</small>`);
-        $('#budget_expenditures_monthly').html(`
-            <span class="budget-indicator budget-high">
-                Rp ${formatCurrency(data.total_expenditures_value || 0)}
-            </span>
-        `);
-    }
-    
-    function formatCurrency(amount) {
-        return new Intl.NumberFormat('id-ID').format(amount);
-    }
-    
-    function getBudgetLevelClass(amount) {
-        if (amount > 100000000) return 'budget-high';
-        if (amount > 50000000) return 'budget-medium';
-        return 'budget-low';
         // Update expenditures stats
         $('#total_expenditures_monthly').html(`
             <div>
@@ -1148,6 +1087,10 @@
                 <span class="fw-bold">${data.total_items_in_expenditures}</span> item terkirim
             </div>
         `);
+    }
+    
+    function formatCurrency(amount) {
+        return new Intl.NumberFormat('id-ID').format(amount);
     }
     
     function updateButtons(selectedMonth) {

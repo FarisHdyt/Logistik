@@ -18,7 +18,7 @@
             --success: #10b981;
             --warning: #f59e0b;
             --info: #0ea5e9;
-            --superadmin-color: #8b5cf6; /* Warna khusus superadmin */
+            --superadmin-color: #8b5cf6;
             --dark: #1e293b;
             --light: #f8fafc;
             --sidebar-width: 250px;
@@ -36,9 +36,8 @@
             color: var(--dark);
         }
         
-        /* Sidebar - Sesuai Dashboard Superadmin */
         .sidebar {
-            background: linear-gradient(180deg, var(--dark) 0%, #0f172a 100%); /* Warna gelap untuk superadmin */
+            background: linear-gradient(180deg, var(--dark) 0%, #0f172a 100%);
             color: white;
             min-height: 100vh;
             width: var(--sidebar-width);
@@ -91,14 +90,12 @@
             text-align: center;
         }
         
-        /* Main Content */
         .main-content {
             margin-left: var(--sidebar-width);
             padding: 1.5rem;
             min-height: 100vh;
         }
         
-        /* Top Bar - Sesuai Dashboard Superadmin */
         .topbar {
             background: white;
             padding: 1rem 1.5rem;
@@ -119,7 +116,7 @@
         .user-avatar {
             width: 40px;
             height: 40px;
-            background: linear-gradient(135deg, var(--superadmin-color) 0%, #6d28d9 100%); /* Warna superadmin */
+            background: linear-gradient(135deg, var(--superadmin-color) 0%, #6d28d9 100%);
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -143,7 +140,6 @@
             background: #b91c1c;
         }
         
-        /* Page Header */
         .page-header {
             background: white;
             border-radius: 10px;
@@ -170,7 +166,6 @@
             border-color: #7c3aed;
         }
         
-        /* Stats Cards - Sesuai Dashboard Superadmin */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -212,7 +207,6 @@
             font-size: 0.9rem;
         }
         
-        /* Status Tabs */
         .status-tabs {
             display: flex;
             gap: 0.5rem;
@@ -247,7 +241,6 @@
             border-color: var(--superadmin-color);
         }
         
-        /* Badges */
         .badge {
             padding: 0.4rem 0.8rem;
             font-weight: 600;
@@ -256,7 +249,6 @@
             color: var(--dark) !important;
         }
         
-        /* Badge Status Pengadaan */
         .badge-pending {
             background-color: #fef3c7 !important;
             color: #92400e !important;
@@ -287,7 +279,42 @@
             border-color: #f87171;
         }
         
-        /* Badge Tipe Pengadaan */
+        .badge-partially_approved {
+            background-color: #fef3c7 !important;
+            color: #92400e !important;
+            border-color: #fbbf24;
+        }
+        
+        .badge-item-pending {
+            background-color: #fef3c7 !important;
+            color: #92400e !important;
+            border-color: #fbbf24;
+        }
+        
+        .badge-item-approved {
+            background-color: #d1fae5 !important;
+            color: #065f46 !important;
+            border-color: #10b981;
+        }
+        
+        .badge-item-rejected {
+            background-color: #fee2e2 !important;
+            color: #991b1b !important;
+            border-color: #f87171;
+        }
+        
+        .badge-item-cancelled {
+            background-color: #fef3c7 !important;
+            color: #92400e !important;
+            border-color: #fbbf24;
+        }
+        
+        .badge-item-completed {
+            background-color: #8b5cf6 !important;
+            color: white !important;
+            border-color: #7c3aed;
+        }
+        
         .badge-baru {
             background-color: #dbeafe !important;
             color: #1e40af !important;
@@ -300,7 +327,12 @@
             border-color: #fbbf24;
         }
         
-        /* Prioritas badges */
+        .badge-multi {
+            background-color: #8b5cf6 !important;
+            color: white !important;
+            border-color: #7c3aed;
+        }
+        
         .badge-priority-normal {
             background-color: #d1fae5 !important;
             color: #065f46 !important;
@@ -319,14 +351,22 @@
             border-color: #f87171;
         }
         
-        /* Badge khusus superadmin */
         .badge-superadmin {
             background-color: var(--superadmin-color) !important;
             color: white !important;
             border-color: var(--superadmin-color);
         }
         
-        /* Tables */
+        .multi-item-badge {
+            background-color: #0ea5e9;
+            color: white;
+            padding: 0.1rem 0.4rem;
+            border-radius: 3px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-right: 0.5rem;
+        }
+        
         .table-card {
             background: white;
             border-radius: 10px;
@@ -341,7 +381,6 @@
             border-bottom: 2px solid #e2e8f0;
         }
         
-        /* Filter Bar */
         .filter-bar {
             background: white;
             border-radius: 10px;
@@ -350,7 +389,6 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
         
-        /* Alert */
         .alert-container {
             position: fixed;
             top: 20px;
@@ -359,71 +397,228 @@
             min-width: 300px;
         }
         
-        /* Select2 Custom Styling */
-        .select2-container--default .select2-selection--single {
-            border: 1px solid #dee2e6;
-            height: calc(1.5em + 0.75rem + 2px);
-            border-radius: 0.375rem;
-            padding: 0.375rem 0.75rem;
+        .multi-item-container {
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 0.75rem;
+            background-color: #f8fafc;
+            margin-top: 0.5rem;
         }
         
-        .select2-container--default .select2-selection--single .select2-selection__rendered {
-            line-height: 1.5;
-            color: #212529;
+        .multi-item-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
         }
         
-        .select2-container--default .select2-selection--single .select2-selection__arrow {
-            height: calc(1.5em + 0.75rem + 2px);
+        .multi-item-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            font-size: 0.85rem;
         }
         
-        /* Modal Action Buttons */
-        .modal-action-buttons {
+        .multi-item-list li {
+            padding: 0.25rem 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .multi-item-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .item-kode {
+            background-color: #e0f2fe;
+            color: #0369a1;
+            padding: 0.1rem 0.3rem;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 0.75rem;
+            margin-right: 0.3rem;
+        }
+        
+        .item-detail {
+            color: #64748b;
+            font-size: 0.8rem;
+            display: block;
+        }
+        
+        /* Item Status Badges in Multi Item List */
+        .item-status-badge {
+            font-size: 0.65rem;
+            padding: 0.1rem 0.3rem;
+            border-radius: 3px;
+            margin-left: 0.5rem;
+            font-weight: 600;
+        }
+        
+        .item-status-completed {
+            background-color: #d1fae5;
+            color: #065f46;
+            border: 1px solid #10b981;
+        }
+        
+        .item-status-rejected {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #f87171;
+        }
+        
+        .item-status-cancelled {
+            background-color: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fbbf24;
+        }
+        
+        .item-status-pending {
+            background-color: #e0f2fe;
+            color: #0369a1;
+            border: 1px solid #0ea5e9;
+        }
+        
+        .item-status-approved {
+            background-color: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #60a5fa;
+        }
+        
+        /* Rejected/Cancelled Item Styling */
+        .item-rejected {
+            opacity: 0.7;
+            text-decoration: line-through;
+            color: #991b1b;
+        }
+        
+        .item-cancelled {
+            opacity: 0.7;
+            color: #92400e;
+        }
+        
+        .item-rejected .item-detail,
+        .item-cancelled .item-detail {
+            color: inherit;
+        }
+        
+        .rejection-reason {
+            background-color: #fee2e2;
+            border: 1px solid #f87171;
+            border-radius: 4px;
+            padding: 0.25rem 0.5rem;
+            margin-top: 0.25rem;
+            font-size: 0.75rem;
+            color: #991b1b;
+        }
+        
+        .total-summary {
+            background-color: #f0f9ff;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            padding: 0.5rem;
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+        }
+        
+        .total-summary span {
+            font-weight: 600;
+            color: #0369a1;
+        }
+        
+        /* Summary Stats in Multi Item */
+        .summary-stats {
+            display: flex;
+            gap: 1rem;
+            margin-top: 0.5rem;
+            font-size: 0.8rem;
+            flex-wrap: wrap;
+        }
+        
+        .stat-approved {
+            color: #065f46;
+            background-color: #d1fae5;
+            padding: 0.2rem 0.5rem;
+            border-radius: 3px;
+            border: 1px solid #10b981;
+        }
+        
+        .stat-rejected {
+            color: #991b1b;
+            background-color: #fee2e2;
+            padding: 0.2rem 0.5rem;
+            border-radius: 3px;
+            border: 1px solid #f87171;
+        }
+        
+        .stat-cancelled {
+            color: #92400e;
+            background-color: #fef3c7;
+            padding: 0.2rem 0.5rem;
+            border-radius: 3px;
+            border: 1px solid #fbbf24;
+        }
+        
+        .stat-pending {
+            color: #0369a1;
+            background-color: #e0f2fe;
+            padding: 0.2rem 0.5rem;
+            border-radius: 3px;
+            border: 1px solid #0ea5e9;
+        }
+        
+        .stat-completed {
+            color: #6d28d9;
+            background-color: #ede9fe;
+            padding: 0.2rem 0.5rem;
+            border-radius: 3px;
+            border: 1px solid #8b5cf6;
+        }
+        
+        .item-validation-checkbox {
+            margin-right: 0.5rem;
+            transform: scale(1.2);
+        }
+        
+        .validation-summary {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .validation-actions {
             display: flex;
             gap: 0.5rem;
-            justify-content: flex-end;
             margin-top: 1rem;
         }
         
-        /* Karakter counter styling */
-        .char-counter {
+        .item-validation-row {
+            transition: background-color 0.3s;
+        }
+        
+        .item-validation-row:hover {
+            background-color: #f8fafc;
+        }
+        
+        .item-validation-row.selected {
+            background-color: #e0f2fe;
+        }
+        
+        .validation-status-badge {
             font-size: 0.75rem;
-            text-align: right;
-            margin-top: 0.25rem;
-            color: #6c757d;
+            padding: 0.2rem 0.5rem;
         }
         
-        .char-counter.warning {
-            color: #f59e0b;
+        .btn-reject-all-custom {
+            background-color: #fee2e2 !important;
+            border-color: #f87171 !important;
+            color: #991b1b !important;
         }
         
-        .char-counter.danger {
-            color: #dc2626;
+        .btn-reject-all-custom:hover {
+            background-color: #fecaca !important;
+            border-color: #ef4444 !important;
         }
         
-        /* Action Buttons Styling */
-        .btn-validate {
-            min-width: 80px;
-        }
-        
-        /* Loading Spinner */
-        .spinner-border {
-            width: 1rem;
-            height: 1rem;
-            margin-right: 0.5rem;
-        }
-        
-        /* Quick Print Button */
-        .btn-print {
-            background-color: var(--warning);
-            border-color: var(--warning);
-        }
-        
-        .btn-print:hover {
-            background-color: #d97706;
-            border-color: #d97706;
-        }
-        
-        /* Responsive */
         @media (max-width: 768px) {
             .sidebar {
                 width: 70px;
@@ -461,23 +656,14 @@
                 font-size: 0.8rem;
             }
             
-            .modal-action-buttons {
-                flex-direction: column;
-            }
-            
             .stats-grid {
                 grid-template-columns: repeat(2, 1fr);
                 gap: 1rem;
             }
             
-            .stat-icon {
-                width: 50px;
-                height: 50px;
-                font-size: 1.5rem;
-            }
-            
-            .stat-content h3 {
-                font-size: 1.5rem;
+            .summary-stats {
+                flex-direction: column;
+                gap: 0.5rem;
             }
         }
         
@@ -485,45 +671,11 @@
             .stats-grid {
                 grid-template-columns: 1fr;
             }
-            
-            .status-tabs {
-                justify-content: center;
-            }
-        }
-        
-        /* Print Styles */
-        @media print {
-            .sidebar, .topbar, .page-header, .stats-grid, 
-            .filter-bar, .status-tabs, .action-buttons, 
-            .btn-group, .pagination, .alert-container {
-                display: none !important;
-            }
-            
-            .main-content {
-                margin-left: 0 !important;
-                padding: 0 !important;
-            }
-            
-            .table-card {
-                box-shadow: none !important;
-                padding: 0 !important;
-                border: none !important;
-            }
-            
-            body {
-                background-color: white !important;
-                color: black !important;
-            }
-            
-            .badge {
-                color: black !important;
-                border: 1px solid #000 !important;
-            }
         }
     </style>
 </head>
 <body>
-    <!-- Sidebar - Sesuai Dashboard Superadmin -->
+    <!-- Sidebar -->
     <div class="sidebar">
         <div class="sidebar-brand">
             <h3>SILOG</h3>
@@ -591,7 +743,7 @@
     
     <!-- Main Content -->
     <div class="main-content">
-        <!-- Top Bar - Sesuai Dashboard Superadmin -->
+        <!-- Top Bar -->
         <div class="topbar">
             <h4 class="mb-0">Validasi Pengadaan Barang</h4>
             <div class="user-info">
@@ -614,28 +766,23 @@
         </div>
         
         <!-- Alert Container -->
-        <div class="alert-container" id="alertContainer"></div>
-        
-        <!-- Alert Messages dari Session -->
-        @if(session('success'))
-        <div class="alert-container">
+        <div class="alert-container" id="alertContainer">
+            @if(session('success'))
             <div class="alert alert-success alert-dismissible fade show" role="alert">
                 <i class="bi bi-check-circle me-2"></i>
                 {{ session('success') }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
-        </div>
-        @endif
-        
-        @if(session('error'))
-        <div class="alert-container">
+            @endif
+            
+            @if(session('error'))
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
                 <i class="bi bi-exclamation-triangle me-2"></i>
                 {{ session('error') }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
+            @endif
         </div>
-        @endif
         
         <!-- Page Header -->
         <div class="page-header">
@@ -645,14 +792,14 @@
                     <p class="text-muted mb-0">Tinjau dan validasi pengajuan pengadaan barang</p>
                 </div>
                 <div class="action-buttons">
-                    <button class="btn btn-print btn-action" onclick="printTable()">
+                    <button class="btn btn-warning btn-action" onclick="printTable()">
                         <i class="bi bi-printer"></i> Cetak Laporan
                     </button>
                 </div>
             </div>
         </div>
         
-        <!-- Stats Cards - Sesuai Dashboard Superadmin -->
+        <!-- Stats Cards -->
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-icon" style="background-color: #ede9fe; color: var(--superadmin-color);">
@@ -675,22 +822,22 @@
             </div>
             
             <div class="stat-card">
-                <div class="stat-icon" style="background-color: #dbeafe; color: var(--primary);">
-                    <i class="bi bi-currency-dollar"></i>
-                </div>
-                <div class="stat-content">
-                    <h3>Rp {{ number_format($stats['pending_value'] ?? 0, 0, ',', '.') }}</h3>
-                    <p>Nilai Menunggu</p>
-                </div>
-            </div>
-            
-            <div class="stat-card">
                 <div class="stat-icon" style="background-color: #d1fae5; color: var(--success);">
                     <i class="bi bi-check-circle"></i>
                 </div>
                 <div class="stat-content">
                     <h3>{{ $stats['approved'] ?? 0 }}</h3>
                     <p>Telah Disetujui</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon" style="background-color: #8b5cf6; color: white;">
+                    <i class="bi bi-check2-all"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>{{ $stats['completed'] ?? 0 }}</h3>
+                    <p>Selesai</p>
                 </div>
             </div>
         </div>
@@ -729,9 +876,10 @@
             <a href="{{ route('superadmin.procurement', ['status' => 'all']) }}" class="status-tab {{ !request('status') || request('status') == 'all' ? 'active' : '' }}">Semua</a>
             <a href="{{ route('superadmin.procurement', ['status' => 'pending']) }}" class="status-tab {{ request('status') == 'pending' ? 'active' : '' }}">Menunggu Validasi</a>
             <a href="{{ route('superadmin.procurement', ['status' => 'approved']) }}" class="status-tab {{ request('status') == 'approved' ? 'active' : '' }}">Disetujui</a>
-            <a href="{{ route('superadmin.procurement', ['status' => 'rejected']) }}" class="status-tab {{ request('status') == 'rejected' ? 'active' : '' }}">Ditolak</a>
-            <a href="{{ route('superadmin.procurement', ['status' => 'completed']) }}" class="status-tab {{ request('status') == 'completed' ? 'active' : '' }}">Selesai</a>
-            <a href="{{ route('superadmin.procurement', ['status' => 'cancelled']) }}" class="status-tab {{ request('status') == 'cancelled' ? 'active' : '' }}">Dibatalkan</a>
+            <a href="{{ route('superadmin.procurement', ['status' => 'rejected']) }}" class="status-tab {{ request('status') == 'rejected' ? 'active' : '' }}>Ditolak</a>
+            <a href="{{ route('superadmin.procurement', ['status' => 'completed']) }}" class="status-tab {{ request('status') == 'completed' ? 'active' : '' }}>Selesai</a>
+            <a href="{{ route('superadmin.procurement', ['status' => 'cancelled']) }}" class="status-tab {{ request('status') == 'cancelled' ? 'active' : '' }}>Dibatalkan</a>
+            <a href="{{ route('superadmin.procurement', ['status' => 'partially_approved']) }}" class="status-tab {{ request('status') == 'partially_approved' ? 'active' : '' }}">Disetujui Sebagian</a>
         </div>
         
         <!-- Procurement Table -->
@@ -741,11 +889,11 @@
                     <thead>
                         <tr>
                             <th>No</th>
-                            <th>Kode/Nama Barang</th>
-                            <th>Diajukan Oleh</th>
+                            <th>Kode Pengadaan</th>
+                            <th>Item Barang</th>
                             <th>Tipe</th>
                             <th>Jumlah</th>
-                            <th>Harga Perkiraan</th>
+                            <th>Total Nilai</th>
                             <th>Prioritas</th>
                             <th>Status</th>
                             <th>Tanggal Diajukan</th>
@@ -755,23 +903,220 @@
                     <tbody>
                         @if(isset($procurements) && $procurements->count() > 0)
                             @foreach($procurements as $index => $procurement)
+                            @php
+                                $items = $procurement->items ?? [];
+                                $isMultiItem = $procurement->is_multi_item && count($items) > 0;
+                                $firstItem = count($items) > 0 ? $items->first() : null;
+                                
+                                // PERBAIKAN: Cek tipe pengadaan yang benar untuk multi-item
+                                $tipePengadaan = $procurement->tipe_pengadaan;
+                                // Jika ini multi-item, tipe harus "multi"
+                                if ($isMultiItem) {
+                                    $tipePengadaan = 'multi';
+                                }
+                                
+                                // Hitung statistik item
+                                $itemStats = [
+                                    'total' => $items->count(),
+                                    'approved' => $items->where('status', 'approved')->count(),
+                                    'completed' => $items->where('status', 'completed')->count(),
+                                    'rejected' => $items->where('status', 'rejected')->count(),
+                                    'cancelled' => $items->where('status', 'cancelled')->count(),
+                                    'pending' => $items->where('status', 'pending')->count(),
+                                ];
+                                
+                                // Hitung total jumlah dan nilai HANYA untuk item yang tidak ditolak/dibatalkan
+                                $approvedItems = $items->filter(function($item) {
+                                    return !in_array($item->status, ['rejected', 'cancelled']);
+                                });
+                                
+                                $totalJumlah = $isMultiItem ? $approvedItems->sum('jumlah') : 
+                                              ($firstItem && !in_array($firstItem->status, ['rejected', 'cancelled']) ? 
+                                               $firstItem->jumlah : 0);
+                                
+                                $totalNilai = $isMultiItem ? $approvedItems->sum(function($item) {
+                                    return ($item->jumlah ?? 0) * ($item->harga_perkiraan ?? 0);
+                                }) : ($firstItem && !in_array($firstItem->status, ['rejected', 'cancelled']) ? 
+                                     (($firstItem->jumlah ?? 0) * ($firstItem->harga_perkiraan ?? 0)) : 0);
+                            @endphp
                             <tr>
                                 <td>{{ ($procurements->currentPage() - 1) * $procurements->perPage() + $index + 1 }}</td>
                                 <td>
-                                    <strong>{{ $procurement->kode_barang }}</strong><br>
-                                    <small>{{ $procurement->nama_barang }}</small>
+                                    <strong>{{ $procurement->kode_pengadaan ?? 'P-' . str_pad($procurement->id, 6, '0', STR_PAD_LEFT) }}</strong>
                                 </td>
                                 <td>
-                                    <small>{{ $procurement->user->name ?? 'Tidak diketahui' }}</small><br>
-                                    <small class="text-muted">{{ $procurement->user->satker->nama_satker ?? 'Tidak ada satker' }}</small>
+                                    @if($isMultiItem)
+                                        <!-- Tampilan Multi Item dengan status -->
+                                        <div class="multi-item-container">
+                                            <div class="multi-item-header">
+                                                <span class="multi-item-badge">{{ $items->count() }} ITEM</span>
+                                                <strong>Pengadaan Multi Item</strong>
+                                            </div>
+                                            <ul class="multi-item-list">
+                                                @foreach($items as $item)
+                                                @php
+                                                    $itemClass = '';
+                                                    $statusClass = '';
+                                                    $statusText = '';
+                                                    
+                                                    switch($item->status) {
+                                                        case 'completed':
+                                                            $itemClass = '';
+                                                            $statusClass = 'item-status-completed';
+                                                            $statusText = 'Selesai';
+                                                            break;
+                                                        case 'rejected':
+                                                            $itemClass = 'item-rejected';
+                                                            $statusClass = 'item-status-rejected';
+                                                            $statusText = 'Ditolak';
+                                                            break;
+                                                        case 'cancelled':
+                                                            $itemClass = 'item-cancelled';
+                                                            $statusClass = 'item-status-cancelled';
+                                                            $statusText = 'Dibatalkan';
+                                                            break;
+                                                        case 'approved':
+                                                            $itemClass = '';
+                                                            $statusClass = 'item-status-approved';
+                                                            $statusText = 'Disetujui';
+                                                            break;
+                                                        case 'pending':
+                                                            $itemClass = '';
+                                                            $statusClass = 'item-status-pending';
+                                                            $statusText = 'Menunggu';
+                                                            break;
+                                                    }
+                                                @endphp
+                                                <li class="{{ $itemClass }}">
+                                                    <span class="item-kode">{{ $item->kode_barang ?? 'N/A' }}</span>
+                                                    <strong>{{ $item->nama_barang ?? 'Item' }}</strong>
+                                                    <span class="item-status-badge {{ $statusClass }}">
+                                                        {{ $statusText }}
+                                                    </span>
+                                                    <span class="item-detail">
+                                                        {{ $item->jumlah ?? 0 }} unit @ Rp {{ number_format($item->harga_perkiraan ?? 0, 0, ',', '.') }} per unit
+                                                    </span>
+                                                    @if(in_array($item->status, ['rejected', 'cancelled']) && $item->alasan_penolakan)
+                                                    <div class="rejection-reason">
+                                                        <small><strong>Alasan:</strong> {{ $item->alasan_penolakan }}</small>
+                                                    </div>
+                                                    @endif
+                                                </li>
+                                                @endforeach
+                                            </ul>
+                                            
+                                            <!-- Summary Stats -->
+                                            @if($itemStats['rejected'] > 0 || $itemStats['cancelled'] > 0 || $itemStats['completed'] > 0 || $itemStats['approved'] > 0)
+                                            <div class="summary-stats">
+                                                @if($itemStats['approved'] > 0)
+                                                <span class="stat-approved">
+                                                    <i class="bi bi-check-circle"></i> {{ $itemStats['approved'] }} Disetujui
+                                                </span>
+                                                @endif
+                                                @if($itemStats['completed'] > 0)
+                                                <span class="stat-completed">
+                                                    <i class="bi bi-check-circle-fill"></i> {{ $itemStats['completed'] }} Selesai
+                                                </span>
+                                                @endif
+                                                @if($itemStats['rejected'] > 0)
+                                                <span class="stat-rejected">
+                                                    <i class="bi bi-x-circle"></i> {{ $itemStats['rejected'] }} Ditolak
+                                                </span>
+                                                @endif
+                                                @if($itemStats['cancelled'] > 0)
+                                                <span class="stat-cancelled">
+                                                    <i class="bi bi-x-circle-fill"></i> {{ $itemStats['cancelled'] }} Dibatalkan
+                                                </span>
+                                                @endif
+                                                @if($itemStats['pending'] > 0)
+                                                <span class="stat-pending">
+                                                    <i class="bi bi-clock"></i> {{ $itemStats['pending'] }} Menunggu
+                                                </span>
+                                                @endif
+                                            </div>
+                                            @endif
+                                            
+                                            <div class="total-summary">
+                                                Total Disetujui: <span>{{ $totalJumlah }} unit</span> • 
+                                                Nilai: <span>Rp {{ number_format($totalNilai, 0, ',', '.') }}</span>
+                                            </div>
+                                        </div>
+                                    @elseif($firstItem)
+                                        <!-- Tampilan Single Item dari relasi items -->
+                                        @php
+                                            $itemClass = '';
+                                            $statusText = '';
+                                            $statusClass = '';
+                                            
+                                            if(in_array($firstItem->status, ['rejected', 'cancelled'])) {
+                                                $itemClass = 'item-rejected';
+                                            }
+                                            
+                                            switch($firstItem->status) {
+                                                case 'completed':
+                                                    $statusText = 'Selesai';
+                                                    $statusClass = 'item-status-completed';
+                                                    break;
+                                                case 'rejected':
+                                                    $statusText = 'Ditolak';
+                                                    $statusClass = 'item-status-rejected';
+                                                    break;
+                                                case 'cancelled':
+                                                    $statusText = 'Dibatalkan';
+                                                    $statusClass = 'item-status-cancelled';
+                                                    break;
+                                                case 'approved':
+                                                    $statusText = 'Disetujui';
+                                                    $statusClass = 'item-status-approved';
+                                                    break;
+                                                case 'pending':
+                                                    $statusText = 'Menunggu';
+                                                    $statusClass = 'item-status-pending';
+                                                    break;
+                                            }
+                                        @endphp
+                                        <div class="{{ $itemClass }}">
+                                            <strong>{{ $firstItem->kode_barang ?? 'N/A' }}</strong><br>
+                                            <small>{{ $firstItem->nama_barang ?? 'Barang' }}</small>
+                                            @if($statusText)
+                                            <br><span class="item-status-badge {{ $statusClass }}">
+                                                {{ $statusText }}
+                                            </span>
+                                            @endif
+                                            @if(in_array($firstItem->status, ['rejected', 'cancelled']) && $firstItem->alasan_penolakan)
+                                            <div class="rejection-reason mt-1">
+                                                <small><strong>Alasan:</strong> {{ $firstItem->alasan_penolakan }}</small>
+                                            </div>
+                                            @endif
+                                        </div>
+                                    @else
+                                        <!-- Fallback jika tidak ada items -->
+                                        <strong>{{ $procurement->kode_barang ?? 'N/A' }}</strong><br>
+                                        <small>{{ $procurement->nama_barang ?? 'Barang' }}</small>
+                                    @endif
                                 </td>
                                 <td>
-                                    <span class="badge badge-{{ $procurement->tipe_pengadaan }}">
-                                        {{ $procurement->tipe_pengadaan == 'baru' ? 'Baru' : 'Restock' }}
+                                    <!-- PERBAIKAN: Tampilkan badge yang benar berdasarkan tipe pengadaan -->
+                                    @if($tipePengadaan == 'multi')
+                                    <span class="badge badge-multi">
+                                        Multi Item
                                     </span>
+                                    @elseif($tipePengadaan == 'baru')
+                                    <span class="badge badge-baru">
+                                        Baru
+                                    </span>
+                                    @else
+                                    <span class="badge badge-restock">
+                                        Restock
+                                    </span>
+                                    @endif
                                 </td>
-                                <td class="text-center">{{ $procurement->jumlah }}</td>
-                                <td>Rp {{ number_format($procurement->harga_perkiraan, 0, ',', '.') }}</td>
+                                <td class="text-center">
+                                    {{ $totalJumlah }}
+                                </td>
+                                <td>
+                                    Rp {{ number_format($totalNilai, 0, ',', '.') }}
+                                </td>
                                 <td>
                                     <span class="badge badge-priority-{{ $procurement->prioritas }}">
                                         {{ ucfirst($procurement->prioritas) }}
@@ -789,6 +1134,8 @@
                                             Dibatalkan
                                         @elseif($procurement->status == 'rejected')
                                             Ditolak
+                                        @elseif($procurement->status == 'partially_approved')
+                                            Disetujui Sebagian
                                         @else
                                             {{ ucfirst($procurement->status) }}
                                         @endif
@@ -802,17 +1149,28 @@
                                             <i class="bi bi-eye"></i>
                                         </button>
                                         
-                                        {{-- Tombol validasi hanya untuk status pending --}}
                                         @if($procurement->status == 'pending')
-                                        <button type="button" class="btn btn-success btn-sm approve-procurement" 
-                                                data-id="{{ $procurement->id }}" title="Setujui">
-                                            <i class="bi bi-check-circle"></i>
-                                        </button>
-                                        <button type="button" class="btn btn-danger btn-sm reject-procurement" 
-                                                data-id="{{ $procurement->id }}" title="Tolak">
-                                            <i class="bi bi-x-circle"></i>
-                                        </button>
+                                            <!-- Untuk single item -->
+                                            @if(!$isMultiItem || count($items) <= 1)
+                                            <button type="button" class="btn btn-success btn-sm approve-procurement" 
+                                                    data-id="{{ $procurement->id }}" title="Setujui Semua">
+                                                <i class="bi bi-check-circle"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-danger btn-sm reject-procurement" 
+                                                    data-id="{{ $procurement->id }}" title="Tolak Semua">
+                                                <i class="bi bi-x-circle"></i>
+                                            </button>
+                                            @else
+                                            <!-- Custom validation untuk multi-item -->
+                                            <button type="button" class="btn btn-warning btn-sm custom-approve-procurement" 
+                                                    data-id="{{ $procurement->id }}" title="Validasi Custom">
+                                                <i class="bi bi-check2-all"></i>
+                                            </button>
+                                            @endif
                                         @endif
+                                        
+                                        <!-- PERBAIKAN: Hapus tombol "Tandai Selesai" untuk superadmin -->
+                                        <!-- Superadmin hanya bisa melihat detail untuk pengadaan yang sudah disetujui -->
                                     </div>
                                 </td>
                             </tr>
@@ -823,7 +1181,7 @@
                                     <div class="py-4">
                                         <i class="bi bi-cart-plus display-6 text-muted"></i>
                                         <p class="mt-2">Tidak ada data pengadaan ditemukan</p>
-                                        @if(request()->has('search') || request()->has('tipe'))
+                                        @if(request()->has('search') || request()->has('status') || request()->has('tipe'))
                                         <a href="{{ route('superadmin.procurement') }}" class="btn btn-primary btn-sm mt-2" style="background-color: var(--superadmin-color); border-color: var(--superadmin-color);">
                                             Reset Filter
                                         </a>
@@ -845,43 +1203,30 @@
                 <div>
                     <nav aria-label="Page navigation">
                         <ul class="pagination">
-                            {{-- Previous Page Link --}}
                             @if ($procurements->onFirstPage())
-                                <li class="page-item disabled" aria-disabled="true" aria-label="@lang('pagination.previous')">
+                                <li class="page-item disabled" aria-disabled="true">
                                     <span class="page-link" aria-hidden="true">&laquo; Sebelumnya</span>
                                 </li>
                             @else
                                 <li class="page-item">
-                                    <a class="page-link" href="{{ $procurements->previousPageUrl() }}" rel="prev" aria-label="@lang('pagination.previous')">&laquo; Sebelumnya</a>
+                                    <a class="page-link" href="{{ $procurements->previousPageUrl() }}" rel="prev">&laquo; Sebelumnya</a>
                                 </li>
                             @endif
 
-                            {{-- Pagination Elements --}}
-                            @foreach ($procurements->links()->elements as $element)
-                                {{-- "Three Dots" Separator --}}
-                                @if (is_string($element))
-                                    <li class="page-item disabled" aria-disabled="true"><span class="page-link">{{ $element }}</span></li>
-                                @endif
-
-                                {{-- Array Of Links --}}
-                                @if (is_array($element))
-                                    @foreach ($element as $page => $url)
-                                        @if ($page == $procurements->currentPage())
-                                            <li class="page-item active" aria-current="page"><span class="page-link">{{ $page }}</span></li>
-                                        @else
-                                            <li class="page-item"><a class="page-link" href="{{ $url }}">{{ $page }}</a></li>
-                                        @endif
-                                    @endforeach
+                            @foreach ($procurements->getUrlRange(1, $procurements->lastPage()) as $page => $url)
+                                @if ($page == $procurements->currentPage())
+                                    <li class="page-item active" aria-current="page"><span class="page-link">{{ $page }}</span></li>
+                                @else
+                                    <li class="page-item"><a class="page-link" href="{{ $url }}">{{ $page }}</a></li>
                                 @endif
                             @endforeach
 
-                            {{-- Next Page Link --}}
                             @if ($procurements->hasMorePages())
                                 <li class="page-item">
-                                    <a class="page-link" href="{{ $procurements->nextPageUrl() }}" rel="next" aria-label="@lang('pagination.next')">Selanjutnya &raquo;</a>
+                                    <a class="page-link" href="{{ $procurements->nextPageUrl() }}" rel="next">Selanjutnya &raquo;</a>
                                 </li>
                             @else
-                                <li class="page-item disabled" aria-disabled="true" aria-label="@lang('pagination.next')">
+                                <li class="page-item disabled" aria-disabled="true">
                                     <span class="page-link" aria-hidden="true">Selanjutnya &raquo;</span>
                                 </li>
                             @endif
@@ -893,7 +1238,7 @@
         </div>
     </div>
     
-    <!-- Detail Modal untuk Pengadaan -->
+    <!-- Detail Modal -->
     <div class="modal fade" id="detailProcurementModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -901,15 +1246,39 @@
                     <h5 class="modal-title">Detail Pengajuan Pengadaan</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body modal-form" id="detailProcurementBody">
+                <div class="modal-body" id="detailProcurementBody">
                     <!-- Detail akan diisi dengan JavaScript -->
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" onclick="printDetail()" style="background-color: var(--superadmin-color); border-color: var(--superadmin-color);">
-                        <i class="bi bi-printer me-1"></i> Cetak
-                    </button>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
                 </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Custom Validation Modal -->
+    <div class="modal fade" id="customValidationModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Validasi Custom Pengadaan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="POST" id="customValidationForm">
+                    @csrf
+                    <div class="modal-body" id="customValidationBody">
+                        <!-- Konten akan diisi dengan JavaScript -->
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-success" id="submitCustomValidationBtn">
+                            <i class="bi bi-check-circle me-1"></i> Submit Validasi
+                        </button>
+                        <button type="button" class="btn btn-reject-all-custom" id="rejectAllCustomBtn">
+                            <i class="bi bi-x-circle me-1"></i> Tolak Semua
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -926,7 +1295,7 @@
                     @csrf
                     <div class="modal-body">
                         <input type="hidden" name="procurement_id" id="approve_procurement_id">
-                        <p>Apakah Anda yakin ingin menyetujui pengadaan ini?</p>
+                        <p>Apakah Anda yakin ingin menyetujui seluruh pengadaan ini?</p>
                         <div class="mb-3">
                             <label for="catatan_approve" class="form-label">
                                 Catatan (Opsional)
@@ -938,7 +1307,7 @@
                     <div class="modal-footer">
                         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
                         <button type="submit" class="btn btn-success" id="submitApproveBtn">
-                            <i class="bi bi-check-circle me-1"></i> Setujui
+                            <i class="bi bi-check-circle me-1"></i> Setujui Semua
                         </button>
                     </div>
                 </form>
@@ -961,147 +1330,406 @@
                         <div class="mb-3">
                             <label for="alasan_penolakan" class="form-label">
                                 Alasan Penolakan <span class="text-danger">*</span>
-                                <small class="text-muted">(minimal 10 karakter)</small>
                             </label>
                             <textarea class="form-control" id="alasan_penolakan" name="alasan_penolakan" 
-                                      rows="3" placeholder="Masukkan alasan penolakan minimal 10 karakter" 
-                                      minlength="10" required></textarea>
-                            <div class="char-counter" id="alasan_counter">0/10 karakter</div>
-                            <div class="form-text text-danger d-none" id="alasan_error">
-                                <i class="bi bi-exclamation-circle"></i> Alasan penolakan harus minimal 10 karakter
-                            </div>
+                                      rows="3" placeholder="Masukkan alasan penolakan" required></textarea>
                         </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
-                        <button type="submit" class="btn btn-danger" id="submitRejectBtn">Tolak Pengadaan</button>
+                        <button type="submit" class="btn btn-danger" id="submitRejectBtn">Tolak Semua</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
+    
+    <!-- PERBAIKAN: Hapus modal Complete Procurement karena superadmin tidak bisa menandai selesai -->
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
-    $(document).ready(function() {
-        // Submit form filter dengan Enter
-        $('#searchInput').keypress(function(e) {
-            if (e.which == 13) {
-                $('#filterForm').submit();
-                return false;
-            }
+$(document).ready(function() {
+    // Initialize Bootstrap modals
+    const detailModal = new bootstrap.Modal(document.getElementById('detailProcurementModal'));
+    const customValidationModal = new bootstrap.Modal(document.getElementById('customValidationModal'));
+    const approveModal = new bootstrap.Modal(document.getElementById('approveProcurementModal'));
+    const rejectModal = new bootstrap.Modal(document.getElementById('rejectProcurementModal'));
+    // PERBAIKAN: Hapus inisialisasi modal complete karena superadmin tidak bisa menandai selesai
+    
+    // Helper functions
+    function getStatusDisplay(status) {
+        const statusMap = {
+            'pending': 'Menunggu',
+            'approved': 'Disetujui',
+            'completed': 'Selesai',
+            'cancelled': 'Dibatalkan',
+            'rejected': 'Ditolak',
+            'partially_approved': 'Disetujui Sebagian'
+        };
+        return statusMap[status] || status.charAt(0).toUpperCase() + status.slice(1);
+    }
+    
+    function getItemStatusText(status) {
+        const statusMap = {
+            'pending': 'Menunggu',
+            'approved': 'Disetujui',
+            'completed': 'Selesai',
+            'rejected': 'Ditolak',
+            'cancelled': 'Dibatalkan'
+        };
+        return statusMap[status] || status.charAt(0).toUpperCase() + status.slice(1);
+    }
+    
+    function getItemStatusClass(status) {
+        const classMap = {
+            'pending': 'item-status-pending',
+            'approved': 'item-status-approved',
+            'completed': 'item-status-completed',
+            'rejected': 'item-status-rejected',
+            'cancelled': 'item-status-cancelled'
+        };
+        return classMap[status] || 'item-status-pending';
+    }
+    
+    function getTipePengadaanDisplay(tipe, isMultiItem) {
+        // PERBAIKAN: Fungsi untuk menampilkan tipe pengadaan yang benar
+        if (isMultiItem) {
+            return 'Multi Item';
+        } else if (tipe === 'baru') {
+            return 'Baru';
+        } else if (tipe === 'restock') {
+            return 'Restock';
+        } else {
+            return tipe.charAt(0).toUpperCase() + tipe.slice(1);
+        }
+    }
+    
+    function formatDate(dateString) {
+        if (!dateString) return '-';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('id-ID', {
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric'
         });
+    }
+    
+    function formatNumber(num) {
+        if (!num) return '0';
+        return new Intl.NumberFormat('id-ID').format(num);
+    }
+    
+    // Show alert function
+    function showAlert(message, type = 'success') {
+        const alertContainer = $('#alertContainer');
         
-        // Auto dismiss alerts setelah 5 detik
+        // Hapus alert sebelumnya
+        alertContainer.find('.alert').alert('close');
+        
+        let icon = 'bi-check-circle';
+        if (type === 'warning') icon = 'bi-exclamation-triangle';
+        if (type === 'danger') icon = 'bi-exclamation-octagon';
+        if (type === 'info') icon = 'bi-info-circle';
+        
+        const alert = $(`
+            <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                <i class="bi ${icon} me-2"></i>
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        `);
+        
+        alertContainer.append(alert);
+        
+        // Auto dismiss setelah 5 detik
         setTimeout(() => {
-            $('.alert').alert('close');
+            alert.alert('close');
         }, 5000);
+    }
+    
+    // Auto dismiss alerts
+    setTimeout(() => {
+        $('.alert').alert('close');
+    }, 5000);
+    
+    // Submit form filter dengan Enter
+    $('#searchInput').keypress(function(e) {
+        if (e.which == 13) {
+            $('#filterForm').submit();
+            return false;
+        }
+    });
+    
+    // View detail procurement
+    $(document).on('click', '.view-procurement', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
         
-        // View detail procurement
-        $(document).on('click', '.view-procurement', function() {
-            const procurementId = $(this).data('id');
-            
-            // Tampilkan loading state
-            $('#detailProcurementBody').html(`
-                <div class="text-center py-4">
-                    <div class="spinner-border text-primary" role="status" style="color: var(--superadmin-color);">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                    <p class="mt-2 text-muted">Memuat data pengadaan...</p>
+        const procurementId = $(this).data('id');
+        
+        // Tampilkan loading state
+        $('#detailProcurementBody').html(`
+            <div class="text-center py-4">
+                <div class="spinner-border text-primary" role="status" style="color: var(--superadmin-color);">
+                    <span class="visually-hidden">Loading...</span>
                 </div>
-            `);
-            
-            fetch(`/superadmin/procurement/${procurementId}`)
-                .then(response => response.json())
-                .then(data => {
-                    const procurement = data.procurement;
-                    
-                    let html = `
-                        <!-- Informasi Umum -->
-                        <div class="row mb-4">
-                            <div class="col-md-6">
-                                <div class="card">
-                                    <div class="card-body">
-                                        <h6 class="card-title mb-3" style="color: var(--superadmin-color);">
-                                            <i class="bi bi-info-circle me-2"></i>Informasi Pengadaan
-                                        </h6>
-                                        <div class="row mb-2">
-                                            <div class="col-5 fw-bold">Kode Barang:</div>
-                                            <div class="col-7">${procurement.kode_barang || '-'}</div>
-                                        </div>
-                                        <div class="row mb-2">
-                                            <div class="col-5 fw-bold">Nama Barang:</div>
-                                            <div class="col-7">${procurement.nama_barang || '-'}</div>
-                                        </div>
-                                        <div class="row mb-2">
-                                            <div class="col-5 fw-bold">Tipe Pengadaan:</div>
-                                            <div class="col-7">
-                                                <span class="badge badge-${procurement.tipe_pengadaan}">
-                                                    ${procurement.tipe_pengadaan_display || procurement.tipe_pengadaan}
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div class="row mb-2">
-                                            <div class="col-5 fw-bold">Kategori:</div>
-                                            <div class="col-7">${procurement.kategori?.nama_kategori || '-'}</div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-5 fw-bold">Satuan:</div>
-                                            <div class="col-7">${procurement.satuan?.nama_satuan || '-'}</div>
+                <p class="mt-2 text-muted">Memuat data pengadaan...</p>
+            </div>
+        `);
+        
+        // Show modal first
+        detailModal.show();
+        
+        // Fetch data
+        $.ajax({
+            url: "{{ url('superadmin/procurement') }}/" + procurementId,
+            method: 'GET',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                'Accept': 'application/json'
+            },
+            success: function(response) {
+                if (response.error) {
+                    $('#detailProcurementBody').html(`
+                        <div class="alert alert-danger">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            ${response.error}
+                        </div>
+                    `);
+                    return;
+                }
+                
+                const procurement = response.procurement;
+                const items = procurement.items || [];
+                const isMultiItem = items.length > 1;
+                
+                // Pastikan kode_pengadaan ada
+                const kodePengadaan = procurement.kode_pengadaan || 
+                                      'P-' + procurement.id.toString().padStart(6, '0');
+                
+                // Items data
+                
+                // Hitung statistik item
+                const itemStats = {
+                    approved: items.filter(item => item.status === 'approved').length,
+                    completed: items.filter(item => item.status === 'completed').length,
+                    rejected: items.filter(item => item.status === 'rejected').length,
+                    cancelled: items.filter(item => item.status === 'cancelled').length,
+                    pending: items.filter(item => item.status === 'pending').length,
+                    total: items.length
+                };
+                
+                // Hitung total hanya untuk item yang tidak ditolak/dibatalkan
+                const validItems = items.filter(item => !['rejected', 'cancelled'].includes(item.status));
+                let totalJumlah = 0;
+                let totalNilai = 0;
+                
+                validItems.forEach(item => {
+                    const jumlah = parseInt(item.jumlah) || 0;
+                    const harga = parseFloat(item.harga_perkiraan) || 0;
+                    totalJumlah += jumlah;
+                    totalNilai += (jumlah * harga);
+                });
+                
+                // PERBAIKAN: Tentukan tipe pengadaan yang benar
+                const tipePengadaan = isMultiItem ? 'multi' : procurement.tipe_pengadaan;
+                
+                // Build HTML content
+                let html = `
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="card-title mb-3" style="color: var(--superadmin-color);">
+                                        <i class="bi bi-info-circle me-2"></i>Informasi Pengadaan
+                                    </h6>
+                                    <div class="row mb-2">
+                                        <div class="col-5 fw-bold">Kode Pengadaan:</div>
+                                        <div class="col-7"><code>${kodePengadaan}</code></div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col-5 fw-bold">Tipe Pengadaan:</div>
+                                        <div class="col-7">
+                                            ${tipePengadaan === 'multi' ? `
+                                            <span class="badge badge-multi">Multi Item</span>
+                                            ` : tipePengadaan === 'baru' ? `
+                                            <span class="badge badge-baru">Baru</span>
+                                            ` : `
+                                            <span class="badge badge-restock">Restock</span>
+                                            `}
                                         </div>
                                     </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="card">
-                                    <div class="card-body">
-                                        <h6 class="card-title mb-3" style="color: var(--superadmin-color);">
-                                            <i class="bi bi-clipboard-check me-2"></i>Status Pengadaan
-                                        </h6>
-                                        <div class="row mb-2">
-                                            <div class="col-5 fw-bold">Status:</div>
-                                            <div class="col-7">
-                                                <span class="badge badge-${procurement.status}">
-                                                    ${procurement.status_display || procurement.status}
-                                                </span>
-                                            </div>
+                                    <div class="row mb-2">
+                                        <div class="col-5 fw-bold">Status:</div>
+                                        <div class="col-7">
+                                            <span class="badge badge-${procurement.status}">
+                                                ${getStatusDisplay(procurement.status)}
+                                            </span>
                                         </div>
-                                        <div class="row mb-2">
-                                            <div class="col-5 fw-bold">Prioritas:</div>
-                                            <div class="col-7">
-                                                <span class="badge badge-priority-${procurement.prioritas}">
-                                                    ${procurement.prioritas_display || procurement.prioritas}
-                                                </span>
-                                            </div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col-5 fw-bold">Prioritas:</div>
+                                        <div class="col-7">
+                                            <span class="badge badge-priority-${procurement.prioritas}">
+                                                ${procurement.prioritas === 'mendesak' ? 'Mendesak' : procurement.prioritas === 'tinggi' ? 'Tinggi' : 'Normal'}
+                                            </span>
                                         </div>
-                                        <div class="row mb-2">
-                                            <div class="col-5 fw-bold">Jumlah:</div>
-                                            <div class="col-7">${procurement.jumlah}</div>
-                                        </div>
-                                        <div class="row mb-2">
-                                            <div class="col-5 fw-bold">Harga Perkiraan:</div>
-                                            <div class="col-7">Rp ${formatNumber(procurement.harga_perkiraan)}</div>
-                                        </div>
-                                        <div class="row mb-2">
-                                            <div class="col-5 fw-bold">Total Perkiraan:</div>
-                                            <div class="col-7 fw-bold" style="color: var(--superadmin-color);">Rp ${formatNumber(procurement.total_perkiraan || procurement.jumlah * procurement.harga_perkiraan)}</div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-5 fw-bold">Tanggal Diajukan:</div>
-                                            <div class="col-7">${new Date(procurement.created_at).toLocaleDateString('id-ID', {
-                                                day: '2-digit',
-                                                month: 'long',
-                                                year: 'numeric'
-                                            })}</div>
-                                        </div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col-5 fw-bold">Tanggal Diajukan:</div>
+                                        <div class="col-7">${formatDate(procurement.created_at)}</div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-5 fw-bold">Alasan Pengadaan:</div>
+                                        <div class="col-7">${procurement.alasan_pengadaan || '-'}</div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="card-title mb-3" style="color: var(--superadmin-color);">
+                                        <i class="bi bi-calculator me-2"></i>Ringkasan
+                                    </h6>
+                                    <div class="row mb-2">
+                                        <div class="col-5 fw-bold">Jumlah Item:</div>
+                                        <div class="col-7">
+                                            ${itemStats.total} item 
+                                            ${isMultiItem ? `(${itemStats.approved} disetujui, ${itemStats.completed} selesai, ${itemStats.rejected} ditolak, ${itemStats.cancelled} dibatalkan, ${itemStats.pending} menunggu)` : ''}
+                                        </div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col-5 fw-bold">Total Jumlah:</div>
+                                        <div class="col-7">${formatNumber(totalJumlah)} unit</div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col-5 fw-bold">Total Nilai:</div>
+                                        <div class="col-7 fw-bold" style="color: var(--superadmin-color);">
+                                            Rp ${formatNumber(totalNilai)}
+                                        </div>
+                                    </div>
+                                    ${procurement.catatan ? `
+                                    <div class="row">
+                                        <div class="col-5 fw-bold">Catatan:</div>
+                                        <div class="col-7">${procurement.catatan}</div>
+                                    </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Daftar Barang dengan status
+                html += `
+                    <div class="card mb-4">
+                        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0" style="color: var(--superadmin-color);">
+                                <i class="bi bi-list-check me-2"></i>Daftar Barang
+                                ${isMultiItem ? '<span class="badge bg-info">' + items.length + ' Item</span>' : ''}
+                            </h6>
+                            ${itemStats.rejected > 0 || itemStats.cancelled > 0 || itemStats.completed > 0 || itemStats.approved > 0 ? `
+                            <div class="summary-stats">
+                                ${itemStats.approved > 0 ? `<span class="stat-approved"><i class="bi bi-check-circle"></i> ${itemStats.approved} Disetujui</span>` : ''}
+                                ${itemStats.completed > 0 ? `<span class="stat-completed"><i class="bi bi-check-circle-fill"></i> ${itemStats.completed} Selesai</span>` : ''}
+                                ${itemStats.rejected > 0 ? `<span class="stat-rejected"><i class="bi bi-x-circle"></i> ${itemStats.rejected} Ditolak</span>` : ''}
+                                ${itemStats.cancelled > 0 ? `<span class="stat-cancelled"><i class="bi bi-x-circle-fill"></i> ${itemStats.cancelled} Dibatalkan</span>` : ''}
+                                ${itemStats.pending > 0 ? `<span class="stat-pending"><i class="bi bi-clock"></i> ${itemStats.pending} Menunggu</span>` : ''}
+                            </div>
+                            ` : ''}
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>No</th>
+                                            <th>Status</th>
+                                            <th>Kode Barang</th>
+                                            <th>Nama Barang</th>
+                                            <th>Kategori</th>
+                                            <th>Satuan</th>
+                                            <th class="text-center">Jumlah</th>
+                                            <th class="text-end">Harga/Unit</th>
+                                            <th class="text-end">Subtotal</th>
+                                            <th>Keterangan</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                `;
+                
+                // Items table rows dengan status
+                if (items && items.length > 0) {
+                    items.forEach((item, index) => {
+                        const jumlah = parseInt(item.jumlah) || 0;
+                        const harga = parseFloat(item.harga_perkiraan) || 0;
+                        const subtotal = jumlah * harga;
+                        const statusClass = getItemStatusClass(item.status);
+                        const statusText = getItemStatusText(item.status);
                         
-                        <!-- Informasi Pemohon -->
+                        let rowClass = '';
+                        if (item.status === 'rejected') rowClass = 'table-danger';
+                        else if (item.status === 'cancelled') rowClass = 'table-warning';
+                        else if (item.status === 'completed') rowClass = 'table-success';
+                        else if (item.status === 'approved') rowClass = 'table-primary';
+                        else if (item.status === 'pending') rowClass = 'table-secondary';
+                        
+                        html += `
+                            <tr class="${rowClass}">
+                                <td>${index + 1}</td>
+                                <td>
+                                    <span class="item-status-badge ${statusClass}">
+                                        ${statusText}
+                                    </span>
+                                </td>
+                                <td><code>${item.kode_barang || '-'}</code></td>
+                                <td>${item.nama_barang || '-'}</td>
+                                <td>${item.kategori || '-'}</td>
+                                <td>${item.satuan || '-'}</td>
+                                <td class="text-center">${formatNumber(jumlah)}</td>
+                                <td class="text-end">Rp ${formatNumber(harga)}</td>
+                                <td class="text-end fw-bold">Rp ${formatNumber(subtotal)}</td>
+                                <td>
+                                    ${item.alasan_penolakan ? `<small class="text-danger"><strong>Alasan:</strong> ${item.alasan_penolakan}</small>` : ''}
+                                    ${item.deskripsi ? `<br><small>${item.deskripsi}</small>` : ''}
+                                </td>
+                            </tr>
+                        `;
+                    });
+                } else {
+                    // Fallback jika tidak ada items
+                    html += `
+                        <tr>
+                            <td colspan="10" class="text-center py-3">
+                                <i class="bi bi-exclamation-circle text-muted"></i>
+                                Tidak ada data item
+                            </td>
+                        </tr>
+                    `;
+                }
+                
+                html += `
+                                    </tbody>
+                                    <tfoot class="table-light">
+                                        <tr>
+                                            <th colspan="6" class="text-end">TOTAL (Item yang disetujui):</th>
+                                            <th class="text-center">${formatNumber(totalJumlah)}</th>
+                                            <th></th>
+                                            <th class="text-end fw-bold" style="color: var(--superadmin-color);">Rp ${formatNumber(totalNilai)}</th>
+                                            <th></th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Informasi Pemohon
+                if (procurement.user) {
+                    html += `
                         <div class="card mb-4">
                             <div class="card-header bg-light">
                                 <h6 class="mb-0" style="color: var(--superadmin-color);">
@@ -1111,49 +1739,33 @@
                             <div class="card-body">
                                 <div class="row mb-2">
                                     <div class="col-4 fw-bold">Nama Pemohon:</div>
-                                    <div class="col-8">${procurement.user?.name || procurement.diajukan_oleh_user?.name || '-'}</div>
+                                    <div class="col-8">${procurement.user.name || '-'}</div>
                                 </div>
                                 <div class="row mb-2">
                                     <div class="col-4 fw-bold">Username:</div>
-                                    <div class="col-8">${procurement.user?.username || '-'}</div>
+                                    <div class="col-8">${procurement.user.username || '-'}</div>
                                 </div>
                                 <div class="row mb-2">
                                     <div class="col-4 fw-bold">Email:</div>
-                                    <div class="col-8">${procurement.user?.email || '-'}</div>
+                                    <div class="col-8">${procurement.user.email || '-'}</div>
                                 </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Alasan Pengadaan -->
-                        <div class="card mb-4">
-                            <div class="card-header bg-light">
-                                <h6 class="mb-0" style="color: var(--superadmin-color);">
-                                    <i class="bi bi-card-text me-2"></i>Alasan Pengadaan
-                                </h6>
-                            </div>
-                            <div class="card-body">
-                                <p class="mb-0">${procurement.alasan_pengadaan || 'Tidak ada alasan yang dicantumkan'}</p>
+                                <div class="row mb-2">
+                                    <div class="col-4 fw-bold">Jabatan:</div>
+                                    <div class="col-8">${procurement.user.jabatan || '-'}</div>
+                                </div>
+                                ${procurement.user.satker ? `
+                                <div class="row">
+                                    <div class="col-4 fw-bold">Satker:</div>
+                                    <div class="col-8">${procurement.user.satker.nama_satker || '-'}</div>
+                                </div>
+                                ` : ''}
                             </div>
                         </div>
                     `;
-                    
-                    // Catatan jika ada
-                    if (procurement.catatan) {
-                        html += `
-                            <div class="card mb-4">
-                                <div class="card-header bg-light">
-                                    <h6 class="mb-0" style="color: var(--superadmin-color);">
-                                        <i class="bi bi-sticky me-2"></i>Catatan
-                                    </h6>
-                                </div>
-                                <div class="card-body">
-                                    <p class="mb-0">${procurement.catatan}</p>
-                                </div>
-                            </div>
-                        `;
-                    }
-                    
-                    // Informasi timeline jika ada
+                }
+                
+                // Timeline jika ada data
+                if (procurement.created_at || procurement.approved_at || procurement.rejected_at || procurement.cancelled_at) {
                     html += `
                         <div class="card">
                             <div class="card-header bg-light">
@@ -1162,67 +1774,28 @@
                                 </h6>
                             </div>
                             <div class="card-body">
-                                <div class="timeline">
-                                    <div class="timeline-item">
-                                        <div class="timeline-marker"></div>
-                                        <div class="timeline-content">
-                                            <strong>Diajukan</strong>
-                                            <div class="text-muted small">
-                                                ${new Date(procurement.created_at).toLocaleDateString('id-ID')}
-                                                ${procurement.user?.name ? `oleh ${procurement.user.name}` : ''}
-                                            </div>
-                                        </div>
-                                    </div>
+                                <div class="timeline" style="position: relative; padding-left: 30px;">
                     `;
+                    
+                    if (procurement.created_at) {
+                        html += `
+                            <div class="timeline-item" style="position: relative; padding-bottom: 20px;">
+                                <div class="timeline-marker" style="position: absolute; left: -30px; top: 5px; width: 12px; height: 12px; border-radius: 50%; background-color: #dee2e6;"></div>
+                                <div class="timeline-content">
+                                    <strong>Diajukan</strong>
+                                    <div class="text-muted small">${formatDate(procurement.created_at)}</div>
+                                </div>
+                            </div>
+                        `;
+                    }
                     
                     if (procurement.approved_at) {
                         html += `
-                            <div class="timeline-item">
-                                <div class="timeline-marker bg-success"></div>
+                            <div class="timeline-item" style="position: relative; padding-bottom: 20px;">
+                                <div class="timeline-marker" style="position: absolute; left: -30px; top: 5px; width: 12px; height: 12px; border-radius: 50%; background-color: #10b981;"></div>
                                 <div class="timeline-content">
                                     <strong>Disetujui</strong>
-                                    <div class="text-muted small">
-                                        ${new Date(procurement.approved_at).toLocaleDateString('id-ID')}
-                                        ${procurement.disetujui_oleh_user ? `oleh ${procurement.disetujui_oleh_user.name}` : ''}
-                                    </div>
-                                    ${procurement.catatan_approve ? `
-                                    <div class="alert alert-success mt-2 mb-0 p-2">
-                                        <small><strong>Catatan:</strong> ${procurement.catatan_approve}</small>
-                                    </div>
-                                    ` : ''}
-                                </div>
-                            </div>
-                        `;
-                    }
-                    
-                    if (procurement.completed_at) {
-                        html += `
-                            <div class="timeline-item">
-                                <div class="timeline-marker bg-primary"></div>
-                                <div class="timeline-content">
-                                    <strong>Selesai</strong>
-                                    <div class="text-muted small">
-                                        ${new Date(procurement.completed_at).toLocaleDateString('id-ID')}
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                    }
-                    
-                    if (procurement.cancelled_at) {
-                        html += `
-                            <div class="timeline-item">
-                                <div class="timeline-marker bg-danger"></div>
-                                <div class="timeline-content">
-                                    <strong>Dibatalkan</strong>
-                                    <div class="text-muted small">
-                                        ${new Date(procurement.cancelled_at).toLocaleDateString('id-ID')}
-                                    </div>
-                                    ${procurement.alasan_pembatalan ? `
-                                    <div class="alert alert-danger mt-2 mb-0 p-2">
-                                        <small><strong>Alasan:</strong> ${procurement.alasan_pembatalan}</small>
-                                    </div>
-                                    ` : ''}
+                                    <div class="text-muted small">${formatDate(procurement.approved_at)}</div>
                                 </div>
                             </div>
                         `;
@@ -1230,14 +1803,11 @@
                     
                     if (procurement.rejected_at) {
                         html += `
-                            <div class="timeline-item">
-                                <div class="timeline-marker bg-danger"></div>
+                            <div class="timeline-item" style="position: relative; padding-bottom: 20px;">
+                                <div class="timeline-marker" style="position: absolute; left: -30px; top: 5px; width: 12px; height: 12px; border-radius: 50%; background-color: #dc2626;"></div>
                                 <div class="timeline-content">
                                     <strong>Ditolak</strong>
-                                    <div class="text-muted small">
-                                        ${new Date(procurement.rejected_at).toLocaleDateString('id-ID')}
-                                        ${procurement.ditolak_oleh_user ? `oleh ${procurement.ditolak_oleh_user.name}` : ''}
-                                    </div>
+                                    <div class="text-muted small">${formatDate(procurement.rejected_at)}</div>
                                     ${procurement.alasan_penolakan ? `
                                     <div class="alert alert-danger mt-2 mb-0 p-2">
                                         <small><strong>Alasan:</strong> ${procurement.alasan_penolakan}</small>
@@ -1248,542 +1818,621 @@
                         `;
                     }
                     
+                    if (procurement.cancelled_at) {
+                        html += `
+                            <div class="timeline-item" style="position: relative; padding-bottom: 20px;">
+                                <div class="timeline-marker" style="position: absolute; left: -30px; top: 5px; width: 12px; height: 12px; border-radius: 50%; background-color: #dc2626;"></div>
+                                <div class="timeline-content">
+                                    <strong>Dibatalkan</strong>
+                                    <div class="text-muted small">${formatDate(procurement.cancelled_at)}</div>
+                                    ${procurement.alasan_pembatalan ? `
+                                    <div class="alert alert-danger mt-2 mb-0 p-2">
+                                        <small><strong>Alasan:</strong> ${procurement.alasan_pembatalan}</small>
+                                    </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        `;
+                    }
+                    
+                    if (procurement.completed_at) {
+                        html += `
+                            <div class="timeline-item" style="position: relative; padding-bottom: 20px;">
+                                <div class="timeline-marker" style="position: absolute; left: -30px; top: 5px; width: 12px; height: 12px; border-radius: 50%; background-color: var(--superadmin-color);"></div>
+                                <div class="timeline-content">
+                                    <strong>Selesai</strong>
+                                    <div class="text-muted small">${formatDate(procurement.completed_at)}</div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    
                     html += `
                                 </div>
                             </div>
                         </div>
-                        
-                        <style>
-                            .timeline {
-                                position: relative;
-                                padding-left: 30px;
-                            }
-                            .timeline-item {
-                                position: relative;
-                                padding-bottom: 20px;
-                            }
-                            .timeline-marker {
-                                position: absolute;
-                                left: -30px;
-                                top: 5px;
-                                width: 12px;
-                                height: 12px;
-                                border-radius: 50%;
-                                background-color: #dee2e6;
-                            }
-                            .timeline-marker.bg-success { background-color: var(--success); }
-                            .timeline-marker.bg-primary { background-color: var(--primary); }
-                            .timeline-marker.bg-danger { background-color: var(--secondary); }
-                            .timeline-content {
-                                margin-left: 0;
-                            }
-                        </style>
                     `;
-                    
-                    $('#detailProcurementBody').html(html);
-                    
-                    const modal = new bootstrap.Modal(document.getElementById('detailProcurementModal'));
-                    modal.show();
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    $('#detailProcurementBody').html(`
-                        <div class="text-center py-4">
-                            <i class="bi bi-exclamation-triangle text-danger display-4"></i>
-                            <h5 class="mt-3 text-danger">Gagal memuat data pengadaan</h5>
-                            <p class="text-muted">Silakan coba lagi atau hubungi administrator</p>
-                            <button class="btn btn-primary btn-sm mt-2" onclick="location.reload()" style="background-color: var(--superadmin-color); border-color: var(--superadmin-color);">
-                                <i class="bi bi-arrow-clockwise"></i> Coba Lagi
-                            </button>
+                }
+                
+                $('#detailProcurementBody').html(html);
+            },
+            error: function(xhr, status, error) {
+                console.error('Error:', xhr.responseText);
+                $('#detailProcurementBody').html(`
+                    <div class="text-center py-4">
+                        <i class="bi bi-exclamation-triangle text-danger display-4"></i>
+                        <h5 class="mt-3 text-danger">Gagal memuat data pengadaan</h5>
+                        <p class="text-muted">Terjadi kesalahan saat memuat data</p>
+                    </div>
+                `);
+            }
+        });
+    });
+    
+    // Custom validation modal - FIXED EVENT HANDLER
+    $(document).on('click', '.custom-approve-procurement', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const procurementId = $(this).data('id');
+        
+        console.log('Tombol custom-approve ditekan untuk ID:', procurementId);
+        
+        // Tampilkan loading state
+        $('#customValidationBody').html(`
+            <div class="text-center py-4">
+                <div class="spinner-border text-primary" role="status" style="color: var(--superadmin-color);">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2 text-muted">Memuat data pengadaan...</p>
+            </div>
+        `);
+        
+        // Reset form
+        $('#customValidationForm')[0].reset();
+        
+        // Show modal
+        customValidationModal.show();
+        
+        // Fetch data
+        $.ajax({
+            url: "{{ url('superadmin/procurement') }}/" + procurementId,
+            method: 'GET',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                'Accept': 'application/json'
+            },
+            success: function(response) {
+                if (response.error) {
+                    $('#customValidationBody').html(`
+                        <div class="alert alert-danger">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            ${response.error}
                         </div>
                     `);
+                    return;
+                }
+                
+                const procurement = response.procurement;
+                const items = procurement.items || [];
+                
+                // Build HTML for custom validation
+                let html = `
+                    <input type="hidden" name="procurement_id" value="${procurementId}">
+                    <div class="validation-summary">
+                        <h6 class="mb-3" style="color: var(--superadmin-color);">
+                            <i class="bi bi-check2-all me-2"></i>Validasi Custom Pengadaan
+                        </h6>
+                        <p class="mb-2">Pilih item yang akan disetujui:</p>
+                        <p class="text-muted small mb-0">
+                            <strong>Item yang dicentang akan disetujui, item yang tidak dicentang akan ditolak.</strong><br>
+                            Anda bisa memilih semua, sebagian, atau bahkan tidak memilih sama sekali (menolak semua item).
+                        </p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="catatan_umum" class="form-label">
+                            Catatan Umum (Opsional)
+                        </label>
+                        <textarea class="form-control" id="catatan_umum" name="catatan_umum" 
+                                  rows="2" placeholder="Tambahkan catatan umum untuk pengadaan ini"></textarea>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th width="40">
+                                        <input type="checkbox" id="selectAllItems" class="item-validation-checkbox" checked>
+                                    </th>
+                                    <th>No</th>
+                                    <th>Kode Barang</th>
+                                    <th>Nama Barang</th>
+                                    <th class="text-center">Jumlah</th>
+                                    <th class="text-end">Harga/Unit</th>
+                                    <th class="text-end">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+                
+                items.forEach((item, index) => {
+                    const jumlah = parseInt(item.jumlah) || 0;
+                    const harga = parseFloat(item.harga_perkiraan) || 0;
+                    const subtotal = jumlah * harga;
+                    const itemId = item.id || index;
+                    
+                    html += `
+                        <tr class="item-validation-row selected" data-item-id="${itemId}">
+                            <td>
+                                <input type="checkbox" class="item-validation-checkbox item-checkbox" 
+                                       name="approved_items[]" value="${itemId}" checked 
+                                       data-jumlah="${jumlah}" data-harga="${harga}" data-subtotal="${subtotal}">
+                            </td>
+                            <td>${index + 1}</td>
+                            <td><code>${item.kode_barang || '-'}</code></td>
+                            <td>${item.nama_barang || '-'}</td>
+                            <td class="text-center">${formatNumber(jumlah)}</td>
+                            <td class="text-end">Rp ${formatNumber(harga)}</td>
+                            <td class="text-end fw-bold">Rp ${formatNumber(subtotal)}</td>
+                        </tr>
+                    `;
                 });
-        });
-        
-        // Approve procurement - tampilkan modal
-        $(document).on('click', '.approve-procurement', function() {
-            const procurementId = $(this).data('id');
-            $('#approve_procurement_id').val(procurementId);
-            $('#catatan_approve').val('');
-            
-            const modal = new bootstrap.Modal(document.getElementById('approveProcurementModal'));
-            modal.show();
-        });
-        
-        // Submit approve form
-        $('#approveProcurementForm').submit(function(e) {
-            e.preventDefault();
-            
-            const procurementId = $('#approve_procurement_id').val();
-            const formData = $(this).serialize();
-            const csrfToken = $('meta[name="csrf-token"]').attr('content');
-            
-            // Disable tombol submit selama proses
-            $('#submitApproveBtn').prop('disabled', true).html(`
-                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                Memproses...
-            `);
-            
-            fetch(`/superadmin/procurement/${procurementId}/approve`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-CSRF-TOKEN': csrfToken
-                },
-                body: formData
-            })
-            .then(response => {
-                if (response.ok) {
-                    return response.json();
-                } else {
-                    throw new Error('Terjadi kesalahan saat menyetujui pengadaan');
+                
+                const totalJumlah = items.reduce((sum, item) => sum + (parseInt(item.jumlah) || 0), 0);
+                const totalNilai = items.reduce((sum, item) => {
+                    const jumlah = parseInt(item.jumlah) || 0;
+                    const harga = parseFloat(item.harga_perkiraan) || 0;
+                    return sum + (jumlah * harga);
+                }, 0);
+                
+                html += `
+                            </tbody>
+                            <tfoot class="table-light">
+                                <tr>
+                                    <td colspan="4" class="text-end fw-bold">TOTAL YANG DISETUJUI:</td>
+                                    <td class="text-center fw-bold" id="approvedTotalJumlah">${formatNumber(totalJumlah)}</td>
+                                    <td></td>
+                                    <td class="text-end fw-bold" style="color: var(--superadmin-color);" id="approvedTotalNilai">Rp ${formatNumber(totalNilai)}</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="4" class="text-end fw-bold">TOTAL YANG DITOLAK:</td>
+                                    <td class="text-center fw-bold" id="rejectedTotalJumlah">0</td>
+                                    <td></td>
+                                    <td class="text-end fw-bold text-danger" id="rejectedTotalNilai">Rp 0</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="alasan_penolakan_items" class="form-label">
+                            Alasan Penolakan Item (Opsional, untuk item yang ditolak)
+                        </label>
+                        <textarea class="form-control" id="alasan_penolakan_items" name="alasan_penolakan_items" 
+                                  rows="3" placeholder="Masukkan alasan penolakan untuk item yang tidak disetujui"></textarea>
+                    </div>
+                    
+                    <div class="validation-actions">
+                        <button type="button" class="btn btn-outline-primary" id="selectAllBtn">
+                            <i class="bi bi-check2-square me-1"></i> Pilih Semua
+                        </button>
+                        <button type="button" class="btn btn-outline-primary" id="deselectAllBtn">
+                            <i class="bi bi-x-square me-1"></i> Batalkan Semua
+                        </button>
+                        <button type="button" class="btn btn-outline-danger" id="rejectAllItemsBtn">
+                            <i class="bi bi-x-circle me-1"></i> Tolak Semua Item
+                        </button>
+                    </div>
+                    
+                    <div class="alert alert-info mt-3">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>Informasi:</strong> Anda bisa memilih semua item untuk disetujui, sebagian item, atau bahkan tidak memilih sama sekali untuk menolak semua item.
+                    </div>
+                `;
+                
+                $('#customValidationBody').html(html);
+                
+                // Fungsi untuk update summary
+                function updateValidationSummary() {
+                    let approvedJumlah = 0;
+                    let approvedNilai = 0;
+                    let rejectedJumlah = 0;
+                    let rejectedNilai = 0;
+                    
+                    $('.item-checkbox:checked').each(function() {
+                        const jumlah = parseInt($(this).data('jumlah')) || 0;
+                        const harga = parseFloat($(this).data('harga')) || 0;
+                        approvedJumlah += jumlah;
+                        approvedNilai += (jumlah * harga);
+                    });
+                    
+                    $('.item-checkbox').not(':checked').each(function() {
+                        const jumlah = parseInt($(this).data('jumlah')) || 0;
+                        const harga = parseFloat($(this).data('harga')) || 0;
+                        rejectedJumlah += jumlah;
+                        rejectedNilai += (jumlah * harga);
+                    });
+                    
+                    $('#approvedTotalJumlah').text(formatNumber(approvedJumlah));
+                    $('#approvedTotalNilai').text('Rp ' + formatNumber(approvedNilai));
+                    $('#rejectedTotalJumlah').text(formatNumber(rejectedJumlah));
+                    $('#rejectedTotalNilai').text('Rp ' + formatNumber(rejectedNilai));
+                    
+                    // Update class row
+                    $('.item-validation-row').each(function() {
+                        const checkbox = $(this).find('.item-checkbox');
+                        if (checkbox.is(':checked')) {
+                            $(this).addClass('selected');
+                        } else {
+                            $(this).removeClass('selected');
+                        }
+                    });
+                    
+                    // Update checkbox select all
+                    const totalCheckboxes = $('.item-checkbox').length;
+                    const checkedCheckboxes = $('.item-checkbox:checked').length;
+                    $('#selectAllItems').prop('checked', totalCheckboxes === checkedCheckboxes);
                 }
-            })
-            .then(data => {
-                if (data.success) {
-                    showAlert('Pengadaan berhasil disetujui', 'success');
-                    $('#approveProcurementModal').modal('hide');
+                
+                // Inisialisasi fungsi updateValidationSummary di window scope
+                window.updateValidationSummary = updateValidationSummary;
+                
+                // Select all items
+                $('#selectAllItems').off('change').on('change', function() {
+                    const isChecked = $(this).is(':checked');
+                    $('.item-checkbox').prop('checked', isChecked);
+                    updateValidationSummary();
+                });
+                
+                // Select all button
+                $('#selectAllBtn').off('click').on('click', function() {
+                    $('#selectAllItems').prop('checked', true).trigger('change');
+                });
+                
+                // Deselect all button
+                $('#deselectAllBtn').off('click').on('click', function() {
+                    $('#selectAllItems').prop('checked', false).trigger('change');
+                });
+                
+                // Reject all items button
+                $('#rejectAllItemsBtn').off('click').on('click', function() {
+                    if (confirm('Apakah Anda yakin ingin menolak semua item dalam pengadaan ini?')) {
+                        $('#selectAllItems').prop('checked', false).trigger('change');
+                        $('#alasan_penolakan_items').focus();
+                    }
+                });
+                
+                // Individual checkbox change
+                $(document).off('change', '.item-checkbox').on('change', '.item-checkbox', function() {
+                    updateValidationSummary();
+                });
+                
+                // Initialize summary
+                updateValidationSummary();
+            },
+            error: function(xhr, status, error) {
+                console.error('Error:', error);
+                $('#customValidationBody').html(`
+                    <div class="text-center py-4">
+                        <i class="bi bi-exclamation-triangle text-danger display-4"></i>
+                        <h5 class="mt-3 text-danger">Gagal memuat data pengadaan</h5>
+                        <p class="text-muted">Terjadi kesalahan saat memuat data</p>
+                    </div>
+                `);
+            }
+        });
+    });
+    
+    // Submit custom validation form - FIXED
+    $('#customValidationForm').off('submit').on('submit', function(e) {
+        e.preventDefault();
+        
+        const form = $(this);
+        const procurementId = form.find('input[name="procurement_id"]').val();
+        
+        // Ambil data form
+        const formData = new FormData(this);
+        
+        // Disable tombol submit selama proses
+        const submitBtn = $('#submitCustomValidationBtn');
+        submitBtn.prop('disabled', true).html(`
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            Memproses...
+        `);
+        
+        console.log('Mengirim data custom validation untuk procurement ID:', procurementId);
+        
+        $.ajax({
+            url: "{{ url('superadmin/procurement') }}/" + procurementId + "/custom-approve",
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                console.log('Response sukses:', response);
+                if (response.success) {
+                    showAlert(response.message || 'Validasi berhasil diproses', 'success');
+                    customValidationModal.hide();
                     setTimeout(() => {
                         location.reload();
                     }, 1500);
                 } else {
-                    const errorMessage = data.message || 'Terjadi kesalahan saat menyetujui pengadaan';
-                    showAlert(errorMessage, 'danger');
-                    $('#submitApproveBtn').prop('disabled', false).html('<i class="bi bi-check-circle me-1"></i> Setujui');
+                    showAlert(response.message || 'Terjadi kesalahan saat memproses validasi', 'danger');
+                    submitBtn.prop('disabled', false).html('<i class="bi bi-check-circle me-1"></i> Submit Validasi');
                 }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showAlert('Terjadi kesalahan saat menyetujui pengadaan', 'danger');
-                $('#submitApproveBtn').prop('disabled', false).html('<i class="bi bi-check-circle me-1"></i> Setujui');
-            });
+            },
+            error: function(xhr, status, error) {
+                console.error('Error AJAX:', error);
+                console.error('Status:', status);
+                console.error('Response:', xhr.responseText);
+                
+                let errorMessage = 'Terjadi kesalahan saat memproses validasi';
+                
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    if (response.message) {
+                        errorMessage = response.message;
+                    }
+                } catch (e) {
+                    // Jika tidak bisa parse JSON, gunakan pesan default
+                }
+                
+                showAlert(errorMessage, 'danger');
+                submitBtn.prop('disabled', false).html('<i class="bi bi-check-circle me-1"></i> Submit Validasi');
+            }
         });
+    });
+    
+    // Reject all custom button - FIXED
+    $(document).on('click', '#rejectAllCustomBtn', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
         
-        // Reject procurement - tampilkan modal
-        $(document).on('click', '.reject-procurement', function() {
-            const procurementId = $(this).data('id');
-            $('#reject_procurement_id').val(procurementId);
+        if (confirm('Apakah Anda yakin ingin menolak SEMUA item dalam pengadaan ini? Semua item akan ditandai sebagai ditolak.')) {
+            // Uncheck semua checkbox
+            $('.item-checkbox').prop('checked', false);
             
-            // Reset form dan validasi
-            $('#alasan_penolakan').val('');
-            $('#alasan_error').addClass('d-none');
-            $('#alasan_counter').text('0/10 karakter').removeClass('warning danger');
-            $('#submitRejectBtn').prop('disabled', false);
-            
-            const modal = new bootstrap.Modal(document.getElementById('rejectProcurementModal'));
-            modal.show();
-        });
-        
-        // Validasi real-time pada textarea alasan penolakan
-        $('#alasan_penolakan').on('input', function() {
-            const text = $(this).val();
-            const charCount = text.length;
-            const counter = $('#alasan_counter');
-            const errorElement = $('#alasan_error');
-            
-            // Update counter
-            counter.text(`${charCount}/10 karakter`);
-            
-            // Update warna counter berdasarkan jumlah karakter
-            if (charCount < 10) {
-                counter.removeClass('warning').addClass('danger');
-                errorElement.removeClass('d-none');
-            } else if (charCount >= 10 && charCount < 20) {
-                counter.removeClass('danger').addClass('warning');
-                errorElement.addClass('d-none');
-            } else {
-                counter.removeClass('danger warning');
-                errorElement.addClass('d-none');
+            // Update summary jika fungsi ada
+            if (typeof window.updateValidationSummary === 'function') {
+                window.updateValidationSummary();
             }
             
-            // Enable/disable tombol submit
-            $('#submitRejectBtn').prop('disabled', charCount < 10);
-        });
-        
-        // Submit reject form dengan validasi
-        $('#rejectProcurementForm').submit(function(e) {
-            e.preventDefault();
-            
-            const procurementId = $('#reject_procurement_id').val();
-            const alasan = $('#alasan_penolakan').val().trim();
-            
-            // Validasi panjang karakter
-            if (alasan.length < 10) {
-                showAlert('Alasan penolakan harus minimal 10 karakter!', 'danger');
-                $('#alasan_penolakan').focus();
-                return false;
-            }
-            
-            const formData = $(this).serialize();
-            const csrfToken = $('meta[name="csrf-token"]').attr('content');
-            
-            // Disable tombol submit selama proses
-            $('#submitRejectBtn').prop('disabled', true).html(`
-                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                Memproses...
-            `);
-            
-            fetch(`/superadmin/procurement/${procurementId}/reject`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-CSRF-TOKEN': csrfToken
-                },
-                body: formData
-            })
-            .then(response => {
-                if (response.ok) {
-                    return response.json();
-                } else {
-                    throw new Error('Terjadi kesalahan saat menolak pengadaan');
-                }
-            })
-            .then(data => {
-                if (data.success) {
-                    showAlert('Pengadaan berhasil ditolak', 'success');
-                    $('#rejectProcurementModal').modal('hide');
-                    setTimeout(() => {
-                        location.reload();
-                    }, 1500);
-                } else {
-                    const errorMessage = data.message || 'Terjadi kesalahan saat menolak pengadaan';
-                    showAlert(errorMessage, 'danger');
-                    $('#submitRejectBtn').prop('disabled', false).text('Tolak Pengadaan');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showAlert('Terjadi kesalahan saat menolak pengadaan', 'danger');
-                $('#submitRejectBtn').prop('disabled', false).text('Tolak Pengadaan');
-            });
-        });
-        
-        // Mobile sidebar toggle
-        if (window.innerWidth <= 768) {
-            const toggleBtn = document.createElement('button');
-            toggleBtn.className = 'btn btn-primary position-fixed';
-            toggleBtn.style.cssText = 'top: 10px; left: 10px; z-index: 1001; padding: 5px 10px; background-color: var(--superadmin-color); border-color: var(--superadmin-color);';
-            toggleBtn.innerHTML = '<i class="bi bi-list"></i>';
-            toggleBtn.onclick = function() {
-                const sidebar = document.querySelector('.sidebar');
-                const mainContent = document.querySelector('.main-content');
-                if (sidebar.style.width === '70px') {
-                    sidebar.style.width = '250px';
-                    mainContent.style.marginLeft = '250px';
-                } else {
-                    sidebar.style.width = '70px';
-                    mainContent.style.marginLeft = '70px';
-                }
-            };
-            document.body.appendChild(toggleBtn);
+            // Tampilkan alert info
+            showAlert('Semua item telah ditandai untuk ditolak. Silahkan submit validasi untuk melanjutkan.', 'info');
         }
     });
     
-    // Fungsi untuk menampilkan alert
-    function showAlert(message, type = 'success') {
-        // Pastikan alert container ada
-        let alertContainer = document.getElementById('alertContainer');
+    // Approve procurement - tampilkan modal (untuk single item) - FIXED
+    $(document).on('click', '.approve-procurement', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
         
-        if (!alertContainer) {
-            // Buat alert container jika tidak ada
-            alertContainer = document.createElement('div');
-            alertContainer.className = 'alert-container';
-            alertContainer.id = 'alertContainer';
-            document.body.appendChild(alertContainer);
-        }
+        const procurementId = $(this).data('id');
+        $('#approve_procurement_id').val(procurementId);
+        $('#catatan_approve').val('');
         
-        // Hapus alert sebelumnya
-        const existingAlerts = alertContainer.querySelectorAll('.alert');
-        existingAlerts.forEach(alert => {
-            const bsAlert = bootstrap.Alert.getInstance(alert);
-            if (bsAlert) {
-                bsAlert.close();
-            } else {
-                alert.remove();
-            }
-        });
-        
-        const alert = document.createElement('div');
-        alert.className = `alert alert-${type} alert-dismissible fade show`;
-        alert.setAttribute('role', 'alert');
-        
-        let icon = 'bi-check-circle';
-        if (type === 'warning') icon = 'bi-exclamation-triangle';
-        if (type === 'danger') icon = 'bi-exclamation-octagon';
-        if (type === 'info') icon = 'bi-info-circle';
-        
-        alert.innerHTML = `
-            <i class="bi ${icon} me-2"></i>
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        `;
-        
-        alertContainer.appendChild(alert);
-        
-        // Inisialisasi Bootstrap alert
-        const bsAlert = new bootstrap.Alert(alert);
-        
-        // Auto dismiss setelah 5 detik
-        setTimeout(() => {
-            if (alert.parentNode === alertContainer) {
-                bsAlert.close();
-            }
-        }, 5000);
-    }
+        approveModal.show();
+    });
     
-    function formatNumber(num) {
-        return new Intl.NumberFormat('id-ID').format(num);
-    }
-    
-    // Print Function - PERBAIKAN: Menyimpan referensi elemen yang ditambahkan
-    let addedElements = [];
-    
-    function printTable() {
-        // Simpan elemen yang akan disembunyikan
-        const elementsToHide = document.querySelectorAll('.sidebar, .topbar, .page-header, .stats-grid, .filter-bar, .status-tabs, .action-buttons, .btn-group, .pagination, .alert-container');
+    // Submit approve form (untuk single item) - FIXED
+    $('#approveProcurementForm').off('submit').on('submit', function(e) {
+        e.preventDefault();
         
-        // Sembunyikan elemen yang tidak perlu dicetak
-        const originalStyles = [];
-        elementsToHide.forEach((el, index) => {
-            if (el) {
-                originalStyles[index] = {
-                    element: el,
-                    display: el.style.display
-                };
-                el.style.display = 'none';
-            }
-        });
+        const procurementId = $('#approve_procurement_id').val();
+        const formData = $(this).serialize();
         
-        // Perlebar tabel untuk cetak
-        const tableCard = document.querySelector('.table-card');
-        if (tableCard) {
-            const originalTableCardStyles = {
-                boxShadow: tableCard.style.boxShadow,
-                padding: tableCard.style.padding,
-                margin: tableCard.style.margin
-            };
-            
-            tableCard.style.boxShadow = 'none';
-            tableCard.style.padding = '0';
-            tableCard.style.margin = '0';
-            
-            // Atur margin untuk konten utama
-            const mainContent = document.querySelector('.main-content');
-            if (mainContent) {
-                mainContent.style.marginLeft = '0';
-                mainContent.style.padding = '20px';
-            }
-            
-            // Tambahkan judul cetak
-            const printTitle = document.createElement('h4');
-            printTitle.textContent = 'Laporan Validasi Pengadaan Barang - SILOG Polres';
-            printTitle.style.textAlign = 'center';
-            printTitle.style.marginBottom = '20px';
-            printTitle.style.fontWeight = 'bold';
-            printTitle.style.color = 'var(--superadmin-color)';
-            tableCard.parentNode.insertBefore(printTitle, tableCard);
-            addedElements.push(printTitle);
-            
-            // Tambahkan tanggal cetak
-            const printDate = document.createElement('p');
-            printDate.textContent = 'Tanggal: ' + new Date().toLocaleDateString('id-ID');
-            printDate.style.textAlign = 'center';
-            printDate.style.marginBottom = '20px';
-            printDate.style.color = '#666';
-            tableCard.parentNode.insertBefore(printDate, tableCard.nextSibling);
-            addedElements.push(printDate);
-            
-            // Tambahkan filter info jika ada
-            let filterInfo = '';
-            const searchInput = document.getElementById('searchInput');
-            const tipeFilter = document.getElementById('tipeFilter');
-            
-            if (searchInput && searchInput.value) {
-                filterInfo += `Pencarian: ${searchInput.value}<br>`;
-            }
-            if (tipeFilter && tipeFilter.value) {
-                const selectedTipe = document.querySelector('#tipeFilter option:checked');
-                filterInfo += `Tipe: ${selectedTipe ? selectedTipe.text : ''}<br>`;
-            }
-            
-            // Tambahkan status info dari tab aktif
-            const activeTab = document.querySelector('.status-tab.active');
-            if (activeTab) {
-                const statusText = activeTab.textContent;
-                if (statusText !== 'Semua') {
-                    filterInfo += `Status: ${statusText}<br>`;
+        // Disable tombol submit selama proses
+        const submitBtn = $('#submitApproveBtn');
+        submitBtn.prop('disabled', true).html(`
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            Memproses...
+        `);
+        
+        console.log('Mengirim data approve untuk procurement ID:', procurementId);
+        
+        $.ajax({
+            url: "{{ url('superadmin/procurement') }}/" + procurementId + "/approve",
+            method: 'POST',
+            data: formData,
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                console.log('Response approve sukses:', response);
+                if (response.success) {
+                    showAlert('Pengadaan berhasil disetujui', 'success');
+                    approveModal.hide();
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    showAlert(response.message || 'Terjadi kesalahan saat menyetujui pengadaan', 'danger');
+                    submitBtn.prop('disabled', false).html('<i class="bi bi-check-circle me-1"></i> Setujui Semua');
                 }
-            }
-            
-            if (filterInfo) {
-                const filterElement = document.createElement('p');
-                filterElement.innerHTML = filterInfo;
-                filterElement.style.textAlign = 'center';
-                filterElement.style.marginBottom = '20px';
-                filterElement.style.color = '#666';
-                filterElement.style.fontSize = '0.9rem';
-                tableCard.parentNode.insertBefore(filterElement, printDate.nextSibling);
-                addedElements.push(filterElement);
-            }
-            
-            // Simpan event listener untuk afterprint
-            window.addEventListener('afterprint', restoreAfterPrint);
-            
-            // Trigger print
-            window.print();
-        }
-    }
-    
-    // Fungsi untuk mengembalikan tampilan setelah cetak
-    function restoreAfterPrint() {
-        // Hapus event listener
-        window.removeEventListener('afterprint', restoreAfterPrint);
-        
-        // Kembalikan elemen yang ditambahkan
-        addedElements.forEach(element => {
-            if (element && element.parentNode) {
-                element.parentNode.removeChild(element);
+            },
+            error: function(xhr, status, error) {
+                console.error('Error AJAX approve:', error);
+                console.error('Status:', status);
+                console.error('Response:', xhr.responseText);
+                
+                let errorMessage = 'Terjadi kesalahan saat menyetujui pengadaan';
+                
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    if (response.message) {
+                        errorMessage = response.message;
+                    }
+                } catch (e) {
+                    // Jika tidak bisa parse JSON, gunakan pesan default
+                }
+                
+                showAlert(errorMessage, 'danger');
+                submitBtn.prop('disabled', false).html('<i class="bi bi-check-circle me-1"></i> Setujui Semua');
             }
         });
+    });
+    
+    // Reject procurement - tampilkan modal (untuk single item) - FIXED
+    $(document).on('click', '.reject-procurement', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
         
-        // Kosongkan array
-        addedElements = [];
+        const procurementId = $(this).data('id');
+        $('#reject_procurement_id').val(procurementId);
+        $('#alasan_penolakan').val('');
         
-        // Kembalikan style asli untuk semua elemen yang diubah
-        const tableCard = document.querySelector('.table-card');
-        if (tableCard) {
-            tableCard.style.boxShadow = '';
-            tableCard.style.padding = '';
-            tableCard.style.margin = '';
+        rejectModal.show();
+    });
+    
+    // Submit reject form dengan validasi (untuk single item) - FIXED
+    $('#rejectProcurementForm').off('submit').on('submit', function(e) {
+        e.preventDefault();
+        
+        const procurementId = $('#reject_procurement_id').val();
+        const alasan = $('#alasan_penolakan').val().trim();
+        
+        // Validasi alasan
+        if (alasan.length < 10) {
+            showAlert('Alasan penolakan harus minimal 10 karakter!', 'danger');
+            $('#alasan_penolakan').focus();
+            return false;
         }
         
+        const formData = $(this).serialize();
+        
+        // Disable tombol submit selama proses
+        const submitBtn = $('#submitRejectBtn');
+        submitBtn.prop('disabled', true).html(`
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            Memproses...
+        `);
+        
+        console.log('Mengirim data reject untuk procurement ID:', procurementId);
+        
+        $.ajax({
+            url: "{{ url('superadmin/procurement') }}/" + procurementId + "/reject",
+            method: 'POST',
+            data: formData,
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                console.log('Response reject sukses:', response);
+                if (response.success) {
+                    showAlert('Pengadaan berhasil ditolak', 'success');
+                    rejectModal.hide();
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    showAlert(response.message || 'Terjadi kesalahan saat menolak pengadaan', 'danger');
+                    submitBtn.prop('disabled', false).text('Tolak Semua');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error AJAX reject:', error);
+                console.error('Status:', status);
+                console.error('Response:', xhr.responseText);
+                
+                let errorMessage = 'Terjadi kesalahan saat menolak pengadaan';
+                
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    if (response.message) {
+                        errorMessage = response.message;
+                    }
+                } catch (e) {
+                    // Jika tidak bisa parse JSON, gunakan pesan default
+                }
+                
+                showAlert(errorMessage, 'danger');
+                submitBtn.prop('disabled', false).text('Tolak Semua');
+            }
+        });
+    });
+    
+    // PERBAIKAN: Hapus event handler untuk complete procurement karena superadmin tidak bisa menandai selesai
+});
+
+// Print Function
+function printTable() {
+    // Simpan elemen yang akan disembunyikan
+    const elementsToHide = document.querySelectorAll('.sidebar, .topbar, .page-header, .stats-grid, .filter-bar, .status-tabs, .action-buttons, .btn-group, .pagination, .alert-container');
+    
+    // Sembunyikan elemen yang tidak perlu dicetak
+    elementsToHide.forEach(el => {
+        if (el) {
+            el.style.display = 'none';
+        }
+    });
+    
+    // Perlebar tabel untuk cetak
+    const tableCard = document.querySelector('.table-card');
+    if (tableCard) {
+        tableCard.style.boxShadow = 'none';
+        tableCard.style.padding = '0';
+        tableCard.style.margin = '0';
+        
+        // Atur margin untuk konten utama
         const mainContent = document.querySelector('.main-content');
         if (mainContent) {
-            mainContent.style.marginLeft = '';
-            mainContent.style.padding = '';
+            mainContent.style.marginLeft = '0';
+            mainContent.style.padding = '20px';
         }
         
-        // Tampilkan kembali elemen yang disembunyikan
-        const elementsToShow = document.querySelectorAll('.sidebar, .topbar, .page-header, .stats-grid, .filter-bar, .status-tabs, .action-buttons, .btn-group, .pagination, .alert-container');
-        elementsToShow.forEach(el => {
-            if (el) {
-                el.style.display = '';
+        // Tambahkan judul cetak
+        const printTitle = document.createElement('h4');
+        printTitle.textContent = 'Laporan Validasi Pengadaan Barang - SILOG Polres';
+        printTitle.style.textAlign = 'center';
+        printTitle.style.marginBottom = '20px';
+        printTitle.style.fontWeight = 'bold';
+        printTitle.style.color = 'var(--superadmin-color)';
+        tableCard.parentNode.insertBefore(printTitle, tableCard);
+        
+        // Tambahkan tanggal cetak
+        const printDate = document.createElement('p');
+        printDate.textContent = 'Tanggal: ' + new Date().toLocaleDateString('id-ID');
+        printDate.style.textAlign = 'center';
+        printDate.style.marginBottom = '20px';
+        printDate.style.color = '#666';
+        tableCard.parentNode.insertBefore(printDate, tableCard.nextSibling);
+        
+        // Trigger print
+        window.print();
+        
+        // Kembalikan tampilan setelah cetak
+        setTimeout(() => {
+            elementsToHide.forEach(el => {
+                if (el) {
+                    el.style.display = '';
+                }
+            });
+            
+            if (tableCard) {
+                tableCard.style.boxShadow = '';
+                tableCard.style.padding = '';
+                tableCard.style.margin = '';
             }
-        });
+            
+            if (mainContent) {
+                mainContent.style.marginLeft = '';
+                mainContent.style.padding = '';
+            }
+            
+            // Hapus elemen yang ditambahkan untuk cetak
+            if (printTitle.parentNode) {
+                printTitle.parentNode.removeChild(printTitle);
+            }
+            if (printDate.parentNode) {
+                printDate.parentNode.removeChild(printDate);
+            }
+        }, 100);
     }
-    
-    // Print Detail Function
-    function printDetail() {
-        const detailContent = document.getElementById('detailProcurementBody');
-        if (!detailContent) {
-            showAlert('Tidak ada konten untuk dicetak', 'warning');
-            return;
-        }
-        
-        const clonedContent = detailContent.cloneNode(true);
-        const printWindow = window.open('', '_blank');
-        
-        const title = document.createElement('h4');
-        title.textContent = 'Detail Validasi Pengadaan Barang - SILOG Polres';
-        title.style.textAlign = 'center';
-        title.style.marginBottom = '20px';
-        title.style.fontWeight = 'bold';
-        title.style.color = 'var(--superadmin-color)';
-        
-        const date = document.createElement('p');
-        date.textContent = 'Tanggal Cetak: ' + new Date().toLocaleDateString('id-ID');
-        date.style.textAlign = 'center';
-        date.style.marginBottom = '30px';
-        date.style.color = '#666';
-        
-        printWindow.document.open();
-        printWindow.document.write(`
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <title>Detail Validasi Pengadaan Barang - SILOG Polres</title>
-                <style>
-                    body { 
-                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-                        margin: 40px; 
-                        color: #333;
-                    }
-                    .card { 
-                        margin-bottom: 20px; 
-                        border: 1px solid #ddd; 
-                        border-radius: 8px;
-                    }
-                    .card-header { 
-                        background-color: #f8f9fa; 
-                        padding: 12px 15px; 
-                        border-bottom: 1px solid #ddd;
-                    }
-                    .card-body { 
-                        padding: 15px; 
-                    }
-                    .badge { 
-                        padding: 4px 8px; 
-                        border-radius: 4px; 
-                        font-weight: bold; 
-                        font-size: 0.85em;
-                    }
-                    .badge-pending { background-color: #fef3c7; color: #92400e; border: 1px solid #fbbf24; }
-                    .badge-approved { background-color: #d1fae5; color: #065f46; border: 1px solid #10b981; }
-                    .badge-completed { background-color: #8b5cf6; color: white; border: 1px solid #7c3aed; }
-                    .badge-cancelled { background-color: #fee2e2; color: #991b1b; border: 1px solid #f87171; }
-                    .badge-rejected { background-color: #fee2e2; color: #991b1b; border: 1px solid #f87171; }
-                    .badge-baru { background-color: #dbeafe; color: #1e40af; border: 1px solid #60a5fa; }
-                    .badge-restock { background-color: #fef3c7; color: #92400e; border: 1px solid #fbbf24; }
-                    .badge-priority-normal { background-color: #d1fae5; color: #065f46; border: 1px solid #10b981; }
-                    .badge-priority-tinggi { background-color: #fef3c7; color: #92400e; border: 1px solid #fbbf24; }
-                    .badge-priority-mendesak { background-color: #fee2e2; color: #991b1b; border: 1px solid #f87171; }
-                    .badge-superadmin { background-color: #8b5cf6; color: white; border: 1px solid #7c3aed; }
-                    .text-primary { color: #8b5cf6; } /* Warna superadmin untuk print */
-                    .text-muted { color: #6c757d; }
-                    .fw-bold { font-weight: 600; }
-                    .row { display: flex; flex-wrap: wrap; margin-right: -15px; margin-left: -15px; }
-                    .col-5, .col-7, .col-md-6 { position: relative; width: 100%; padding-right: 15px; padding-left: 15px; }
-                    .col-5 { flex: 0 0 41.666667%; max-width: 41.666667%; }
-                    .col-7 { flex: 0 0 58.333333%; max-width: 58.333333%; }
-                    .col-md-6 { flex: 0 0 50%; max-width: 50%; }
-                    .mb-2 { margin-bottom: 0.5rem; }
-                    .mb-3 { margin-bottom: 1rem; }
-                    .mb-4 { margin-bottom: 1.5rem; }
-                    .text-center { text-align: center; }
-                    .timeline { position: relative; padding-left: 30px; }
-                    .timeline-item { position: relative; padding-bottom: 20px; }
-                    .timeline-marker { position: absolute; left: -30px; top: 5px; width: 12px; height: 12px; border-radius: 50%; background-color: #dee2e6; }
-                    .timeline-content { margin-left: 0; }
-                    @media print {
-                        body { margin: 0; padding: 20px; }
-                        .card { page-break-inside: avoid; }
-                    }
-                </style>
-            </head>
-            <body>
-                ${title.outerHTML}
-                ${date.outerHTML}
-                ${clonedContent.innerHTML}
-                <script>
-                    window.onload = function() {
-                        window.print();
-                        setTimeout(function() {
-                            window.close();
-                        }, 1000);
-                    }
-                <\/script>
-            </body>
-            </html>
-        `);
-        printWindow.document.close();
-    }
-    
-    // Logout confirmation
-    document.querySelector('form[action="{{ route("logout") }}"]')?.addEventListener('submit', function(e) {
-        if (!confirm('Apakah Anda yakin ingin logout?')) {
-            e.preventDefault();
-        }
-    });
+}
 </script>
 </body>
 </html>

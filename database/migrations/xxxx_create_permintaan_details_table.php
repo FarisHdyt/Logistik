@@ -8,28 +8,49 @@ return new class extends Migration
 {
     public function up()
     {
-        Schema::create('nama', function (Blueprint $table) {
-            $table->bigIncrements('id'); // kolom 1: id bigint UNSIGNED AUTO_INCREMENT
-            $table->bigInteger('permintaan_id')->unsigned(); // kolom 2: permintaan_id bigint UNSIGNED
-            $table->bigInteger('barang_id')->unsigned(); // kolom 3: barang_id bigint UNSIGNED
-            $table->integer('jumlah'); // kolom 4: jumlah int
-            $table->decimal('harga_satuan', 15, 2); // kolom 5: harga_satuan decimal(15,2)
-            $table->decimal('subtotal', 15, 2); // kolom 6: subtotal decimal(15,2)
-            $table->enum('status', ['pending', 'approved', 'rejected', 'delivered'])->default('pending'); // kolom 7: status enum
-            $table->timestamp('created_at')->nullable(); // kolom 8: created_at timestamp
-            $table->timestamp('updated_at')->nullable(); // kolom 9: updated_at timestamp
-            $table->bigInteger('satker_id')->unsigned(); // kolom 10: satker_id bigint UNSIGNED
-            $table->text('catatan')->nullable(); // kolom 11: catatan text
-
-            // Foreign keys (diasumsikan berdasarkan nama kolom)
-            $table->foreign('permintaan_id')->references('id')->on('permintaans')->onDelete('cascade');
-            $table->foreign('barang_id')->references('id')->on('barangs')->onDelete('cascade');
-            $table->foreign('satker_id')->references('id')->on('satkers')->onDelete('cascade');
+        Schema::create('permintaan_details', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('permintaan_id')->constrained('permintaans')->onDelete('cascade');
+            $table->foreignId('barang_id')->constrained('barangs')->onDelete('cascade');
+            $table->integer('jumlah');
+            $table->decimal('harga_satuan', 15, 2)->default(0);
+            $table->decimal('subtotal', 15, 2)->default(0);
+            $table->enum('status', ['pending', 'approved', 'rejected', 'delivered'])->default('pending');
+            $table->timestamps();
         });
+
+        // TAMBAHKAN PENGECEKAN - MODIFIKASI DI SINI
+        if (!Schema::hasColumn('permintaans', 'total_items')) {
+            Schema::table('permintaans', function (Blueprint $table) {
+                $table->integer('total_items')->default(0)->after('jumlah');
+            });
+        } else {
+            // Jika kolom sudah ada, pastikan tipe datanya benar
+            Schema::table('permintaans', function (Blueprint $table) {
+                $table->integer('total_items')->default(0)->change();
+            });
+        }
+
+        if (!Schema::hasColumn('permintaans', 'total_harga')) {
+            Schema::table('permintaans', function (Blueprint $table) {
+                $table->decimal('total_harga', 15, 2)->default(0)->after('total_items');
+            });
+        } else {
+            Schema::table('permintaans', function (Blueprint $table) {
+                $table->decimal('total_harga', 15, 2)->default(0)->change();
+            });
+        }
     }
 
     public function down()
     {
-        Schema::dropIfExists('nama');
+        Schema::dropIfExists('permintaan_details');
+        
+        // Hanya drop kolom jika benar-benar ingin menghapusnya
+        if (Schema::hasColumn('permintaans', 'total_items')) {
+            Schema::table('permintaans', function (Blueprint $table) {
+                $table->dropColumn(['total_items', 'total_harga']);
+            });
+        }
     }
 };

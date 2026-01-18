@@ -15,7 +15,7 @@ use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SuperadminReportsController;
 use App\Http\Controllers\ProcurementController;
-use App\Http\Controllers\SuperadminProcurementController; // Ditambahkan
+use App\Http\Controllers\SuperadminProcurementController;
 
 /*
 |--------------------------------------------------------------------------
@@ -99,25 +99,31 @@ Route::middleware(['auth', 'check.maintenance'])->group(function () {
             Route::post('/{barang}/restock', [InventoryController::class, 'restock'])->name('admin.inventory.restock');
             Route::get('/{barang}', [InventoryController::class, 'show'])->name('admin.inventory.show');
             
+            // PERBAIKAN: Mengubah route storePengadaan dengan nama yang benar
             Route::post('/store-pengadaan', [InventoryController::class, 'storePengadaan'])
-                ->name('admin.inventory.store.pengadaan');
+                ->name('admin.inventory.storePengadaan'); // PERBAIKAN: storePengadaan bukan store.pengadaan
+            
+            // PERBAIKAN: Route untuk generate kode barang
+            Route::get('/generate-kode-barang', [InventoryController::class, 'generateKodeBarang'])
+                ->name('admin.inventory.generateKodeBarang');
             
             Route::get('/get-barang-procurement', [InventoryController::class, 'getBarangForProcurement'])
-                ->name('admin.inventory.get.barang.procurement');
+                ->name('admin.inventory.getBarangForProcurement');
             
             Route::get('/get-barang-detail/{id}', [InventoryController::class, 'getBarangDetail'])
-                ->name('admin.inventory.get.barang.detail');
+                ->name('admin.inventory.getBarangDetail');
             
             Route::get('/get-recent-procurements', [InventoryController::class, 'getRecentProcurements'])
-                ->name('admin.inventory.get.recent.procurements');
+                ->name('admin.inventory.getRecentProcurements');
             
             Route::post('/category/quick-store', [InventoryController::class, 'quickStoreCategory'])
-                ->name('admin.inventory.category.quick-store');
+                ->name('admin.inventory.quickStoreCategory');
             
             Route::get('/search', [InventoryController::class, 'search'])->name('admin.inventory.search');
             
-            Route::get('/get-by-kode/{kode}', [InventoryController::class, 'getBarangByKode'])
-                ->name('admin.inventory.get-by-kode');
+            // PERBAIKAN: Route get barang by kode dengan nama yang benar
+            Route::get('/get-barang-by-kode/{kode}', [InventoryController::class, 'getBarangByKode'])
+                ->name('admin.inventory.get.barang.by.kode'); // PERBAIKAN: getBarangByKode bukan get.barang.by.kode
         });
         
         // Procurement Routes (Pengadaan Barang)
@@ -157,11 +163,18 @@ Route::middleware(['auth', 'check.maintenance'])->group(function () {
             Route::get('/', [PermintaanController::class, 'index'])->name('admin.requests');
             Route::get('/create', [PermintaanController::class, 'create'])->name('admin.requests.create');
             Route::post('/', [PermintaanController::class, 'store'])->name('admin.requests.store');
+            
+            // Route untuk approve/reject detail permintaan harus didefinisikan SEBELUM route show
+            Route::post('/{permintaan}/details/{detail}/approve', [PermintaanController::class, 'approveDetail'])
+                ->name('admin.requests.details.approve');
+            Route::post('/{permintaan}/details/{detail}/reject', [PermintaanController::class, 'rejectDetail'])
+                ->name('admin.requests.details.reject');
+            
+            Route::get('/{permintaan}', [PermintaanController::class, 'show'])->name('admin.requests.show');
             Route::post('/{permintaan}/approve', [PermintaanController::class, 'approve'])->name('admin.requests.approve');
             Route::post('/{permintaan}/reject', [PermintaanController::class, 'reject'])->name('admin.requests.reject');
             Route::post('/{permintaan}/deliver', [PermintaanController::class, 'markAsDelivered'])->name('admin.requests.deliver');
             Route::delete('/{permintaan}', [PermintaanController::class, 'destroy'])->name('admin.requests.destroy');
-            Route::get('/{permintaan}', [PermintaanController::class, 'show'])->name('admin.requests.show');
         });
         
         // Reports Routes
@@ -203,6 +216,13 @@ Route::middleware(['auth', 'check.maintenance'])->group(function () {
         // ROUTE DENGAN METHOD GET HARUS DIDAHULUKAN
         Route::get('/', [PermintaanController::class, 'index'])->name('admin.requests');
         Route::get('/create', [PermintaanController::class, 'create'])->name('admin.requests.create');
+        
+        // Route untuk approve/reject detail permintaan harus didefinisikan SEBELUM route show
+        Route::post('/{permintaan}/details/{detail}/approve', [PermintaanController::class, 'approveDetail'])
+            ->name('admin.requests.details.approve');
+        Route::post('/{permintaan}/details/{detail}/reject', [PermintaanController::class, 'rejectDetail'])
+            ->name('admin.requests.details.reject');
+        
         Route::get('/{permintaan}', [PermintaanController::class, 'show'])->name('admin.requests.show');
         Route::get('/{permintaan}/details', [PermintaanController::class, 'show'])->name('admin.requests.details');
         Route::get('/{permintaan}/debug', [PermintaanController::class, 'debugShow'])->name('admin.requests.debug');
@@ -211,10 +231,6 @@ Route::middleware(['auth', 'check.maintenance'])->group(function () {
         Route::post('/', [PermintaanController::class, 'store'])->name('admin.requests.store');
         Route::post('/{permintaan}/approve', [PermintaanController::class, 'approve'])->name('admin.requests.approve');
         Route::post('/{permintaan}/reject', [PermintaanController::class, 'reject'])->name('admin.requests.reject');
-        Route::post('/{permintaan}/details/{detail}/approve', [PermintaanController::class, 'approveDetail'])
-            ->name('admin.requests.details.approve');
-        Route::post('/{permintaan}/details/{detail}/reject', [PermintaanController::class, 'rejectDetail'])
-            ->name('admin.requests.details.reject');
         Route::post('/{permintaan}/deliver', [PermintaanController::class, 'markAsDelivered'])->name('admin.requests.deliver');
         Route::delete('/{permintaan}', [PermintaanController::class, 'destroy'])->name('admin.requests.destroy');
     });
@@ -243,7 +259,6 @@ Route::middleware(['auth', 'check.maintenance'])->group(function () {
         Route::get('/create', [SatkerController::class, 'create'])->name('admin.satker.create');
         Route::get('/{id}', [SatkerController::class, 'show'])->name('admin.satker.show');
     });
-});
 
     // ==================== ROUTES UNTUK SUPERADMIN ====================
     Route::prefix('superadmin')->middleware(['role:superadmin'])->group(function () {
@@ -267,20 +282,32 @@ Route::middleware(['auth', 'check.maintenance'])->group(function () {
                 ->name('superadmin.accounts.reset-password');
         });
         
-        // Validasi Pengadaan untuk Superadmin
+        // Validasi Pengadaan untuk Superadmin - DIPERBARUI
         Route::prefix('procurement')->group(function () {
             Route::get('/', [SuperadminProcurementController::class, 'index'])->name('superadmin.procurement');
             Route::get('/{id}', [SuperadminProcurementController::class, 'show'])->name('superadmin.procurement.show');
+            
+            // Action routes untuk validasi pengadaan
             Route::post('/{id}/approve', [SuperadminProcurementController::class, 'approve'])->name('superadmin.procurement.approve');
             Route::post('/{id}/reject', [SuperadminProcurementController::class, 'reject'])->name('superadmin.procurement.reject');
+            
+            // ROUTE BARU: Custom approval untuk multi-item
+            Route::post('/{id}/custom-approve', [SuperadminProcurementController::class, 'customApprove'])->name('superadmin.procurement.custom-approve');
+            
+            // ROUTE BARU: Complete dan Cancel
+            Route::post('/{id}/complete', [SuperadminProcurementController::class, 'complete'])->name('superadmin.procurement.complete');
+            Route::post('/{id}/cancel', [SuperadminProcurementController::class, 'cancel'])->name('superadmin.procurement.cancel');
+            
+            // ROUTE BARU: Item stats
+            Route::get('/{id}/item-stats', [SuperadminProcurementController::class, 'getItemStats'])->name('superadmin.procurement.item-stats');
             
             // Route untuk chart data
             Route::get('/chart-data', [SuperadminProcurementController::class, 'getChartData'])->name('superadmin.procurement.chart-data');
         });
         
-        // Validasi Permintaan untuk Superadmin (diasumsikan ada controller yang sesuai)
+        // Validasi Permintaan untuk Superadmin
         Route::prefix('requests')->group(function () {
-            Route::get('/', [PermintaanController::class, 'index'])->name('superadmin.requests'); // Sesuaikan dengan controller yang tepat
+            Route::get('/', [PermintaanController::class, 'index'])->name('superadmin.requests');
         });
         
         // Manajemen Satker
@@ -388,16 +415,30 @@ Route::middleware(['auth', 'check.maintenance'])->group(function () {
         Route::get('/satker/{id}/details', [SatkerController::class, 'getDetails'])->name('api.satker.details');
         Route::get('/satker/select-options', [SatkerController::class, 'getSatkersForSelect'])->name('api.satker.select-options');
         
+        // PERBAIKAN: Menggunakan nama route yang sesuai dengan controller method
         Route::get('/inventory/get-barang-procurement', [InventoryController::class, 'getBarangForProcurement'])
-            ->name('api.inventory.get.barang.procurement');
+            ->name('api.inventory.getBarangForProcurement');
             
         Route::get('/inventory/get-recent-procurements', [InventoryController::class, 'getRecentProcurements'])
-            ->name('api.inventory.get.recent.procurements');
+            ->name('api.inventory.getRecentProcurements');
+            
+        // PERBAIKAN: Route untuk generate kode barang dari API
+        Route::get('/inventory/generate-kode-barang', [InventoryController::class, 'generateKodeBarang'])
+            ->name('api.inventory.generateKodeBarang');
+            
+        // PERBAIKAN: Route untuk get barang by kode
+        Route::get('/inventory/get-barang-by-kode/{kode}', [InventoryController::class, 'getBarangByKode'])
+            ->name('api.inventory.getBarangByKode');
+            
+        // API Routes untuk Superadmin Procurement
+        Route::get('/superadmin/procurement/{id}', [SuperadminProcurementController::class, 'show'])
+            ->name('api.superadmin.procurement.show');
+            
+        Route::get('/superadmin/procurement/{id}/item-stats', [SuperadminProcurementController::class, 'getItemStats'])
+            ->name('api.superadmin.procurement.item-stats');
     });
 
-
-// ==================== MAINTENANCE ROUTES (KHUSUS) ====================
-Route::middleware('auth')->group(function () {
+    // ==================== MAINTENANCE ROUTES (KHUSUS) ====================
     Route::post('/settings/maintenance/enable', [SettingController::class, 'enableMaintenance'])
         ->name('settings.maintenance.enable')
         ->middleware('role:superadmin');
