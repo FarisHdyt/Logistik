@@ -112,7 +112,7 @@ class AccountsController extends Controller
         ]);
 
         // Log activity
-        ActivityLogController::logAction('create', 'Membuat akun baru: ' . $user->name, [
+        ActivityLogController::logAction('Create', 'Membuat akun baru: ' . $user->name, [
             'user_id' => $user->id,
             'name' => $user->name,
             'email' => $user->email,
@@ -226,7 +226,7 @@ class AccountsController extends Controller
         }
 
         // Log activity
-        ActivityLogController::logAction('update', 'Memperbarui data akun: ' . $user->name, [
+        ActivityLogController::logAction('Update', 'Memperbarui data akun: ' . $user->name, [
             'user_id' => $user->id,
             'old_data' => $oldData,
             'new_data' => $user->toArray()
@@ -250,7 +250,7 @@ class AccountsController extends Controller
         }
 
         // Log activity before deletion
-        ActivityLogController::logAction('delete', 'Menghapus akun: ' . $user->name, [
+        ActivityLogController::logAction('Delete', 'Menghapus akun: ' . $user->name, [
             'user_id' => $user->id,
             'name' => $user->name,
             'email' => $user->email,
@@ -286,7 +286,7 @@ class AccountsController extends Controller
         ]);
 
         // Log activity
-        ActivityLogController::logAction('update', 'Mengubah status akun ' . $user->name, [
+        ActivityLogController::logAction('Update', 'Mengubah status akun ' . $user->name, [
             'user_id' => $user->id,
             'old_status' => $oldStatus,
             'new_status' => $user->is_active
@@ -340,7 +340,7 @@ class AccountsController extends Controller
         ]);
 
         // Log activity
-        ActivityLogController::logAction('update', 'Reset password akun: ' . $user->name, [
+        ActivityLogController::logAction('Update', 'Reset password akun: ' . $user->name, [
             'user_id' => $user->id,
             'name' => $user->name,
             'email' => $user->email,
@@ -382,19 +382,19 @@ class AccountsController extends Controller
             case 'activate':
                 User::whereIn('id', $userIds)->update(['is_active' => true]);
                 $message = 'Akun berhasil diaktifkan.';
-                $logAction = 'update';
+                $logAction = 'Update';
                 break;
                 
             case 'deactivate':
                 User::whereIn('id', $userIds)->update(['is_active' => false]);
                 $message = 'Akun berhasil dinonaktifkan.';
-                $logAction = 'update';
+                $logAction = 'Update';
                 break;
                 
             case 'delete':
                 User::whereIn('id', $userIds)->delete();
                 $message = 'Akun berhasil dihapus.';
-                $logAction = 'delete';
+                $logAction = 'Delete';
                 break;
         }
 

@@ -506,6 +506,61 @@
             border-radius: 3px;
         }
         
+        /* BADGE STYLES - SESUAIKAN DENGAN VIEW SEBELUMNYA */
+        span.badge.badge-login {
+            background-color: #22c55e !important;
+            color: white !important;
+            padding: 0.4rem 0.8rem !important;
+            font-weight: 500 !important;
+            font-size: 0.85rem !important;
+            border: none !important;
+        }
+        
+        span.badge.badge-logout {
+            background-color: #94a3b8 !important;
+            color: white !important;
+            padding: 0.4rem 0.8rem !important;
+            font-weight: 500 !important;
+            font-size: 0.85rem !important;
+            border: none !important;
+        }
+        
+        span.badge.badge-create {
+            background-color: #3b82f6 !important;
+            color: white !important;
+            padding: 0.4rem 0.8rem !important;
+            font-weight: 500 !important;
+            font-size: 0.85rem !important;
+            border: none !important;
+        }
+        
+        span.badge.badge-update {
+            background-color: #f59e0b !important;
+            color: white !important;
+            padding: 0.4rem 0.8rem !important;
+            font-weight: 500 !important;
+            font-size: 0.85rem !important;
+            border: none !important;
+        }
+        
+        span.badge.badge-delete {
+            background-color: #ef4444 !important;
+            color: white !important;
+            padding: 0.4rem 0.8rem !important;
+            font-weight: 500 !important;
+            font-size: 0.85rem !important;
+            border: none !important;
+        }
+        
+        span.badge.badge-secondary {
+            background-color: #64748b !important;
+            color: white !important;
+            padding: 0.4rem 0.8rem !important;
+            font-weight: 500 !important;
+            font-size: 0.85rem !important;
+            border: none !important;
+        }
+        
         /* Responsive */
         @media (max-width: 768px) {
             .sidebar {
@@ -671,14 +726,21 @@
                         <td class="text-center">{{ $loop->iteration }}</td>
                         <td>{{ $activity->user->name ?? 'System' }}</td>
                         <td>
-                            <span class="badge 
-                                @if($activity->action == 'login') bg-success
-                                @elseif($activity->action == 'logout') bg-secondary
-                                @elseif($activity->action == 'create') bg-primary
-                                @elseif($activity->action == 'update') bg-warning
-                                @elseif($activity->action == 'delete') bg-danger
-                                @else bg-info @endif">
-                                {{ ucfirst($activity->action) }}
+                            @php
+                                $action = strtolower(trim($activity->action ?? 'unknown'));
+                                $badgeClass = [
+                                    'login' => 'badge-login',
+                                    'logout' => 'badge-logout',
+                                    'create' => 'badge-create',
+                                    'update' => 'badge-update',
+                                    'delete' => 'badge-delete',
+                                    'created' => 'badge-create',
+                                    'updated' => 'badge-update',
+                                    'deleted' => 'badge-delete',
+                                ][$action] ?? 'badge-secondary';
+                            @endphp
+                            <span class="badge {{ $badgeClass }}">
+                                {{ ucfirst($action) }}
                             </span>
                         </td>
                         <td>{{ $activity->description ?? '-' }}</td>
@@ -1192,18 +1254,21 @@
                                 </td>
                                 <td>
                                     @php
-                                        $action = $activity->action ?? 'unknown';
-                                        $actionColors = [
-                                            'login' => 'success',
-                                            'logout' => 'secondary',
-                                            'create' => 'primary',
-                                            'update' => 'warning',
-                                            'delete' => 'danger',
-                                            'view' => 'info'
-                                        ];
-                                        $color = $actionColors[$action] ?? 'dark';
+                                        $action = strtolower(trim($activity->action ?? 'unknown'));
+                                        $badgeClass = [
+                                            'login' => 'badge-login',
+                                            'logout' => 'badge-logout',
+                                            'create' => 'badge-create',
+                                            'update' => 'badge-update',
+                                            'delete' => 'badge-delete',
+                                            'created' => 'badge-create',
+                                            'updated' => 'badge-update',
+                                            'deleted' => 'badge-delete',
+                                        ][$action] ?? 'badge-secondary';
                                     @endphp
-                                    <span class="badge bg-{{ $color }}">{{ ucfirst($action) }}</span>
+                                    <span class="badge {{ $badgeClass }}">
+                                        {{ ucfirst($action) }}
+                                    </span>
                                 </td>
                                 <td>{{ $activity->description ?? '-' }}</td>
                                 <td><code>{{ $activity->ip_address ?? '-' }}</code></td>

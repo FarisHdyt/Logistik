@@ -251,10 +251,11 @@
             border-bottom: 2px solid #e2e8f0;
         }
         
-        /* Badges */
+        /* Badges untuk role user */
         .badge {
             padding: 0.4rem 0.8rem;
             font-weight: 500;
+            font-size: 0.85rem;
         }
         
         .badge-superadmin {
@@ -280,6 +281,89 @@
         .badge-inactive {
             background-color: #f3f4f6;
             color: #6b7280;
+        }
+        
+        /* BADGE STYLES UNTUK AKTIVITAS - SESUAIKAN DENGAN VIEW SEBELUMNYA */
+        span.badge.badge-login {
+            background-color: #22c55e !important;
+            color: white !important;
+            padding: 0.4rem 0.8rem !important;
+            font-weight: 500 !important;
+            font-size: 0.85rem !important;
+            border: none !important;
+        }
+        
+        span.badge.badge-logout {
+            background-color: #94a3b8 !important;
+            color: white !important;
+            padding: 0.4rem 0.8rem !important;
+            font-weight: 500 !important;
+            font-size: 0.85rem !important;
+            border: none !important;
+        }
+        
+        span.badge.badge-create {
+            background-color: #3b82f6 !important;
+            color: white !important;
+            padding: 0.4rem 0.8rem !important;
+            font-weight: 500 !important;
+            font-size: 0.85rem !important;
+            border: none !important;
+        }
+        
+        span.badge.badge-update {
+            background-color: #f59e0b !important;
+            color: white !important;
+            padding: 0.4rem 0.8rem !important;
+            font-weight: 500 !important;
+            font-size: 0.85rem !important;
+            border: none !important;
+        }
+        
+        span.badge.badge-delete {
+            background-color: #ef4444 !important;
+            color: white !important;
+            padding: 0.4rem 0.8rem !important;
+            font-weight: 500 !important;
+            font-size: 0.85rem !important;
+            border: none !important;
+        }
+        
+        span.badge.badge-secondary {
+            background-color: #64748b !important;
+            color: white !important;
+            padding: 0.4rem 0.8rem !important;
+            font-weight: 500 !important;
+            font-size: 0.85rem !important;
+            border: none !important;
+        }
+        
+        /* Untuk action approve/reject/validate yang spesifik */
+        span.badge.badge-approve {
+            background-color: #22c55e !important;
+            color: white !important;
+            padding: 0.4rem 0.8rem !important;
+            font-weight: 500 !important;
+            font-size: 0.85rem !important;
+            border: none !important;
+        }
+        
+        span.badge.badge-reject {
+            background-color: #ef4444 !important;
+            color: white !important;
+            padding: 0.4rem 0.8rem !important;
+            font-weight: 500 !important;
+            font-size: 0.85rem !important;
+            border: none !important;
+        }
+        
+        span.badge.badge-validate {
+            background-color: #0ea5e9 !important;
+            color: white !important;
+            padding: 0.4rem 0.8rem !important;
+            font-weight: 500 !important;
+            font-size: 0.85rem !important;
+            border: none !important;
         }
         
         /* Quick Actions */
@@ -683,21 +767,25 @@
                             </td>
                             <td>
                                 @php
-                                    $action = $activity->action ?? 'unknown';
-                                    $actionColors = [
-                                        'login' => 'success',
-                                        'logout' => 'secondary',
-                                        'create' => 'primary',
-                                        'update' => 'warning',
-                                        'delete' => 'danger',
-                                        'view' => 'info',
-                                        'approve' => 'success',
-                                        'reject' => 'danger',
-                                        'validate' => 'info'
-                                    ];
-                                    $color = $actionColors[$action] ?? 'dark';
+                                    $action = strtolower(trim($activity->action ?? 'unknown'));
+                                    $badgeClass = [
+                                        'login' => 'badge-login',
+                                        'logout' => 'badge-logout',
+                                        'create' => 'badge-create',
+                                        'update' => 'badge-update',
+                                        'delete' => 'badge-delete',
+                                        'created' => 'badge-create',
+                                        'updated' => 'badge-update',
+                                        'deleted' => 'badge-delete',
+                                        'approve' => 'badge-approve',
+                                        'reject' => 'badge-reject',
+                                        'validate' => 'badge-validate',
+                                        'view' => 'badge-secondary',
+                                    ][$action] ?? 'badge-secondary';
                                 @endphp
-                                <span class="badge bg-{{ $color }}">{{ ucfirst($action) }}</span>
+                                <span class="badge {{ $badgeClass }}">
+                                    {{ ucfirst($action) }}
+                                </span>
                             </td>
                             <td>{{ $activity->description ?? '-' }}</td>
                             <td><code>{{ $activity->ip_address ?? '-' }}</code></td>

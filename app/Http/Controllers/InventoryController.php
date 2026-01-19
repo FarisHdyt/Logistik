@@ -216,9 +216,9 @@ class InventoryController extends Controller
             \Log::info('Satuan ID: ' . $barang->satuan_id);
             \Log::info('Gudang ID: ' . $barang->gudang_id);
             
-            // Log aktivitas tambah barang
+            // Log aktivitas tambah barang - CREATE
             $this->logActivity(
-                'Tambah Barang',
+                'Create',
                 "Barang baru berhasil ditambahkan: {$barang->kode_barang} - {$barang->nama_barang}",
                 $barang
             );
@@ -313,9 +313,9 @@ class InventoryController extends Controller
             $barang->refresh();
             \Log::info('Barang setelah update:', $barang->toArray());
             
-            // Log aktivitas ubah barang
+            // Log aktivitas ubah barang - UPDATE
             $this->logActivity(
-                'Update Barang',
+                'Update',
                 "Barang berhasil diperbarui: {$barang->kode_barang} - {$barang->nama_barang}",
                 $barang,
                 json_encode(['old_data' => $oldData, 'new_data' => $newData])
@@ -336,9 +336,9 @@ class InventoryController extends Controller
     
     public function destroy(Barang $barang)
     {
-        // Log aktivitas hapus barang
+        // Log aktivitas hapus barang - DELETE
         $this->logActivity(
-            'Hapus Barang',
+            'Delete',
             "Barang berhasil dihapus: {$barang->kode_barang} - {$barang->nama_barang}",
             $barang
         );
@@ -380,9 +380,9 @@ class InventoryController extends Controller
             $barang->update(['harga_beli' => $request->harga_beli]);
         }
         
-        // Log aktivitas restock barang
+        // Log aktivitas restock barang - UPDATE (karena mengubah stok)
         $this->logActivity(
-            'Restock Barang',
+            'Update',
             "Barang direstock: {$barang->kode_barang} - {$barang->nama_barang} (Stok +{$addedStok})",
             $barang,
             json_encode([
@@ -450,9 +450,9 @@ class InventoryController extends Controller
             'keterangan' => $request->deskripsi ?? null,
         ]);
         
-        // Log aktivitas tambah kategori
+        // Log aktivitas tambah kategori - CREATE
         $this->logActivity(
-            'Tambah Kategori',
+            'Create',
             "Kategori baru ditambahkan: {$category->nama_kategori}",
             null,
             json_encode(['kategori_id' => $category->id, 'nama_kategori' => $category->nama_kategori])
@@ -652,7 +652,7 @@ class InventoryController extends Controller
             $procurement->total_jumlah = $totalJumlah;
             $procurement->save();
             
-            // Log aktivitas pengajuan pengadaan multi-barang
+            // Log aktivitas pengajuan pengadaan multi-barang - CREATE (karena membuat procurement baru)
             $logDetails = [
                 'kode_pengadaan' => $procurement->kode_pengadaan,
                 'tipe_pengadaan' => $tipePengadaan,
@@ -669,7 +669,7 @@ class InventoryController extends Controller
             }
             
             $this->logActivity(
-                'Pengajuan Pengadaan ' . ucfirst($tipePengadaan),
+                'Create',
                 "Pengajuan pengadaan {$tipePengadaan} diajukan: {$procurement->kode_pengadaan}",
                 $procurement,
                 json_encode($logDetails)
@@ -827,9 +827,18 @@ class InventoryController extends Controller
     
     /**
      * Helper method untuk log aktivitas
+     * HANYA untuk: Login, Logout, Create, Update, Delete
      */
     private function logActivity($action, $description, $relatedModel = null, $details = null)
     {
+        // Daftar aksi yang diperbolehkan
+        $allowedActions = ['Login', 'Logout', 'Create', 'Update', 'Delete'];
+        
+        // Hanya log jika aksi termasuk dalam daftar yang diperbolehkan
+        if (!in_array($action, $allowedActions)) {
+            return;
+        }
+        
         try {
             $activityData = [
                 'user_id' => Auth::id(),

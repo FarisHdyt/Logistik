@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
 use App\Models\RestoreHistory;
+use App\Http\Controllers\ActivityLogController;
 
 class SettingController extends Controller
 {
@@ -46,6 +47,7 @@ class SettingController extends Controller
     public function updateProfile(Request $request)
     {
         $user = Auth::user();
+        $oldData = $user->toArray();
         
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
@@ -68,10 +70,39 @@ class SettingController extends Controller
                 'phone' => $request->phone,
             ]);
             
+            $newData = $user->fresh()->toArray();
+            
+            // Log activity sebagai UPDATE
+            ActivityLogController::logAction(
+                'Update',
+                "Memperbarui profil superadmin: {$user->name}",
+                [
+                    'user_id' => $user->id,
+                    'old_data' => $oldData,
+                    'new_data' => $newData,
+                    'changes' => [
+                        'name' => ['from' => $oldData['name'], 'to' => $newData['name']],
+                        'email' => ['from' => $oldData['email'], 'to' => $newData['email']],
+                        'username' => ['from' => $oldData['username'], 'to' => $newData['username']],
+                        'phone' => ['from' => $oldData['phone'], 'to' => $newData['phone']],
+                    ]
+                ]
+            );
+            
             return redirect()->route('superadmin.settings', ['active_tab' => 'profile'])
                 ->with('success', 'Profil berhasil diperbarui.');
                 
         } catch (\Exception $e) {
+            // Log error
+            ActivityLogController::logAction(
+                'error',
+                "Gagal memperbarui profil superadmin: {$e->getMessage()}",
+                [
+                    'user_id' => $user->id,
+                    'error_message' => $e->getMessage()
+                ]
+            );
+            
             return redirect()->route('superadmin.settings', ['active_tab' => 'profile'])
                 ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
@@ -96,19 +127,51 @@ class SettingController extends Controller
         }
         
         if (!Hash::check($request->current_password, $user->password)) {
+            // Log failed password change attempt
+            ActivityLogController::logAction(
+                'error',
+                "Gagal mengubah password: Password saat ini salah",
+                [
+                    'user_id' => $user->id,
+                    'attempted' => true
+                ]
+            );
+            
             return redirect()->route('superadmin.settings', ['active_tab' => 'profile'])
                 ->with('error', 'Password saat ini salah.');
         }
         
         try {
+            $oldPasswordHash = $user->password;
             $user->update([
                 'password' => Hash::make($request->new_password)
             ]);
+            
+            // Log activity sebagai UPDATE
+            ActivityLogController::logAction(
+                'Update',
+                "Mengubah password superadmin: {$user->name}",
+                [
+                    'user_id' => $user->id,
+                    'password_changed' => true,
+                    'change_time' => now()->toDateTimeString()
+                ]
+            );
             
             return redirect()->route('superadmin.settings', ['active_tab' => 'profile'])
                 ->with('success', 'Password berhasil diubah.');
                 
         } catch (\Exception $e) {
+            // Log error
+            ActivityLogController::logAction(
+                'error',
+                "Gagal mengubah password superadmin: {$e->getMessage()}",
+                [
+                    'user_id' => $user->id,
+                    'error_message' => $e->getMessage()
+                ]
+            );
+            
             return redirect()->route('superadmin.settings', ['active_tab' => 'profile'])
                 ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
@@ -122,8 +185,33 @@ class SettingController extends Controller
         $format = 'json'; // Format tetap JSON saja
         
         try {
+            $user = Auth::user();
+            
+            // Log activity sebagai CREATE (create backup file)
+            ActivityLogController::logAction(
+                'Create',
+                "Membuat backup database: Ekspor format JSON",
+                [
+                    'user_id' => $user->id,
+                    'format' => $format,
+                    'backup_type' => 'database_export'
+                ]
+            );
+            
             return $this->exportAsJSON();
+            
         } catch (\Exception $e) {
+            // Log error
+            ActivityLogController::logAction(
+                'error',
+                "Gagal mengekspor database: {$e->getMessage()}",
+                [
+                    'user_id' => Auth::id(),
+                    'error_message' => $e->getMessage(),
+                    'format' => $format
+                ]
+            );
+            
             return redirect()->route('superadmin.settings', ['active_tab' => 'database'])
                 ->with('error', 'Gagal mengekspor database: ' . $e->getMessage());
         }
@@ -141,6 +229,19 @@ class SettingController extends Controller
                 ->with('error', 'File backup tidak ditemukan.');
         }
         
+        $user = Auth::user();
+        
+        // Log activity sebagai UPDATE (access/download)
+        ActivityLogController::logAction(
+                'Update',
+                "Mendownload backup file: {$filename}",
+                [
+                    'user_id' => $user->id,
+                    'filename' => $filename,
+                    'file_size' => $this->formatBytes(File::size($filePath))
+                ]
+            );
+        
         return response()->download($filePath);
     }
     
@@ -151,9 +252,23 @@ class SettingController extends Controller
     {
         try {
             $filePath = storage_path('app/backups/' . $filename);
+            $user = Auth::user();
             
             if (File::exists($filePath)) {
+                $fileSize = File::size($filePath);
                 File::delete($filePath);
+                
+                // Log activity sebagai DELETE
+                ActivityLogController::logAction(
+                    'Delete',
+                    "Menghapus backup file: {$filename}",
+                    [
+                        'user_id' => $user->id,
+                        'filename' => $filename,
+                        'file_size' => $this->formatBytes($fileSize),
+                        'deleted_at' => now()->toDateTimeString()
+                    ]
+                );
                 
                 return response()->json([
                     'success' => true,
@@ -167,6 +282,17 @@ class SettingController extends Controller
             ]);
             
         } catch (\Exception $e) {
+            // Log error
+            ActivityLogController::logAction(
+                'error',
+                "Gagal menghapus backup file {$filename}: {$e->getMessage()}",
+                [
+                    'user_id' => Auth::id(),
+                    'filename' => $filename,
+                    'error_message' => $e->getMessage()
+                ]
+            );
+            
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan: ' . $e->getMessage()
@@ -227,6 +353,22 @@ class SettingController extends Controller
                 'user_id' => $user->id,
             ]);
             
+            // Log activity sebagai UPDATE (restore database)
+            ActivityLogController::logAction(
+                'Update',
+                "Merestore database: {$originalName} - metode {$method}",
+                [
+                    'user_id' => $user->id,
+                    'filename' => $originalName,
+                    'method' => $method,
+                    'file_size' => $this->formatBytes($fileSize),
+                    'total_rows' => $result['total_rows'] ?? 0,
+                    'inserted_rows' => $result['inserted_rows'] ?? 0,
+                    'skipped_rows' => $result['skipped_rows'] ?? 0,
+                    'restore_type' => 'database_restore'
+                ]
+            );
+            
             return redirect()->route('superadmin.settings', ['active_tab' => 'database'])
                 ->with('success', 'Database berhasil direstore! ' . 
                     ($result['inserted_rows'] > 0 ? $result['inserted_rows'] . ' data dipulihkan.' : ''));
@@ -234,8 +376,10 @@ class SettingController extends Controller
         } catch (\Exception $e) {
             \Log::error('Restore JSON gagal: ' . $e->getMessage());
             
+            $user = Auth::user();
+            
             // Simpan history restore gagal
-            if (isset($user) && isset($originalName) && isset($method)) {
+            if (isset($originalName) && isset($method)) {
                 $fileSize = $request->file('restore_file')->getSize() ?? 0;
                 
                 $this->saveRestoreHistory([
@@ -251,6 +395,18 @@ class SettingController extends Controller
                     'user_id' => $user->id,
                 ]);
             }
+            
+            // Log error
+            ActivityLogController::logAction(
+                'error',
+                "Gagal restore database: {$e->getMessage()}",
+                [
+                    'user_id' => $user->id,
+                    'filename' => $originalName ?? 'unknown',
+                    'error_message' => $e->getMessage(),
+                    'method' => $method ?? 'unknown'
+                ]
+            );
             
             return redirect()->route('superadmin.settings', ['active_tab' => 'database'])
                 ->with('error', 'Gagal restore database: ' . $e->getMessage());
@@ -302,6 +458,21 @@ class SettingController extends Controller
                 'user_id' => $user->id,
             ]);
             
+            // Log activity sebagai UPDATE (restore from existing backup)
+            ActivityLogController::logAction(
+                'Update',
+                "Merestore database dari backup existing: {$filename}",
+                [
+                    'user_id' => $user->id,
+                    'filename' => $filename,
+                    'method' => $method,
+                    'file_size' => $this->formatBytes(File::size($filePath)),
+                    'total_rows' => $result['total_rows'] ?? 0,
+                    'inserted_rows' => $result['inserted_rows'] ?? 0,
+                    'skipped_rows' => $result['skipped_rows'] ?? 0
+                ]
+            );
+            
             return response()->json([
                 'success' => true,
                 'message' => 'Database berhasil direstore dari backup.',
@@ -310,6 +481,17 @@ class SettingController extends Controller
             
         } catch (\Exception $e) {
             \Log::error('Restore dari backup gagal: ' . $e->getMessage());
+            
+            // Log error
+            ActivityLogController::logAction(
+                'error',
+                "Gagal restore database dari backup {$filename}: {$e->getMessage()}",
+                [
+                    'user_id' => Auth::id(),
+                    'filename' => $filename,
+                    'error_message' => $e->getMessage()
+                ]
+            );
             
             return response()->json([
                 'success' => false,
@@ -324,6 +506,8 @@ class SettingController extends Controller
     public function enableMaintenance(Request $request)
     {
         try {
+            $user = Auth::user();
+            
             // Cek apakah sudah dalam mode maintenance
             if (app()->isDownForMaintenance()) {
                 return response()->json([
@@ -332,7 +516,6 @@ class SettingController extends Controller
                 ]);
             }
             
-            $user = Auth::user();
             $message = $request->get('message', 'Sistem sedang dalam pemeliharaan. Harap coba lagi beberapa saat lagi.');
             
             // Buat array data untuk maintenance mode
@@ -373,6 +556,18 @@ class SettingController extends Controller
             
             file_put_contents($filePath, json_encode($data, JSON_PRETTY_PRINT));
             
+            // Log activity sebagai UPDATE (enable maintenance mode)
+            ActivityLogController::logAction(
+                'Update',
+                "Mengaktifkan maintenance mode",
+                [
+                    'user_id' => $user->id,
+                    'message' => $message,
+                    'allowed_ip' => $request->ip(),
+                    'maintenance_data' => $data
+                ]
+            );
+            
             \Log::info('Maintenance mode diaktifkan oleh: ' . $user->name . ' (ID: ' . $user->id . ')');
             \Log::info('IP yang diizinkan: ' . $request->ip());
             
@@ -397,6 +592,16 @@ class SettingController extends Controller
         } catch (\Exception $e) {
             \Log::error('Gagal mengaktifkan maintenance mode: ' . $e->getMessage());
             
+            // Log error
+            ActivityLogController::logAction(
+                'error',
+                "Gagal mengaktifkan maintenance mode: {$e->getMessage()}",
+                [
+                    'user_id' => Auth::id(),
+                    'error_message' => $e->getMessage()
+                ]
+            );
+            
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal mengaktifkan maintenance mode: ' . $e->getMessage()
@@ -410,6 +615,8 @@ class SettingController extends Controller
     public function disableMaintenance()
     {
         try {
+            $user = Auth::user();
+            
             // Cek apakah sedang dalam mode maintenance
             if (!app()->isDownForMaintenance()) {
                 return response()->json([
@@ -427,7 +634,17 @@ class SettingController extends Controller
             // Juga panggil Artisan up untuk memastikan
             Artisan::call('up');
             
-            \Log::info('Maintenance mode dinonaktifkan oleh: ' . Auth::user()->name);
+            // Log activity sebagai UPDATE (disable maintenance mode)
+            ActivityLogController::logAction(
+                'Update',
+                "Menonaktifkan maintenance mode",
+                [
+                    'user_id' => $user->id,
+                    'disabled_at' => now()->toDateTimeString()
+                ]
+            );
+            
+            \Log::info('Maintenance mode dinonaktifkan oleh: ' . $user->name);
             
             return response()->json([
                 'success' => true,
@@ -436,6 +653,16 @@ class SettingController extends Controller
             
         } catch (\Exception $e) {
             \Log::error('Gagal menonaktifkan maintenance mode: ' . $e->getMessage());
+            
+            // Log error
+            ActivityLogController::logAction(
+                'error',
+                "Gagal menonaktifkan maintenance mode: {$e->getMessage()}",
+                [
+                    'user_id' => Auth::id(),
+                    'error_message' => $e->getMessage()
+                ]
+            );
             
             return response()->json([
                 'success' => false,
@@ -464,6 +691,9 @@ class SettingController extends Controller
             // Cek apakah user saat ini adalah superadmin
             $user = Auth::user();
             $isSuperadmin = $user && $user->role === 'superadmin';
+            
+            // Log activity sebagai READ (check maintenance status)
+            // Note: Tidak perlu log untuk aksi read biasa, hanya untuk perubahan data
             
             return response()->json([
                 'success' => true,
@@ -509,6 +739,17 @@ class SettingController extends Controller
                 session(['bypassed_by' => $user->id]);
                 session(['bypassed_at' => time()]);
                 
+                // Log activity sebagai UPDATE (bypass maintenance)
+                ActivityLogController::logAction(
+                    'Update',
+                    "Bypass maintenance mode dengan secret key",
+                    [
+                        'user_id' => $user->id,
+                        'method' => 'secret_key',
+                        'bypassed_at' => now()->toDateTimeString()
+                    ]
+                );
+                
                 return response()->json([
                     'success' => true,
                     'message' => 'Bypass berhasil dengan secret key',
@@ -523,6 +764,17 @@ class SettingController extends Controller
                     $cookieData = json_decode(decrypt($bypassCookie), true);
                     if (isset($cookieData['user_id']) && $cookieData['user_id'] == $user->id) {
                         session(['maintenance_bypass' => true]);
+                        
+                        // Log activity sebagai UPDATE (bypass maintenance)
+                        ActivityLogController::logAction(
+                            'Update',
+                            "Bypass maintenance mode dengan cookie",
+                            [
+                                'user_id' => $user->id,
+                                'method' => 'cookie',
+                                'bypassed_at' => now()->toDateTimeString()
+                            ]
+                        );
                         
                         return response()->json([
                             'success' => true,
@@ -544,6 +796,18 @@ class SettingController extends Controller
                 if (isset($maintenanceData['allowed']) && in_array($request->ip(), $maintenanceData['allowed'])) {
                     session(['maintenance_bypass' => true]);
                     
+                    // Log activity sebagai UPDATE (bypass maintenance)
+                    ActivityLogController::logAction(
+                        'Update',
+                        "Bypass maintenance mode dengan IP whitelist",
+                        [
+                            'user_id' => $user->id,
+                            'method' => 'ip_whitelist',
+                            'ip_address' => $request->ip(),
+                            'bypassed_at' => now()->toDateTimeString()
+                        ]
+                    );
+                    
                     return response()->json([
                         'success' => true,
                         'message' => 'Bypass berhasil dengan IP whitelist',
@@ -558,6 +822,16 @@ class SettingController extends Controller
             ]);
             
         } catch (\Exception $e) {
+            // Log error
+            ActivityLogController::logAction(
+                'error',
+                "Gagal bypass maintenance mode: {$e->getMessage()}",
+                [
+                    'user_id' => Auth::id(),
+                    'error_message' => $e->getMessage()
+                ]
+            );
+            
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal bypass: ' . $e->getMessage()
@@ -936,13 +1210,41 @@ class SettingController extends Controller
             }
             
             if (class_exists('App\Models\RestoreHistory')) {
-                \App\Models\RestoreHistory::create($data);
+                $restoreHistory = \App\Models\RestoreHistory::create($data);
+                
+                // Log activity sebagai CREATE (create restore history)
+                ActivityLogController::logAction(
+                    'Create',
+                    "Membuat riwayat restore: {$data['filename']} - {$data['status']}",
+                    [
+                        'restore_history_id' => $restoreHistory->id,
+                        'filename' => $data['filename'],
+                        'status' => $data['status'],
+                        'method' => $data['method'],
+                        'inserted_rows' => $data['inserted_rows'] ?? 0
+                    ]
+                );
+                
                 return true;
             } else {
-                DB::table('restore_history')->insert(array_merge($data, [
+                $restoreHistoryId = DB::table('restore_history')->insertGetId(array_merge($data, [
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]));
+                
+                // Log activity sebagai CREATE (create restore history)
+                ActivityLogController::logAction(
+                    'Create',
+                    "Membuat riwayat restore: {$data['filename']} - {$data['status']}",
+                    [
+                        'restore_history_id' => $restoreHistoryId,
+                        'filename' => $data['filename'],
+                        'status' => $data['status'],
+                        'method' => $data['method'],
+                        'inserted_rows' => $data['inserted_rows'] ?? 0
+                    ]
+                );
+                
                 return true;
             }
             

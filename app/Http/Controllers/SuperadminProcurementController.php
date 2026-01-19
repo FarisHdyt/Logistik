@@ -448,10 +448,10 @@ class SuperadminProcurementController extends Controller
                 ]);
             }
             
-            // Log aktivitas validasi custom
+            // Log aktivitas validasi custom - Update
             $this->logActivity(
-                'Validasi Custom Pengadaan',
-                "Pengadaan divalidasi custom oleh superadmin: {$procurement->kode_pengadaan}",
+                'Update',
+                "Pengadaan divalidasi custom: {$procurement->kode_pengadaan}",
                 $procurement,
                 json_encode([
                     'procurement_id' => $procurement->id,
@@ -557,10 +557,10 @@ class SuperadminProcurementController extends Controller
                 }
             }
             
-            // Log aktivitas persetujuan oleh superadmin
+            // Log aktivitas persetujuan oleh superadmin - Update
             $this->logActivity(
-                'Setujui Pengadaan',
-                "Pengadaan disetujui oleh superadmin: {$procurement->kode_pengadaan}",
+                'Update',
+                "Pengadaan disetujui: {$procurement->kode_pengadaan}",
                 $procurement,
                 json_encode([
                     'procurement_id' => $procurement->id,
@@ -652,10 +652,10 @@ class SuperadminProcurementController extends Controller
                 }
             }
             
-            // Log aktivitas penolakan oleh superadmin
+            // Log aktivitas penolakan oleh superadmin - Update
             $this->logActivity(
-                'Tolak Pengadaan',
-                "Pengadaan ditolak oleh superadmin: {$procurement->kode_pengadaan}",
+                'Update',
+                "Pengadaan ditolak: {$procurement->kode_pengadaan}",
                 $procurement,
                 json_encode([
                     'procurement_id' => $procurement->id,
@@ -712,9 +712,18 @@ class SuperadminProcurementController extends Controller
     
     /**
      * Helper method untuk log aktivitas superadmin
+     * HANYA untuk: Login, Logout, Create, Update, Delete
      */
     private function logActivity($action, $description, $relatedModel = null, $details = null)
     {
+        // Daftar aksi yang diperbolehkan
+        $allowedActions = ['Login', 'Logout', 'Create', 'Update', 'Delete'];
+        
+        // Hanya log jika aksi termasuk dalam daftar yang diperbolehkan
+        if (!in_array($action, $allowedActions)) {
+            return;
+        }
+        
         $activityData = [
             'user_id' => Auth::id(),
             'action' => $action,
@@ -789,10 +798,10 @@ class SuperadminProcurementController extends Controller
                 'selesai_oleh' => Auth::id(),
             ]);
             
-            // Log aktivitas penyelesaian oleh superadmin
+            // Log aktivitas penyelesaian oleh superadmin - Update
             $this->logActivity(
-                'Selesaikan Pengadaan',
-                "Pengadaan diselesaikan oleh superadmin: {$procurement->kode_pengadaan}",
+                'Update',
+                "Pengadaan diselesaikan: {$procurement->kode_pengadaan}",
                 $procurement,
                 json_encode([
                     'procurement_id' => $procurement->id,
@@ -875,10 +884,10 @@ class SuperadminProcurementController extends Controller
                 }
             }
             
-            // Log aktivitas pembatalan oleh superadmin
+            // Log aktivitas pembatalan oleh superadmin - Update
             $this->logActivity(
-                'Batalkan Pengadaan',
-                "Pengadaan dibatalkan oleh superadmin: {$procurement->kode_pengadaan}",
+                'Update',
+                "Pengadaan dibatalkan: {$procurement->kode_pengadaan}",
                 $procurement,
                 json_encode([
                     'procurement_id' => $procurement->id,

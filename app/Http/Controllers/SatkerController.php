@@ -94,7 +94,7 @@ class SatkerController extends Controller
         try {
             $satker = Satker::create($request->all());
             
-            ActivityLogController::logAction('create', 'Menambahkan satker baru: ' . $satker->nama_satker, [
+            ActivityLogController::logAction('Create', 'Menambahkan satker baru: ' . $satker->nama_satker, [
                 'satker_id' => $satker->id,
                 'kode_satker' => $satker->kode_satker,
                 'nama_satker' => $satker->nama_satker
@@ -290,7 +290,7 @@ class SatkerController extends Controller
             
             $satker->update($request->all());
             
-            ActivityLogController::logAction('update', 'Memperbarui data satker: ' . $satker->nama_satker, [
+            ActivityLogController::logAction('Update', 'Memperbarui data satker: ' . $satker->nama_satker, [
                 'satker_id' => $satker->id,
                 'kode_satker' => $satker->kode_satker,
                 'nama_satker' => $satker->nama_satker,
@@ -364,7 +364,7 @@ class SatkerController extends Controller
             
             $satker->delete();
             
-            ActivityLogController::logAction('delete', 'Menghapus satker: ' . $logData['nama_satker'], $logData);
+            ActivityLogController::logAction('Delete', 'Menghapus satker: ' . $logData['nama_satker'], $logData);
             
             if (request()->ajax()) {
                 return response()->json([

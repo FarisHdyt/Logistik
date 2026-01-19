@@ -304,10 +304,10 @@ class ProcurementController extends Controller
                 $message = 'Pengajuan pengadaan berhasil dibuat';
             }
             
-            // Log aktivitas
+            // Log aktivitas - HANYA CREATE
             $this->logActivity(
-                'Pengajuan Pengadaan',
-                "Pengajuan pengadaan diajukan: {$procurement->kode_pengadaan}",
+                'Create',
+                "Pengajuan pengadaan dibuat: {$procurement->kode_pengadaan}",
                 $procurement,
                 json_encode([
                     'procurement_id' => $procurement->id,
@@ -483,9 +483,9 @@ class ProcurementController extends Controller
                     'tanggal_selesai' => now(),
                 ]);
                 
-                // Log aktivitas
+                // Log aktivitas - HANYA UPDATE
                 $this->logActivity(
-                    'Selesaikan Pengadaan',
+                    'Update',
                     "Pengadaan diselesaikan: {$procurement->kode_pengadaan} (Diproses: {$processedCount}, Gagal: {$skippedCount})",
                     $procurement,
                     json_encode([
@@ -569,9 +569,9 @@ class ProcurementController extends Controller
                     'alasan_penolakan' => 'Pengadaan dibatalkan: ' . $validated['alasan_pembatalan']
                 ]);
             
-            // Log aktivitas
+            // Log aktivitas - HANYA UPDATE
             $this->logActivity(
-                'Batalkan Pengadaan',
+                'Update',
                 "Pengadaan dibatalkan: {$procurement->kode_pengadaan}",
                 $procurement,
                 json_encode([
@@ -627,9 +627,9 @@ class ProcurementController extends Controller
                     $barang->update(['harga_beli' => $item->harga_perkiraan]);
                 }
                 
-                // Log aktivitas
+                // Log aktivitas - HANYA UPDATE (restock)
                 $this->logActivity(
-                    'Restock Barang',
+                    'Update',
                     "Barang direstock: {$barang->kode_barang} - {$barang->nama_barang} (+{$item->jumlah})",
                     $barang,
                     json_encode([
@@ -715,9 +715,9 @@ class ProcurementController extends Controller
             // Update procurement item dengan barang_id yang baru dibuat
             $item->update(['barang_id' => $barang->id]);
             
-            // Log aktivitas
+            // Log aktivitas - HANYA CREATE (barang baru)
             $this->logActivity(
-                'Buat Barang Baru',
+                'Create',
                 "Barang baru dibuat: {$barang->kode_barang} - {$barang->nama_barang}",
                 $barang,
                 json_encode([
@@ -825,9 +825,9 @@ class ProcurementController extends Controller
             // Update procurement
             $procurement->update($validatedData);
             
-            // Log aktivitas
+            // Log aktivitas - HANYA UPDATE
             $this->logActivity(
-                'Update Pengadaan',
+                'Update',
                 "Pengadaan diupdate: {$procurement->kode_pengadaan}",
                 $procurement,
                 json_encode([
@@ -876,9 +876,9 @@ class ProcurementController extends Controller
             // Hapus procurement
             $procurement->delete();
             
-            // Log aktivitas
+            // Log aktivitas - HANYA DELETE
             $this->logActivity(
-                'Hapus Pengadaan',
+                'Delete',
                 "Pengadaan dihapus: {$kodePengadaan}",
                 null,
                 json_encode([
@@ -933,9 +933,9 @@ class ProcurementController extends Controller
                 'approved_by' => Auth::id()
             ]);
             
-            // Log aktivitas
+            // Log aktivitas - HANYA UPDATE
             $this->logActivity(
-                'Setujui Pengadaan',
+                'Update',
                 "Pengadaan disetujui: {$procurement->kode_pengadaan}",
                 $procurement,
                 json_encode([
@@ -1003,9 +1003,9 @@ class ProcurementController extends Controller
                 'alasan_penolakan' => $validated['alasan_penolakan']
             ]);
             
-            // Log aktivitas
+            // Log aktivitas - HANYA UPDATE
             $this->logActivity(
-                'Tolak Pengadaan',
+                'Update',
                 "Pengadaan ditolak: {$procurement->kode_pengadaan}",
                 $procurement,
                 json_encode([
@@ -1070,9 +1070,18 @@ class ProcurementController extends Controller
     
     /**
      * Helper method untuk log aktivitas
+     * HANYA untuk: Login, Logout, Create, Update, Delete
      */
     private function logActivity($action, $description, $relatedModel = null, $details = null)
     {
+        // Daftar aksi yang diperbolehkan
+        $allowedActions = ['Login', 'Logout', 'Create', 'Update', 'Delete'];
+        
+        // Hanya log jika aksi termasuk dalam daftar yang diperbolehkan
+        if (!in_array($action, $allowedActions)) {
+            return;
+        }
+        
         try {
             $activityData = [
                 'user_id' => Auth::id(),
@@ -1138,16 +1147,8 @@ class ProcurementController extends Controller
         
         $procurements = $query->get();
         
-        // Log export activity
-        $this->logActivity(
-            'Export Data Pengadaan',
-            'Melakukan export data pengadaan ke Excel',
-            null,
-            json_encode([
-                'total_records' => $procurements->count(),
-                'filters' => $request->all()
-            ])
-        );
+        // Log export activity - TIDAK DILOG karena hanya aksi tertentu yang diizinkan
+        // $this->logActivity(...) - dihapus karena export bukan termasuk aksi yang diperbolehkan
         
         // Return data untuk diproses oleh Excel (gunakan package seperti Maatwebsite/Laravel-Excel)
         // Contoh sederhana:

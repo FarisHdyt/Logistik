@@ -245,41 +245,59 @@
             background-color: #f8fafc;
         }
         
-        /* Badges */
-        .badge {
-            padding: 0.4rem 0.8rem;
-            font-weight: 500;
-            font-size: 0.85rem;
-        }
-        
+        /* Badges - DIPERBAIKI DENGAN CSS YANG SANGAT SPESIFIK */
         .badge-login {
-            background-color: #d1fae5;
-            color: #065f46;
+            background-color: #22c55e !important;
+            color: white !important;
+            padding: 0.4rem 0.8rem !important;
+            font-weight: 500 !important;
+            font-size: 0.85rem !important;
+            border: none !important;
         }
         
         .badge-logout {
-            background-color: #f3f4f6;
-            color: #6b7280;
+            background-color: #94a3b8 !important;
+            color: white !important;
+            padding: 0.4rem 0.8rem !important;
+            font-weight: 500 !important;
+            font-size: 0.85rem !important;
+            border: none !important;
         }
         
         .badge-create {
-            background-color: #dbeafe;
-            color: #1e40af;
+            background-color: #3b82f6 !important;
+            color: white !important;
+            padding: 0.4rem 0.8rem !important;
+            font-weight: 500 !important;
+            font-size: 0.85rem !important;
+            border: none !important;
         }
         
         .badge-update {
-            background-color: #fef3c7;
-            color: #92400e;
+            background-color: #f59e0b !important;
+            color: white !important;
+            padding: 0.4rem 0.8rem !important;
+            font-weight: 500 !important;
+            font-size: 0.85rem !important;
+            border: none !important;
         }
         
         .badge-delete {
-            background-color: #fee2e2;
-            color: #991b1b;
+            background-color: #ef4444 !important;
+            color: white !important;
+            padding: 0.4rem 0.8rem !important;
+            font-weight: 500 !important;
+            font-size: 0.85rem !important;
+            border: none !important;
         }
         
-        .badge-view {
-            background-color: #e0e7ff;
-            color: #3730a3;
+        .badge-secondary {
+            background-color: #64748b !important;
+            color: white !important;
+            padding: 0.4rem 0.8rem !important;
+            font-weight: 500 !important;
+            font-size: 0.85rem !important;
+            border: none !important;
         }
         
         /* Filter Bar */
@@ -626,7 +644,6 @@
                     <option value="create" {{ request('action') == 'create' ? 'selected' : '' }}>Create</option>
                     <option value="update" {{ request('action') == 'update' ? 'selected' : '' }}>Update</option>
                     <option value="delete" {{ request('action') == 'delete' ? 'selected' : '' }}>Delete</option>
-                    <option value="view" {{ request('action') == 'view' ? 'selected' : '' }}>View</option>
                 </select>
                 
                 <select class="form-select" style="min-width: 150px;" id="userFilter">
@@ -707,17 +724,35 @@
                             </td>
                             <td>
                                 @php
-                                    $action = $log->action ?? 'unknown';
+                                    // PASTIKAN ACTION DI-LOWERCASE DAN TRIM
+                                    $action = strtolower(trim($log->action ?? 'unknown'));
+                                    
+                                    // Debug: tampilkan action sebenarnya
+                                    // {{ $action }}
+                                    
                                     $badgeClass = [
                                         'login' => 'badge-login',
                                         'logout' => 'badge-logout',
                                         'create' => 'badge-create',
                                         'update' => 'badge-update',
                                         'delete' => 'badge-delete',
-                                        'view' => 'badge-view',
+                                        'created' => 'badge-create',  // tambahan jika action adalah 'created'
+                                        'updated' => 'badge-update',  // tambahan jika action adalah 'updated'
+                                        'deleted' => 'badge-delete',  // tambahan jika action adalah 'deleted'
                                     ][$action] ?? 'badge-secondary';
+                                    
+                                    $badgeStyle = [
+                                        'login' => 'background-color: #22c55e !important; color: white !important;',
+                                        'logout' => 'background-color: #94a3b8 !important; color: white !important;',
+                                        'create' => 'background-color: #3b82f6 !important; color: white !important;',
+                                        'update' => 'background-color: #f59e0b !important; color: white !important;',
+                                        'delete' => 'background-color: #ef4444 !important; color: white !important;',
+                                        'created' => 'background-color: #3b82f6 !important; color: white !important;',
+                                        'updated' => 'background-color: #f59e0b !important; color: white !important;',
+                                        'deleted' => 'background-color: #ef4444 !important; color: white !important;',
+                                    ][$action] ?? 'background-color: #64748b !important; color: white !important;';
                                 @endphp
-                                <span class="badge {{ $badgeClass }}">
+                                <span class="badge {{ $badgeClass }}" style="{{ $badgeStyle }}">
                                     {{ ucfirst($action) }}
                                 </span>
                             </td>
@@ -1026,15 +1061,18 @@
         
         // Get badge class for action
         function getBadgeClass(action) {
+            const actionLower = (action || '').toLowerCase().trim();
             const badgeClasses = {
                 'login': 'badge-login',
                 'logout': 'badge-logout',
                 'create': 'badge-create',
                 'update': 'badge-update',
                 'delete': 'badge-delete',
-                'view': 'badge-view'
+                'created': 'badge-create',
+                'updated': 'badge-update',
+                'deleted': 'badge-delete'
             };
-            return badgeClasses[action] || 'badge-secondary';
+            return badgeClasses[actionLower] || 'badge-secondary';
         }
         
         // Apply filters

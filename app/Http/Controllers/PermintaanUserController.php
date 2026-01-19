@@ -190,7 +190,7 @@ class PermintaanUserController extends Controller
                 'satker' => Satker::find($validated['satker_id'])->nama_satker ?? 'Tidak diketahui',
                 'tanggal_dibutuhkan' => $validated['tanggal_dibutuhkan'],
             ];
-            ActivityLogController::logAction('create_request', 'Mengajukan permintaan baru: ' . $kodePermintaan, $logData);
+            ActivityLogController::logAction('Create', 'Mengajukan permintaan baru: ' . $kodePermintaan, $logData);
             
             DB::commit();
             
@@ -353,7 +353,7 @@ class PermintaanUserController extends Controller
                 'total_jumlah' => $totalJumlah,
                 'total_harga' => $totalHarga,
             ];
-            ActivityLogController::logAction('update_request', 'Mengubah permintaan: ' . $permintaan->kode_permintaan, $logData);
+            ActivityLogController::logAction('Update', 'Mengubah permintaan: ' . $permintaan->kode_permintaan, $logData);
             
             DB::commit();
             
@@ -392,7 +392,7 @@ class PermintaanUserController extends Controller
             $permintaan->delete();
             
             // Log aktivitas hapus permintaan
-            ActivityLogController::logAction('delete_request', 'Menghapus permintaan: ' . $logData['kode_permintaan'], $logData);
+            ActivityLogController::logAction('Delete', 'Menghapus permintaan: ' . $logData['kode_permintaan'], $logData);
             
             return redirect()->route('user.permintaan')
                 ->with('success', 'Permintaan berhasil dihapus');

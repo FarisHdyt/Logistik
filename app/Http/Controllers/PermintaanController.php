@@ -294,7 +294,7 @@ class PermintaanController extends Controller
             ];
             
             ActivityLogController::logAction(
-                'approve_detail',
+                'Update',
                 'Approve detail barang: ' . ($detail->barang->nama_barang ?? 'N/A') . 
                 ' pada permintaan: ' . $permintaan->kode_permintaan,
                 $logData
@@ -371,7 +371,7 @@ class PermintaanController extends Controller
             ];
             
             ActivityLogController::logAction(
-                'reject_detail',
+                'Update',
                 'Reject detail barang: ' . ($detail->barang->nama_barang ?? 'N/A') . 
                 ' pada permintaan: ' . $permintaan->kode_permintaan,
                 $logData
