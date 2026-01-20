@@ -274,7 +274,7 @@
         .badge-mixed {
             background-color: #ffedd5 !important;
             color: #9a3412 !important;
-            border-color: #fb923c;
+            border-color: #fb923c !important;
         }
         
         .detail-status {
@@ -685,6 +685,7 @@
                 <div class="stat-content">
                     <h5>{{ $stats['mixed_requests'] ?? 0 }}</h5>
                     <p>Status Campuran</p>
+                    <small class="text-muted">Disetujui dengan item ditolak</small>
                 </div>
             </div>
             <div class="stat-card" onclick="filterByStatus('delivered')">
@@ -742,7 +743,7 @@
             <a href="{{ route('admin.requests', ['status' => 'all']) }}" class="status-tab {{ !request('status') || request('status') == 'all' ? 'active' : '' }}">Semua</a>
             <a href="{{ route('admin.requests', ['status' => 'pending']) }}" class="status-tab {{ request('status') == 'pending' ? 'active' : '' }}">Pending</a>
             <a href="{{ route('admin.requests', ['status' => 'approved']) }}" class="status-tab {{ request('status') == 'approved' ? 'active' : '' }}">Disetujui</a>
-            <a href="{{ route('admin.requests', ['status' => 'rejected']) }}" class="status-tab {{ request('status') == 'rejected' ? 'active' : '' }}>Ditolak</a>
+            <a href="{{ route('admin.requests', ['status' => 'rejected']) }}" class="status-tab {{ request('status') == 'rejected' ? 'active' : '' }}">Ditolak</a>
             <a href="{{ route('admin.requests', ['status' => 'mixed']) }}" class="status-tab {{ request('status') == 'mixed' ? 'active' : '' }}">Status Campuran</a>
             <a href="{{ route('admin.requests', ['status' => 'delivered']) }}" class="status-tab {{ request('status') == 'delivered' ? 'active' : '' }}">Terkirim</a>
         </div>
@@ -776,7 +777,9 @@
                                 // Hitung status per detail
                                 $hasApprovedDetails = $isMultiBarang ? $request->details->where('status', 'approved')->count() > 0 : false;
                                 $hasRejectedDetails = $isMultiBarang ? $request->details->where('status', 'rejected')->count() > 0 : false;
-                                $hasMixedStatus = $hasApprovedDetails && $hasRejectedDetails;
+                                $hasDeliveredDetails = $isMultiBarang ? $request->details->where('status', 'delivered')->count() > 0 : false;
+                                $hasMixedStatus = ($hasApprovedDetails && $hasRejectedDetails) || 
+                                                 ($hasDeliveredDetails && $hasRejectedDetails);
                                 
                                 // ✅ PERBAIKAN: Ambil semua satker dari details
                                 $detailSatkers = collect();
@@ -849,9 +852,10 @@
                                                             @endif
                                                         @endif
                                                     </span>
-                                                    @if($request->status == 'pending' || $hasMixedStatus)
+                                                    <!-- PERBAIKAN: Tombol aksi per detail hanya untuk pending atau mixed status yang belum delivered -->
+                                                    @if(($request->status == 'pending' || ($hasMixedStatus && !$hasDeliveredDetails)) && $detail->status != 'delivered')
                                                     <div class="detail-actions">
-                                                        @if($detail->status != 'approved')
+                                                        @if($detail->status != 'approved' && $detail->status != 'delivered')
                                                         <button type="button" class="btn btn-success btn-sm btn-approve-detail" 
                                                                 data-request-id="{{ $request->id }}"
                                                                 data-detail-id="{{ $detail->id }}"
@@ -859,7 +863,7 @@
                                                             <i class="bi bi-check"></i>
                                                         </button>
                                                         @endif
-                                                        @if($detail->status != 'rejected')
+                                                        @if($detail->status != 'rejected' && $detail->status != 'delivered')
                                                         <button type="button" class="btn btn-danger btn-sm btn-reject-detail" 
                                                                 data-request-id="{{ $request->id }}"
                                                                 data-detail-id="{{ $detail->id }}"
@@ -950,6 +954,8 @@
                                                 data-bs-target="#detailRequestModal" data-request-id="{{ $request->id }}" title="Detail">
                                             <i class="bi bi-eye"></i>
                                         </button>
+                                        
+                                        <!-- PERBAIKAN: Tombol Setujui/Tolak hanya untuk single barang yang status pending -->
                                         @if($request->status == 'pending' && !$isMultiBarang)
                                         <button type="button" class="btn btn-success btn-sm btn-approve" 
                                                 data-request-id="{{ $request->id }}" title="Setujui Semua">
@@ -960,7 +966,10 @@
                                             <i class="bi bi-x"></i>
                                         </button>
                                         @endif
-                                        @if($request->status == 'approved' || $hasMixedStatus)
+                                        
+                                        <!-- PERBAIKAN: Tombol Kirim hanya untuk status approved atau status campuran yang belum delivered -->
+                                        @if(($request->status == 'approved' && $hasMixedStatus && !$hasDeliveredDetails) || 
+                                            ($request->status == 'approved' && !$hasMixedStatus && !$hasDeliveredDetails))
                                         <button type="button" class="btn btn-primary btn-sm btn-deliver" 
                                                 data-request-id="{{ $request->id }}" title="Kirim Barang Disetujui">
                                             <i class="bi bi-truck"></i>

@@ -254,7 +254,7 @@
             <!-- Sidebar Brand -->
             <div class="sidebar-brand">
                 <h3 class="mb-1 fw-bold">SILOG POLRES</h3>
-                <p class="mb-0 text-white-50" style="font-size: 0.875rem;">User Dashboard</p>
+                <p class="mb-0 text-white-50" style="font-size: 0.875rem;">Permintaan Barang</p>
             </div>
             
             <!-- Sidebar Navigation -->

@@ -29,10 +29,21 @@ class PermintaanController extends Controller
             ])
             ->when($status && $status != 'all', function($query) use ($status) {
                 if ($status == 'mixed') {
-                    return $query->where('status', 'approved')
-                        ->whereHas('details', function($q) {
-                            $q->where('status', 'rejected');
+                    // PERBAIKAN: Query untuk status campuran
+                    return $query->where(function($q) {
+                        // Permintaan dengan status approved tetapi ada detail yang rejected
+                        $q->where('status', 'approved')
+                          ->whereHas('details', function($detailQuery) {
+                              $detailQuery->where('status', 'rejected');
+                          });
+                        
+                        // ATAU: Permintaan dengan detail campuran (approved dan rejected)
+                        $q->orWhereHas('details', function($detailQuery) {
+                            $detailQuery->where('status', 'approved');
+                        })->whereHas('details', function($detailQuery) {
+                            $detailQuery->where('status', 'rejected');
                         });
+                    });
                 }
                 return $query->where('status', $status);
             })
@@ -61,18 +72,32 @@ class PermintaanController extends Controller
             ->latest()
             ->paginate(10);
         
+        // PERBAIKAN: Hitung statistik dengan logika yang benar
         $stats = [
             'total_requests' => Permintaan::count(),
             'pending_requests' => Permintaan::where('status', 'pending')->count(),
             'approved_requests' => Permintaan::where('status', 'approved')
                 ->whereDoesntHave('details', function($q) {
                     $q->where('status', 'rejected');
-                })->count(),
+                })
+                ->count(),
             'rejected_requests' => Permintaan::where('status', 'rejected')->count(),
-            'mixed_requests' => Permintaan::where('status', 'approved')
-                ->whereHas('details', function($q) {
+            'mixed_requests' => Permintaan::where(function($query) {
+                // Permintaan dengan status approved dan ada detail rejected
+                $query->where('status', 'approved')
+                      ->whereHas('details', function($q) {
+                          $q->where('status', 'rejected');
+                      });
+            })
+            ->orWhere(function($query) {
+                // Permintaan dengan detail campuran
+                $query->whereHas('details', function($q) {
+                    $q->where('status', 'approved');
+                })->whereHas('details', function($q) {
                     $q->where('status', 'rejected');
-                })->count(),
+                });
+            })
+            ->count(),
             'delivered_requests' => Permintaan::where('status', 'delivered')->count(),
         ];
         
@@ -256,6 +281,14 @@ class PermintaanController extends Controller
             ->with('barang')
             ->firstOrFail();
         
+        // PERBAIKAN: Tambah validasi jika sudah delivered
+        if ($detail->status === 'delivered') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Barang ini sudah dikirim, tidak dapat diubah.'
+            ], 400);
+        }
+        
         if ($detail->status === 'approved') {
             return response()->json([
                 'success' => false,
@@ -328,6 +361,14 @@ class PermintaanController extends Controller
             ->with('barang')
             ->firstOrFail();
         
+        // PERBAIKAN: Tambah validasi jika sudah delivered
+        if ($detail->status === 'delivered') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Barang ini sudah dikirim, tidak dapat diubah.'
+            ], 400);
+        }
+        
         if ($detail->status === 'rejected') {
             return response()->json([
                 'success' => false,
@@ -395,7 +436,7 @@ class PermintaanController extends Controller
     }
     
     /**
-     * Update parent request status based on details
+     * Update parent request status based on details with mixed status support
      */
     private function updateParentRequestStatus($permintaan)
     {
@@ -414,6 +455,10 @@ class PermintaanController extends Controller
                 $permintaan->update(['status' => 'rejected']);
             } else if ($approvedDetails == $totalDetails) {
                 $permintaan->update(['status' => 'approved']);
+            } else if (($approvedDetails > 0 && $rejectedDetails > 0) || 
+                      ($deliveredDetails > 0 && $rejectedDetails > 0)) {
+                // Status campuran: ada yang approved dan rejected
+                $permintaan->update(['status' => 'approved']); // Tetap approved dengan detail campuran
             } else {
                 $permintaan->update(['status' => 'approved']);
             }

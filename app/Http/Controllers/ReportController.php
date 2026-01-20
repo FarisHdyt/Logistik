@@ -53,14 +53,38 @@ class ReportController extends Controller
     private function getGlobalStats()
     {
         $totalRequests = Permintaan::count();
-        $multiBarangRequests = Permintaan::has('details')->count();
-        $singleBarangRequests = $totalRequests - $multiBarangRequests;
+        
+        // PERBAIKAN: Hitung multi barang yang benar
+        $multiBarangRequests = 0;
+        $singleBarangRequests = 0;
+        $requests = Permintaan::with('details')->get();
+        
+        foreach ($requests as $request) {
+            $hasDetails = $request->details && $request->details->count() > 0;
+            
+            if ($hasDetails) {
+                $isMultiBarang = false;
+                
+                if ($request->details->count() > 1) {
+                    $isMultiBarang = true;
+                } else {
+                    $isMultiBarang = $request->is_multi_barang ?? false;
+                }
+                
+                if ($isMultiBarang) {
+                    $multiBarangRequests++;
+                } else {
+                    $singleBarangRequests++;
+                }
+            } else {
+                $singleBarangRequests++;
+            }
+        }
         
         // Hitung total item dari semua permintaan
         $totalItemsInRequests = 0;
-        $requests = Permintaan::with('details')->get();
         foreach ($requests as $request) {
-            if ($request->details->count() > 0) {
+            if ($request->details && $request->details->count() > 0) {
                 $totalItemsInRequests += $request->details->sum('jumlah');
             } else {
                 $totalItemsInRequests += $request->jumlah;
@@ -71,7 +95,7 @@ class ReportController extends Controller
         $totalItemsInExpenditures = 0;
         $expenditures = Permintaan::with('details')->where('status', 'delivered')->get();
         foreach ($expenditures as $expenditure) {
-            if ($expenditure->details->count() > 0) {
+            if ($expenditure->details && $expenditure->details->count() > 0) {
                 $totalItemsInExpenditures += $expenditure->details->sum('jumlah');
             } else {
                 $totalItemsInExpenditures += $expenditure->jumlah;
@@ -136,27 +160,42 @@ class ReportController extends Controller
         // Requests stats - dengan detail multi barang
         $requests = Permintaan::with(['details'])->whereBetween('created_at', [$startDate, $endDate])->get();
         
-        // Procurement stats
-        $procurements = Procurement::with(['barang', 'kategori', 'satuan', 'user'])
-            ->whereBetween('created_at', [$startDate, $endDate])
-            ->get();
-        
-        // Hitung statistik untuk multi barang permintaan
+        // PERBAIKAN: Hitung statistik untuk multi barang permintaan
         $totalItemsInRequests = 0;
         $multiBarangRequests = 0;
         $singleBarangRequests = 0;
         
         foreach ($requests as $request) {
-            if ($request->details && $request->details->count() > 0) {
-                // Multi barang
-                $multiBarangRequests++;
+            $hasDetails = $request->details && $request->details->count() > 0;
+            
+            if ($hasDetails) {
+                // PERBAIKAN: Gunakan logika yang sama dengan generateRequestsTable()
+                $isMultiBarang = false;
+                
+                if ($request->details->count() > 1) {
+                    $isMultiBarang = true;
+                } else {
+                    $isMultiBarang = $request->is_multi_barang ?? false;
+                }
+                
+                if ($isMultiBarang) {
+                    $multiBarangRequests++;
+                } else {
+                    $singleBarangRequests++;
+                }
+                
                 $totalItemsInRequests += $request->details->sum('jumlah');
             } else {
-                // Single barang
+                // Single barang tanpa details
                 $singleBarangRequests++;
                 $totalItemsInRequests += $request->jumlah;
             }
         }
+        
+        // Procurement stats
+        $procurements = Procurement::with(['barang', 'kategori', 'satuan', 'user'])
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->get();
         
         // Hitung statistik untuk pengadaan
         $totalItemsInProcurements = 0;
@@ -220,10 +259,12 @@ class ReportController extends Controller
                       });
             })->get();
         
-        // Hitung total item dalam pengeluaran
+        // PERBAIKAN: Hitung total item dalam pengeluaran dengan logika multi barang
         $totalItemsInExpenditures = 0;
         foreach ($expenditures as $expenditure) {
-            if ($expenditure->details && $expenditure->details->count() > 0) {
+            $hasDetails = $expenditure->details && $expenditure->details->count() > 0;
+            
+            if ($hasDetails) {
                 $totalItemsInExpenditures += $expenditure->details->sum('jumlah');
             } else {
                 $totalItemsInExpenditures += $expenditure->jumlah;
@@ -237,7 +278,7 @@ class ReportController extends Controller
             'critical_stock' => $inventoryItems->filter(fn($item) => $item->stok <= $item->stok_minimal && $item->stok > 0)->count(),
             'out_of_stock' => $inventoryItems->filter(fn($item) => $item->stok <= 0)->count(),
             
-            // Request stats dengan multi barang
+            // PERBAIKAN: Request stats dengan multi barang yang benar
             'total_requests' => $requests->count(),
             'pending_requests' => $requests->where('status', 'pending')->count(),
             'approved_requests' => $requests->where('status', 'approved')->count(),
@@ -438,34 +479,47 @@ class ReportController extends Controller
             $statusText = $this->getStatusText($item->status);
             $statusClass = $this->getStatusClass($item->status);
             
-            // Tentukan jenis permintaan
-            $isMultiBarang = $item->details && $item->details->count() > 0;
+            // PERBAIKAN: Deteksi multi barang yang benar
+            // Cek jika memiliki details dan jumlah detail lebih dari 1
+            $hasDetails = $item->details && $item->details->count() > 0;
+            $isMultiBarang = false;
+            
+            if ($hasDetails) {
+                // Jika jumlah detail > 1, pasti multi barang
+                if ($item->details->count() > 1) {
+                    $isMultiBarang = true;
+                } 
+                // Jika detail = 1, cek apakah menggunakan fitur multi barang
+                else {
+                    // Cek jika permintaan ini dibuat melalui form multi barang
+                    // atau jika ada data tambahan yang menunjukkan ini multi barang
+                    $isMultiBarang = $item->is_multi_barang ?? false;
+                }
+            }
+            
+            // PERBAIKAN: Tentukan jenis permintaan berdasarkan logika di atas
             $jenisPermintaan = $isMultiBarang ? 
                 '<span class="badge badge-multi">Multi Barang</span>' : 
                 '<span class="badge badge-single">Single Barang</span>';
             
             // Hitung total item
-            $totalItem = $isMultiBarang ? 
+            $totalItem = $hasDetails ? 
                 $item->details->sum('jumlah') : 
                 $item->jumlah;
             
-            // Hitung jumlah barang berbeda
-            $jumlahBarang = $isMultiBarang ? 
+            // PERBAIKAN: Hitung jumlah barang berbeda
+            $jumlahBarang = $hasDetails ? 
                 $item->details->count() . ' jenis' : 
                 '1 jenis';
             
             // Format jumlah barang untuk tampilan
-            $jumlahBarangDisplay = $isMultiBarang ? 
-                $item->details->count() . ' jenis' : 
-                '1 jenis';
+            $jumlahBarangDisplay = $jumlahBarang;
             
             // Format total item untuk tampilan
-            $totalItemDisplay = $isMultiBarang ? 
-                $item->details->sum('jumlah') . ' unit' : 
-                $item->jumlah . ' unit';
+            $totalItemDisplay = $totalItem . ' unit';
             
             // Generate detail barang untuk modal
-            $detailHtml = $this->generateBarangDetailsHtml($item);
+            $detailHtml = $this->generateBarangDetailsHtml($item, $isMultiBarang);
             
             // Simpan detail HTML untuk JavaScript (tidak langsung di baris tabel)
             $scriptData[] = "detailData[" . $item->id . "] = `" . str_replace('`', '\`', $detailHtml) . "`;";
@@ -594,12 +648,17 @@ class ReportController extends Controller
     /**
      * Generate HTML untuk detail barang dalam modal
      */
-    private function generateBarangDetailsHtml($permintaan)
+    private function generateBarangDetailsHtml($permintaan, $isMultiBarang = null)
     {
-        $isMultiBarang = $permintaan->details && $permintaan->details->count() > 0;
+        // PERBAIKAN: Gunakan parameter $isMultiBarang yang sudah dihitung
+        if ($isMultiBarang === null) {
+            $isMultiBarang = $permintaan->details && $permintaan->details->count() > 1;
+        }
         
-        if (!$isMultiBarang) {
-            // Single barang
+        $hasDetails = $permintaan->details && $permintaan->details->count() > 0;
+        
+        if (!$hasDetails) {
+            // Single barang tanpa details
             return '
             <div class="table-responsive">
                 <table class="table table-sm table-bordered">
@@ -625,7 +684,35 @@ class ReportController extends Controller
             </div>';
         }
         
-        // Multi barang
+        // Jika hanya ada 1 detail dan bukan multi barang, tampilkan sebagai single
+        if (!$isMultiBarang && $permintaan->details->count() == 1) {
+            $detail = $permintaan->details->first();
+            return '
+            <div class="table-responsive">
+                <table class="table table-sm table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Barang</th>
+                            <th>Kode</th>
+                            <th>Jumlah</th>
+                            <th>Satuan</th>
+                            <th>Satker</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>' . htmlspecialchars($detail->barang->nama_barang ?? '-') . '</td>
+                            <td>' . htmlspecialchars($detail->barang->kode_barang ?? '-') . '</td>
+                            <td>' . $detail->jumlah . '</td>
+                            <td>' . htmlspecialchars($detail->barang->satuan->nama_satuan ?? '-') . '</td>
+                            <td>' . htmlspecialchars($detail->satker->nama_satker ?? $permintaan->satker->nama_satker ?? '-') . '</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>';
+        }
+        
+        // Multi barang atau single dengan details
         $html = '
         <div class="table-responsive">
             <table class="table table-sm table-bordered">
@@ -655,16 +742,16 @@ class ReportController extends Controller
         }
         
         $html .= '
-                </tbody>
-                <tfoot>
-                    <tr>
-                        <th colspan="3" class="text-end">Total:</th>
-                        <th>' . $permintaan->details->sum('jumlah') . '</th>
-                        <th colspan="2">unit</th>
-                    </tr>
-                </tfoot>
-            </table>
-        </div>';
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th colspan="3" class="text-end">Total:</th>
+                    <th>' . $permintaan->details->sum('jumlah') . '</th>
+                    <th colspan="2">unit</th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>';
         
         return $html;
     }
@@ -693,14 +780,25 @@ class ReportController extends Controller
         $html = '';
         $no = 1;
         foreach ($data as $item) {
-            $isMultiBarang = $item->details && $item->details->count() > 0;
+            // PERBAIKAN: Deteksi multi barang yang benar
+            $hasDetails = $item->details && $item->details->count() > 0;
+            $isMultiBarang = false;
+            
+            if ($hasDetails) {
+                if ($item->details->count() > 1) {
+                    $isMultiBarang = true;
+                } else {
+                    $isMultiBarang = $item->is_multi_barang ?? false;
+                }
+            }
+            
             $jenis = $isMultiBarang ? 'Multi Barang' : 'Single Barang';
             
-            $jumlahBarang = $isMultiBarang ? 
+            $jumlahBarang = $hasDetails ? 
                 $item->details->count() . ' jenis' : 
                 '1 jenis';
             
-            $totalItem = $isMultiBarang ? 
+            $totalItem = $hasDetails ? 
                 $item->details->sum('jumlah') : 
                 $item->jumlah;
             
@@ -827,29 +925,52 @@ class ReportController extends Controller
         $headers = ['Kode Permintaan', 'Tanggal', 'Pemohon', 'Satker', 'Jenis', 'Jumlah Barang', 'Total Item', 'Status', 'Barang Detail'];
         
         $rows = $data->map(function($requestItem) {
-            $isMultiBarang = $requestItem->details && $requestItem->details->count() > 0;
+            // PERBAIKAN: Deteksi multi barang yang benar
+            $hasDetails = $requestItem->details && $requestItem->details->count() > 0;
+            $isMultiBarang = false;
+            
+            if ($hasDetails) {
+                if ($requestItem->details->count() > 1) {
+                    $isMultiBarang = true;
+                } else {
+                    $isMultiBarang = $requestItem->is_multi_barang ?? false;
+                }
+            }
+            
             $jenis = $isMultiBarang ? 'Multi Barang' : 'Single Barang';
             
-            $jumlahBarang = $isMultiBarang ? 
+            $jumlahBarang = $hasDetails ? 
                 $requestItem->details->count() . ' jenis' : 
                 '1 jenis';
             
-            $totalItem = $isMultiBarang ? 
+            $totalItem = $hasDetails ? 
                 $requestItem->details->sum('jumlah') : 
                 $requestItem->jumlah;
             
             // Generate detail barang untuk export
             $detailBarang = '';
-            if ($isMultiBarang) {
-                foreach ($requestItem->details as $detail) {
-                    $detailBarang .= sprintf(
-                        "%s (%s): %d %s - %s; ",
+            if ($hasDetails) {
+                if (!$isMultiBarang && $requestItem->details->count() == 1) {
+                    $detail = $requestItem->details->first();
+                    $detailBarang = sprintf(
+                        "%s (%s): %d %s - %s",
                         $detail->barang->nama_barang ?? '',
                         $detail->barang->kode_barang ?? '',
                         $detail->jumlah,
                         $detail->barang->satuan->nama_satuan ?? '',
                         $detail->satker->nama_satker ?? $requestItem->satker->nama_satker ?? ''
                     );
+                } else {
+                    foreach ($requestItem->details as $detail) {
+                        $detailBarang .= sprintf(
+                            "%s (%s): %d %s - %s; ",
+                            $detail->barang->nama_barang ?? '',
+                            $detail->barang->kode_barang ?? '',
+                            $detail->jumlah,
+                            $detail->barang->satuan->nama_satuan ?? '',
+                            $detail->satker->nama_satker ?? $requestItem->satker->nama_satker ?? ''
+                        );
+                    }
                 }
             } else {
                 $detailBarang = sprintf(
@@ -968,14 +1089,25 @@ class ReportController extends Controller
         $headers = ['Kode Permintaan', 'Tanggal Pengiriman', 'Jenis', 'Jumlah Barang', 'Total Item', 'Penerima (Satker)', 'Keperluan', 'Detail Barang'];
         
         $rows = $data->map(function($expenditure) {
-            $isMultiBarang = $expenditure->details && $expenditure->details->count() > 0;
+            // PERBAIKAN: Deteksi multi barang yang benar
+            $hasDetails = $expenditure->details && $expenditure->details->count() > 0;
+            $isMultiBarang = false;
+            
+            if ($hasDetails) {
+                if ($expenditure->details->count() > 1) {
+                    $isMultiBarang = true;
+                } else {
+                    $isMultiBarang = $expenditure->is_multi_barang ?? false;
+                }
+            }
+            
             $jenis = $isMultiBarang ? 'Multi Barang' : 'Single Barang';
             
-            $jumlahBarang = $isMultiBarang ? 
+            $jumlahBarang = $hasDetails ? 
                 $expenditure->details->count() . ' jenis' : 
                 '1 jenis';
             
-            $totalItem = $isMultiBarang ? 
+            $totalItem = $hasDetails ? 
                 $expenditure->details->sum('jumlah') : 
                 $expenditure->jumlah;
             
@@ -992,15 +1124,26 @@ class ReportController extends Controller
             
             // Generate detail barang untuk export
             $detailBarang = '';
-            if ($isMultiBarang) {
-                foreach ($expenditure->details as $detail) {
-                    $detailBarang .= sprintf(
-                        "%s (%s): %d %s; ",
+            if ($hasDetails) {
+                if (!$isMultiBarang && $expenditure->details->count() == 1) {
+                    $detail = $expenditure->details->first();
+                    $detailBarang = sprintf(
+                        "%s (%s): %d %s",
                         $detail->barang->nama_barang ?? '',
                         $detail->barang->kode_barang ?? '',
                         $detail->jumlah,
                         $detail->barang->satuan->nama_satuan ?? ''
                     );
+                } else {
+                    foreach ($expenditure->details as $detail) {
+                        $detailBarang .= sprintf(
+                            "%s (%s): %d %s; ",
+                            $detail->barang->nama_barang ?? '',
+                            $detail->barang->kode_barang ?? '',
+                            $detail->jumlah,
+                            $detail->barang->satuan->nama_satuan ?? ''
+                        );
+                    }
                 }
             } else {
                 $detailBarang = sprintf(
