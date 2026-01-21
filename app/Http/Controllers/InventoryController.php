@@ -493,10 +493,6 @@ class InventoryController extends Controller
         ]);
         
         // Validasi tambahan untuk barang baru
-        $validator->sometimes('barang.*.kode_barang', 'required|string|max:50|unique:barangs,kode_barang', function($input, $item) {
-            return $item['tipe_pengadaan'] == 'baru';
-        });
-        
         $validator->sometimes('barang.*.nama_barang', 'required|string|max:255', function($input, $item) {
             return $item['tipe_pengadaan'] == 'baru';
         });
@@ -534,26 +530,22 @@ class InventoryController extends Controller
             $barangBaruCount = 0;
             $restockCount = 0;
             
-            // Tentukan tipe pengadaan utama berdasarkan barang yang diajukan
-            $tipePengadaan = 'multi';
+            // ================================================
+            // PERBAIKAN: Tentukan tipe pengadaan utama
+            // ================================================
+            // Jika barang lebih dari 1, maka tipe = 'multi'
+            // Jika barang hanya 1, tentukan berdasarkan tipe barang tersebut
+            // ================================================
             
-            // Cek apakah semua barang adalah barang baru
-            $allBarangBaru = collect($barangData)->every(function($item) {
-                return $item['tipe_pengadaan'] == 'baru';
-            });
+            $jumlahBarang = count($barangData);
+            $tipePengadaan = '';
             
-            // Cek apakah semua barang adalah restock
-            $allRestock = collect($barangData)->every(function($item) {
-                return $item['tipe_pengadaan'] == 'restock';
-            });
-            
-            // Tentukan tipe pengadaan berdasarkan komposisi barang
-            if ($allBarangBaru) {
-                $tipePengadaan = 'baru';
-            } elseif ($allRestock) {
-                $tipePengadaan = 'restock';
-            } else {
+            if ($jumlahBarang > 1) {
+                // Jika lebih dari 1 barang, otomatis menjadi 'multi'
                 $tipePengadaan = 'multi';
+            } else {
+                // Jika hanya 1 barang, gunakan tipe barang tersebut
+                $tipePengadaan = $barangData[0]['tipe_pengadaan']; // 'baru' atau 'restock'
             }
             
             // Buat procurement utama dengan tipe pengadaan yang benar
@@ -564,7 +556,7 @@ class InventoryController extends Controller
             $procurement->catatan = $request->catatan;
             $procurement->status = 'pending';
             $procurement->tipe_pengadaan = $tipePengadaan; // Tipe pengadaan utama
-            $procurement->is_multi_item = (count($barangData) > 1);
+            $procurement->is_multi_item = ($jumlahBarang > 1); // True jika lebih dari 1 item
             
             // Simpan procurement utama
             $procurement->save();
@@ -581,7 +573,7 @@ class InventoryController extends Controller
                 
                 if ($item['tipe_pengadaan'] == 'baru') {
                     // Barang baru
-                    $procurementItem->kode_barang = $item['kode_barang'];
+                    $procurementItem->kode_barang = $this->generateKodeBarangForPengadaan();
                     $procurementItem->nama_barang = $item['nama_barang'];
                     
                     // Jika ada kategori_id dan satuan_id, ambil namanya
@@ -656,17 +648,13 @@ class InventoryController extends Controller
             $logDetails = [
                 'kode_pengadaan' => $procurement->kode_pengadaan,
                 'tipe_pengadaan' => $tipePengadaan,
-                'total_barang' => count($barangData),
+                'total_barang' => $jumlahBarang,
                 'barang_baru' => $barangBaruCount,
                 'restock' => $restockCount,
                 'total_jumlah' => $totalJumlah,
                 'total_harga' => $totalHarga,
                 'prioritas' => $request->prioritas
             ];
-            
-            if ($tipePengadaan == 'multi') {
-                $logDetails['komposisi'] = 'Campuran (Baru dan Restock)';
-            }
             
             $this->logActivity(
                 'Create',
@@ -677,8 +665,15 @@ class InventoryController extends Controller
             
             DB::commit();
             
+            // Buat pesan summary yang sesuai
             $summaryMessage = "Pengajuan pengadaan <strong>{$tipePengadaan}</strong> dengan kode <strong>{$procurement->kode_pengadaan}</strong> berhasil dikirim. ";
-            $summaryMessage .= "Total: " . count($barangData) . " barang (" . $barangBaruCount . " baru, " . $restockCount . " restock), ";
+            
+            if ($tipePengadaan == 'multi') {
+                $summaryMessage .= "Total: {$jumlahBarang} barang (" . $barangBaruCount . " baru, " . $restockCount . " restock), ";
+            } else {
+                $summaryMessage .= "Total: 1 barang (" . ($tipePengadaan == 'baru' ? 'baru' : 'restock') . "), ";
+            }
+            
             $summaryMessage .= $totalJumlah . " unit, Rp " . number_format($totalHarga, 0, ',', '.') . ". Menunggu persetujuan.";
             
             return redirect()->route('admin.inventory')
@@ -695,6 +690,36 @@ class InventoryController extends Controller
                 ->with('error', 'Terjadi kesalahan: ' . $e->getMessage())
                 ->withInput();
         }
+    }
+    
+    /**
+     * Helper: Generate kode barang untuk pengadaan baru
+     */
+    private function generateKodeBarangForPengadaan()
+    {
+        $year = date('Y');
+        
+        // Cari kode terakhir untuk tahun ini
+        $lastBarang = Barang::where('kode_barang', 'like', "BRG-{$year}-%")
+            ->orderBy('kode_barang', 'desc')
+            ->first();
+        
+        if ($lastBarang) {
+            // Extract nomor urut dari kode terakhir
+            if (preg_match('/BRG-' . $year . '-(\d{3})/', $lastBarang->kode_barang, $matches)) {
+                $lastNumber = (int)$matches[1];
+                $nextNumber = $lastNumber + 1;
+            } else {
+                $nextNumber = 1;
+            }
+        } else {
+            $nextNumber = 1;
+        }
+        
+        // Format nomor dengan 3 digit
+        $nomorUrut = str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+        
+        return "BRG-{$year}-{$nomorUrut}";
     }
     
     /**

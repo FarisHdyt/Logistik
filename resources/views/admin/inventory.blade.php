@@ -1103,23 +1103,11 @@
                                     <div class="card-body">
                                         <div class="row g-3">
                                             <div class="col-md-6">
-                                                <label for="kode_barang_baru" class="form-label">Kode Barang</label>
-                                                <div class="input-group">
-                                                    <input type="text" class="form-control" id="kode_barang_baru" 
-                                                           placeholder="Otomatis" readonly>
-                                                    <button type="button" class="btn btn-outline-secondary" onclick="generateKodeBarang()">
-                                                        <i class="bi bi-arrow-clockwise"></i> Generate
-                                                    </button>
-                                                </div>
-                                                <div class="form-text">Kode barang akan dibuat otomatis</div>
-                                            </div>
-                                            <div class="col-md-6">
                                                 <label for="nama_barang_baru" class="form-label">Nama Barang</label>
                                                 <input type="text" class="form-control" id="nama_barang_baru" 
                                                        placeholder="Masukkan nama barang">
+                                                <div class="form-text">Kode barang akan dibuat otomatis oleh sistem</div>
                                             </div>
-                                        </div>
-                                        <div class="row g-3 mt-2">
                                             <div class="col-md-6">
                                                 <label for="kategori_barang_baru" class="form-label">Kategori</label>
                                                 <select class="form-select select2-category-barang-baru" id="kategori_barang_baru" 
@@ -1132,6 +1120,8 @@
                                                     @endif
                                                 </select>
                                             </div>
+                                        </div>
+                                        <div class="row g-3 mt-2">
                                             <div class="col-md-6">
                                                 <label for="satuan_barang_baru" class="form-label">Satuan</label>
                                                 <select class="form-select select2-satuan-barang-baru" id="satuan_barang_baru">
@@ -1142,6 +1132,11 @@
                                                         @endforeach
                                                     @endif
                                                 </select>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label for="stok_minimal_baru" class="form-label">Stok Minimal</label>
+                                                <input type="number" class="form-control" id="stok_minimal_baru" 
+                                                       min="1" value="10">
                                             </div>
                                         </div>
                                         <div class="row g-3 mt-2">
@@ -1156,9 +1151,15 @@
                                                        min="0" step="100" placeholder="0">
                                             </div>
                                             <div class="col-md-4">
-                                                <label for="stok_minimal_baru" class="form-label">Stok Minimal</label>
-                                                <input type="number" class="form-control" id="stok_minimal_baru" 
-                                                       min="1" value="10">
+                                                <label for="gudang_barang_baru" class="form-label">Gudang</label>
+                                                <select class="form-select select2-gudang-barang-baru" id="gudang_barang_baru">
+                                                    <option value="">Pilih Gudang</option>
+                                                    @if(isset($warehouses) && $warehouses->count() > 0)
+                                                        @foreach($warehouses as $warehouse)
+                                                        <option value="{{ $warehouse->id }}">{{ $warehouse->nama_gudang }}</option>
+                                                        @endforeach
+                                                    @endif
+                                                </select>
                                             </div>
                                         </div>
                                         <div class="row g-3 mt-2">
@@ -1365,9 +1366,6 @@
         // Update badge pending items
         updatePendingItemsBadge();
         
-        // Generate kode barang untuk form baru
-        generateKodeBarang();
-        
         // Inisialisasi Select2 untuk filter kategori
         $('.select2-category-filter').select2({
             placeholder: "Semua Kategori",
@@ -1396,6 +1394,13 @@
         // Inisialisasi Select2 untuk satuan barang baru DI DALAM MODAL
         $('.select2-satuan-barang-baru').select2({
             placeholder: "Pilih Satuan",
+            allowClear: true,
+            dropdownParent: $('#pengadaanModal')
+        });
+        
+        // Inisialisasi Select2 untuk gudang barang baru DI DALAM MODAL
+        $('.select2-gudang-barang-baru').select2({
+            placeholder: "Pilih Gudang",
             allowClear: true,
             dropdownParent: $('#pengadaanModal')
         });
@@ -1461,7 +1466,6 @@
         
         // Tombol Tambah Barang Baru
         $('#tambahBarangBaruBtn').click(function() {
-            generateKodeBarang();
             $('#formTambahBarangBaru').slideDown();
             $(this).hide();
         });
@@ -1475,12 +1479,13 @@
         
         // Simpan Barang Baru ke Daftar
         $('#simpanBarangBaruBtn').click(function() {
-            const kode = $('#kode_barang_baru').val();
             const nama = $('#nama_barang_baru').val().trim();
             const kategoriId = $('#kategori_barang_baru').val();
             const kategoriText = $('#kategori_barang_baru option:selected').text();
             const satuanId = $('#satuan_barang_baru').val();
             const satuanText = $('#satuan_barang_baru option:selected').text();
+            const gudangId = $('#gudang_barang_baru').val();
+            const gudangText = $('#gudang_barang_baru option:selected').text();
             const jumlah = parseInt($('#jumlah_barang_baru').val()) || 1;
             const harga = parseInt($('#harga_perkiraan_baru').val()) || 0;
             const stokMinimal = parseInt($('#stok_minimal_baru').val()) || 10;
@@ -1511,102 +1516,31 @@
                 return;
             }
             
-            // Cek apakah barang dengan kode yang sama sudah ada (untuk barang baru)
-            const existingItem = selectedItems.find(item => item.kode === kode && item.isNew);
-            if (existingItem) {
-                showToast(`Barang baru dengan kode ${kode} sudah ada dalam daftar`, 'warning');
-                return;
-            }
+            // Untuk barang baru, backend akan membuat kode otomatis
+            // Tidak perlu cek kode di frontend
             
-            // Cek apakah barang dengan kode yang sama sudah ada di database
-            $.ajax({
-                url: '{{ route("admin.inventory.get.barang.by.kode", "") }}/' + kode,
-                type: 'GET',
-                success: function(response) {
-                    if (response.barang) {
-                        Swal.fire({
-                            icon: 'warning',
-                            title: 'Kode Barang Sudah Digunakan',
-                            html: `Kode barang <strong>${kode}</strong> sudah digunakan oleh:<br>
-                                   <strong>${response.barang.nama_barang}</strong><br><br>
-                                   Apakah Anda ingin menambahkan sebagai <strong>restock</strong>?`,
-                            showCancelButton: true,
-                            confirmButtonText: 'Ya, Restock',
-                            cancelButtonText: 'Tidak, Buat Kode Baru',
-                            confirmButtonColor: '#3085d6',
-                            cancelButtonColor: '#d33'
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                // Tambahkan sebagai restock
-                                selectedItems.push({
-                                    id: response.barang.id,
-                                    kode: response.barang.kode_barang,
-                                    nama: response.barang.nama_barang,
-                                    kategori: response.barang.kategori?.nama_kategori || '',
-                                    satuan: response.barang.satuan?.nama_satuan || '',
-                                    stok: response.barang.stok,
-                                    stok_minimal: response.barang.stok_minimal,
-                                    jumlah: jumlah,
-                                    harga: harga,
-                                    keterangan: keterangan,
-                                    isNew: false
-                                });
-                                
-                                saveToLocalStorage();
-                                updateBarangList();
-                                resetFormBarangBaru();
-                                showToast(`${response.barang.nama_barang} ditambahkan sebagai restock`, 'success');
-                            } else {
-                                generateKodeBarang();
-                            }
-                        });
-                        return;
-                    } else {
-                        // Tambahkan sebagai barang baru
-                        selectedItems.push({
-                            id: 'new_' + Date.now(),
-                            kode: kode,
-                            nama: nama,
-                            kategori: kategoriText,
-                            satuan: satuanText,
-                            kategori_id: kategoriId,
-                            satuan_id: satuanId,
-                            jumlah: jumlah,
-                            harga: harga,
-                            stok_minimal: stokMinimal,
-                            keterangan: keterangan,
-                            isNew: true
-                        });
-                        
-                        saveToLocalStorage();
-                        updateBarangList();
-                        resetFormBarangBaru();
-                        showToast(`Barang baru "${nama}" berhasil ditambahkan ke daftar pengadaan`, 'success');
-                    }
-                },
-                error: function() {
-                    // Jika tidak ada di database, tambahkan sebagai barang baru
-                    selectedItems.push({
-                        id: 'new_' + Date.now(),
-                        kode: kode,
-                        nama: nama,
-                        kategori: kategoriText,
-                        satuan: satuanText,
-                        kategori_id: kategoriId,
-                        satuan_id: satuanId,
-                        jumlah: jumlah,
-                        harga: harga,
-                        stok_minimal: stokMinimal,
-                        keterangan: keterangan,
-                        isNew: true
-                    });
-                    
-                    saveToLocalStorage();
-                    updateBarangList();
-                    resetFormBarangBaru();
-                    showToast(`Barang baru "${nama}" berhasil ditambahkan ke daftar pengadaan`, 'success');
-                }
+            // Tambahkan sebagai barang baru tanpa kode (kode akan dibuat di backend)
+            selectedItems.push({
+                id: 'new_' + Date.now(),
+                kode: '', // Kosong, akan dibuat di backend
+                nama: nama,
+                kategori: kategoriText,
+                satuan: satuanText,
+                gudang: gudangText,
+                kategori_id: kategoriId,
+                satuan_id: satuanId,
+                gudang_id: gudangId,
+                jumlah: jumlah,
+                harga: harga,
+                stok_minimal: stokMinimal,
+                keterangan: keterangan,
+                isNew: true
             });
+            
+            saveToLocalStorage();
+            updateBarangList();
+            resetFormBarangBaru();
+            showToast(`Barang baru "${nama}" berhasil ditambahkan ke daftar pengadaan`, 'success');
         });
         
         // Simpan kategori baru via AJAX
@@ -2028,17 +1962,6 @@
         });
     });
     
-    // Fungsi untuk generate kode barang otomatis
-    function generateKodeBarang() {
-        const prefix = 'BRG';
-        const timestamp = Date.now().toString().slice(-6);
-        const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-        const kode = `${prefix}${timestamp}${random}`;
-        
-        $('#kode_barang_baru').val(kode);
-        return kode;
-    }
-    
     // Fungsi untuk menyimpan data ke localStorage
     function saveToLocalStorage() {
         try {
@@ -2217,12 +2140,17 @@
                 '<span class="badge bg-info me-2">Baru</span>' : 
                 '<span class="badge bg-warning me-2">Restock</span>';
             
+            // Untuk barang baru, tampilkan placeholder untuk kode
+            const kodeDisplay = item.isNew ? 
+                '<span class="text-muted">(Akan dibuat otomatis)</span>' : 
+                item.kode;
+            
             const barangElement = `
                 <div class="barang-item" data-index="${index}">
                     <div class="barang-header">
                         <div class="barang-title">
                             ${tipeBadge}
-                            ${item.kode} - ${item.nama}
+                            ${kodeDisplay} - ${item.nama}
                         </div>
                         <button type="button" class="remove-barang" onclick="removeBarang(${index})">
                             <i class="bi bi-x"></i>
@@ -2252,6 +2180,18 @@
                             <div class="fw-bold">Rp ${formatNumber(item.jumlah * item.harga)}</div>
                         </div>
                     </div>
+                    ${item.gudang ? `
+                    <div class="row mt-2">
+                        <div class="col-md-6">
+                            <label class="form-label">Gudang</label>
+                            <div>${item.gudang}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Stok Minimal</label>
+                            <div>${item.stok_minimal || '10'}</div>
+                        </div>
+                    </div>
+                    ` : ''}
                     ${item.keterangan ? `
                     <div class="mt-2">
                         <label class="form-label">Keterangan</label>
@@ -2337,10 +2277,10 @@
     
     // Fungsi untuk reset form tambah barang baru
     function resetFormBarangBaru() {
-        generateKodeBarang();
         $('#nama_barang_baru').val('').removeClass('is-invalid');
         $('#kategori_barang_baru').val(null).trigger('change');
         $('#satuan_barang_baru').val(null).trigger('change');
+        $('#gudang_barang_baru').val(null).trigger('change');
         $('#jumlah_barang_baru').val('1');
         $('#harga_perkiraan_baru').val('');
         $('#stok_minimal_baru').val('10');
@@ -2356,12 +2296,13 @@
         
         selectedItems.forEach((item, index) => {
             if (item.isNew) {
+                // Untuk barang baru, kirim semua data kecuali kode
                 container.append(`
                     <input type="hidden" name="barang[${index}][tipe_pengadaan]" value="baru">
-                    <input type="hidden" name="barang[${index}][kode_barang]" value="${item.kode}">
                     <input type="hidden" name="barang[${index}][nama_barang]" value="${item.nama}">
                     <input type="hidden" name="barang[${index}][kategori_id]" value="${item.kategori_id}">
                     <input type="hidden" name="barang[${index}][satuan_id]" value="${item.satuan_id}">
+                    <input type="hidden" name="barang[${index}][gudang_id]" value="${item.gudang_id}">
                     <input type="hidden" name="barang[${index}][jumlah]" value="${item.jumlah}">
                     <input type="hidden" name="barang[${index}][harga_perkiraan]" value="${item.harga}">
                     <input type="hidden" name="barang[${index}][stok_minimal]" value="${item.stok_minimal}">
@@ -2883,95 +2824,6 @@
             e.preventDefault();
         }
     });
-    
-    // Search barang untuk pengadaan
-    function searchBarangForProcurement() {
-        const searchTerm = $('#searchBarangPengadaan').val();
-        if (searchTerm.length < 2) {
-            $('#searchResults').html('');
-            return;
-        }
-        
-        $.ajax({
-            url: '{{ route("admin.inventory.getBarangForProcurement") }}',
-            method: 'GET',
-            data: { q: searchTerm },
-            success: function(response) {
-                const results = response.results;
-                let html = '';
-                
-                if (results.length > 0) {
-                    results.forEach(item => {
-                        html += `
-                            <div class="search-result-item" data-id="${item.id}" 
-                                 data-kode="${item.kode}" data-nama="${item.nama}"
-                                 data-kategori="${item.kategori}" data-satuan="${item.satuan}"
-                                 data-stok="${item.stok}" data-stok-minimal="${item.stok_minimal}">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <strong>${item.kode} - ${item.nama}</strong><br>
-                                        <small class="text-muted">
-                                            Kategori: ${item.kategori} | Satuan: ${item.satuan} |
-                                            Stok: ${item.stok} | Minimal: ${item.stok_minimal}
-                                        </small>
-                                    </div>
-                                    <button type="button" class="btn btn-sm btn-primary add-to-list-btn">
-                                        <i class="bi bi-plus"></i> Tambah
-                                    </button>
-                                </div>
-                            </div>
-                        `;
-                    });
-                } else {
-                    html = '<div class="text-center text-muted py-3">Tidak ada barang ditemukan</div>';
-                }
-                
-                $('#searchResults').html(html);
-                
-                // Add event listeners to add buttons
-                $('.add-to-list-btn').click(function() {
-                    const itemElement = $(this).closest('.search-result-item');
-                    const itemId = itemElement.data('id');
-                    const kodeBarang = itemElement.data('kode');
-                    const namaBarang = itemElement.data('nama');
-                    const kategori = itemElement.data('kategori');
-                    const satuan = itemElement.data('satuan');
-                    const stok = itemElement.data('stok');
-                    const stokMinimal = itemElement.data('stok-minimal');
-                    
-                    // Cek apakah barang sudah ada di daftar
-                    const existingItem = selectedItems.find(item => item.id == itemId && !item.isNew);
-                    if (existingItem) {
-                        showToast(`${kodeBarang} - ${namaBarang} sudah ada dalam daftar pengadaan`, 'warning');
-                        return;
-                    }
-                    
-                    // Tambahkan ke array sebagai restock
-                    selectedItems.push({
-                        id: itemId,
-                        kode: kodeBarang,
-                        nama: namaBarang,
-                        kategori: kategori,
-                        satuan: satuan,
-                        stok: stok,
-                        stok_minimal: stokMinimal,
-                        jumlah: 1,
-                        harga: 0,
-                        keterangan: '',
-                        isNew: false
-                    });
-                    
-                    saveToLocalStorage();
-                    updateBarangList();
-                    showToast(`${namaBarang} berhasil ditambahkan ke daftar pengadaan!`, 'success');
-                    
-                    // Clear search
-                    $('#searchBarangPengadaan').val('');
-                    $('#searchResults').html('');
-                });
-            }
-        });
-    }
 </script>
 </body>
 </html>

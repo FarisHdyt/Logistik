@@ -185,7 +185,7 @@ class ProcurementController extends Controller
             ]);
             
             if ($isMultiItem) {
-                // Validasi untuk multi item
+                // Validasi untuk multi item - PERBAIKAN: kode_barang dibuat nullable
                 $validatedItems = $request->validate([
                     'items' => 'required|array|min:1',
                     'items.*.barang_id' => 'nullable|exists:barangs,id',
@@ -196,6 +196,8 @@ class ProcurementController extends Controller
                     'items.*.satuan_id' => 'nullable|exists:satuans,id',
                     'items.*.gudang_id' => 'nullable|exists:gudangs,id',
                     'items.*.stok_minimal' => 'nullable|integer|min:1',
+                    'items.*.nama_barang' => 'nullable|string|max:255', // Untuk barang baru
+                    // Kode barang dibuat nullable karena akan digenerate otomatis untuk barang baru
                 ]);
                 
                 // Simpan items
@@ -225,8 +227,11 @@ class ProcurementController extends Controller
                         }
                     } else {
                         // Untuk item tanpa barang_id (barang baru)
-                        $procurementItem->kode_barang = 'NEW-' . Str::random(6);
-                        $procurementItem->nama_barang = 'Barang Baru';
+                        // PERBAIKAN: Generate kode barang otomatis untuk barang baru
+                        $procurementItem->kode_barang = $this->generateKodeBarangBaru();
+                        
+                        // Gunakan nama_barang dari data atau default
+                        $procurementItem->nama_barang = $itemData['nama_barang'] ?? 'Barang Baru';
                         
                         // Simpan kategori, satuan, dan gudang ID jika ada
                         if (!empty($itemData['kategori_id'])) {
@@ -604,7 +609,7 @@ class ProcurementController extends Controller
     }
     
     /**
-     * Proses item pengadaan (untuk barang yang diselesaikan)
+     * Proses item pengadaan (untuk barang yang diselesaikan) - DIPERBAIKI
      */
     private function processProcurementItem(ProcurementItem $item, Procurement $procurement)
     {
@@ -645,9 +650,24 @@ class ProcurementController extends Controller
                 throw new \Exception("Barang dengan ID {$item->barang_id} tidak ditemukan");
             }
         } else {
+            // PERBAIKAN: Generate kode barang baru jika belum ada atau tidak valid
+            $kodeBarang = $item->kode_barang;
+            
+            // Validasi format kode barang
+            if (empty($kodeBarang) || !$this->isValidKodeBarangFormat($kodeBarang)) {
+                $kodeBarang = $this->generateKodeBarangBaru();
+            }
+            
+            // Cek apakah kode barang sudah ada di database
+            $existingBarang = Barang::where('kode_barang', $kodeBarang)->first();
+            if ($existingBarang) {
+                // Jika kode sudah ada, generate kode baru
+                $kodeBarang = $this->generateKodeBarangBaru();
+            }
+            
             // Buat barang baru dengan data lengkap
             $barangData = [
-                'kode_barang' => $item->kode_barang,
+                'kode_barang' => $kodeBarang,
                 'nama_barang' => $item->nama_barang,
                 'stok' => $item->jumlah,
                 'stok_minimal' => $item->stok_minimal ?? 10,
@@ -667,6 +687,13 @@ class ProcurementController extends Controller
                     $kategori = Kategori::where('nama_kategori', $item->kategori)->first();
                     if ($kategori) {
                         $barangData['kategori_id'] = $kategori->id;
+                    } else {
+                        // Buat kategori baru jika tidak ditemukan
+                        $newKategori = Kategori::create([
+                            'nama_kategori' => $item->kategori,
+                            'deskripsi' => 'Kategori otomatis dibuat dari pengadaan'
+                        ]);
+                        $barangData['kategori_id'] = $newKategori->id;
                     }
                 }
             }
@@ -680,6 +707,13 @@ class ProcurementController extends Controller
                     $satuan = Satuan::where('nama_satuan', $item->satuan)->first();
                     if ($satuan) {
                         $barangData['satuan_id'] = $satuan->id;
+                    } else {
+                        // Buat satuan baru jika tidak ditemukan
+                        $newSatuan = Satuan::create([
+                            'nama_satuan' => $item->satuan,
+                            'deskripsi' => 'Satuan otomatis dibuat dari pengadaan'
+                        ]);
+                        $barangData['satuan_id'] = $newSatuan->id;
                     }
                 }
             }
@@ -694,11 +728,16 @@ class ProcurementController extends Controller
                     if ($gudang) {
                         $barangData['gudang_id'] = $gudang->id;
                         $barangData['lokasi'] = $gudang->lokasi;
+                    } else {
+                        // Gunakan gudang default
+                        $defaultGudang = Gudang::first();
+                        if ($defaultGudang) {
+                            $barangData['gudang_id'] = $defaultGudang->id;
+                            $barangData['lokasi'] = $defaultGudang->lokasi;
+                        }
                     }
-                }
-                
-                // Jika masih null, gunakan gudang default
-                if (empty($barangData['gudang_id'])) {
+                } else {
+                    // Gunakan gudang default
                     $defaultGudang = Gudang::first();
                     if ($defaultGudang) {
                         $barangData['gudang_id'] = $defaultGudang->id;
@@ -732,6 +771,45 @@ class ProcurementController extends Controller
                 ])
             );
         }
+    }
+    
+    /**
+     * Generate kode barang baru dengan format BRG-YYYY-XXX
+     */
+    private function generateKodeBarangBaru()
+    {
+        $year = date('Y');
+        
+        // Cari kode terakhir untuk tahun ini
+        $lastBarang = Barang::where('kode_barang', 'like', "BRG-{$year}-%")
+            ->orderBy('kode_barang', 'desc')
+            ->first();
+        
+        if ($lastBarang) {
+            // Extract nomor urut dari kode terakhir
+            if (preg_match('/BRG-' . $year . '-(\d{3})/', $lastBarang->kode_barang, $matches)) {
+                $lastNumber = (int)$matches[1];
+                $nextNumber = $lastNumber + 1;
+            } else {
+                $nextNumber = 1;
+            }
+        } else {
+            $nextNumber = 1;
+        }
+        
+        // Format nomor dengan 3 digit
+        $nomorUrut = str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+        
+        return "BRG-{$year}-{$nomorUrut}";
+    }
+    
+    /**
+     * Validasi format kode barang
+     */
+    private function isValidKodeBarangFormat($kode)
+    {
+        // Format yang valid: BRG-YYYY-XXX
+        return preg_match('/^BRG-\d{4}-\d{3}$/', $kode);
     }
     
     /**
@@ -1146,9 +1224,6 @@ class ProcurementController extends Controller
         }
         
         $procurements = $query->get();
-        
-        // Log export activity - TIDAK DILOG karena hanya aksi tertentu yang diizinkan
-        // $this->logActivity(...) - dihapus karena export bukan termasuk aksi yang diperbolehkan
         
         // Return data untuk diproses oleh Excel (gunakan package seperti Maatwebsite/Laravel-Excel)
         // Contoh sederhana:

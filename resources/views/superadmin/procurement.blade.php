@@ -279,12 +279,6 @@
             border-color: #f87171;
         }
         
-        .badge-partially_approved {
-            background-color: #fef3c7 !important;
-            color: #92400e !important;
-            border-color: #fbbf24;
-        }
-        
         .badge-item-pending {
             background-color: #fef3c7 !important;
             color: #92400e !important;
@@ -379,6 +373,54 @@
             font-weight: 600;
             color: var(--dark);
             border-bottom: 2px solid #e2e8f0;
+        }
+        
+        /* PERBAIKAN: Tambahkan min-width untuk tabel pada mobile */
+        .table {
+            min-width: 800px;
+        }
+        
+        /* PERBAIKAN: Perbaikan table-responsive untuk mobile */
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        /* PERBAIKAN: Pastikan tabel tetap responsif pada mobile */
+        @media (max-width: 768px) {
+            .table-responsive {
+                border: 1px solid #dee2e6;
+                border-radius: 0.375rem;
+            }
+            
+            .table {
+                margin-bottom: 0;
+                min-width: 100%;
+            }
+            
+            .table td, .table th {
+                white-space: nowrap;
+                vertical-align: middle;
+            }
+            
+            .table td:nth-child(2),  /* Kode Pengadaan */
+            .table td:nth-child(4),  /* Tipe */
+            .table td:nth-child(5),  /* Jumlah */
+            .table td:nth-child(6),  /* Total Nilai */
+            .table td:nth-child(7),  /* Prioritas */
+            .table td:nth-child(8),  /* Status */
+            .table td:nth-child(9) { /* Tanggal */
+                min-width: 120px;
+            }
+            
+            .table td:nth-child(3) { /* Item Barang */
+                min-width: 200px;
+                white-space: normal !important;
+            }
+            
+            .table td:nth-child(10) { /* Aksi */
+                min-width: 150px;
+            }
         }
         
         .filter-bar {
@@ -671,6 +713,36 @@
             .stats-grid {
                 grid-template-columns: 1fr;
             }
+            
+            /* PERBAIKAN: Pastikan filter bar responsif */
+            .filter-bar .row {
+                flex-direction: column;
+            }
+            
+            .filter-bar .col-md-4 {
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+            
+            .filter-bar .d-flex {
+                flex-direction: column;
+            }
+            
+            .filter-bar .btn {
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+            
+            /* PERBAIKAN: Tombol aksi di tabel untuk mobile */
+            .btn-group {
+                flex-direction: column;
+                gap: 0.25rem;
+            }
+            
+            .btn-group .btn {
+                width: 100%;
+                justify-content: center;
+            }
         }
     </style>
 </head>
@@ -846,22 +918,31 @@
         <div class="filter-bar">
             <form method="GET" action="{{ route('superadmin.procurement') }}" id="filterForm">
                 <div class="row g-3">
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <input type="text" class="form-control" id="searchInput" name="search" 
                                placeholder="Cari barang..." value="{{ request('search') }}">
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <select class="form-select" id="tipeFilter" name="tipe">
                             <option value="">Semua Tipe</option>
                             <option value="baru" {{ request('tipe') == 'baru' ? 'selected' : '' }}>Barang Baru</option>
                             <option value="restock" {{ request('tipe') == 'restock' ? 'selected' : '' }}>Restock</option>
+                            <option value="multi" {{ request('tipe') == 'multi' ? 'selected' : '' }}>Multi Item</option>
                         </select>
                     </div>
-                    <div class="col-md-4 d-flex gap-2">
+                    <div class="col-md-3">
+                        <select class="form-select" id="priorityFilter" name="priority">
+                            <option value="">Semua Prioritas</option>
+                            <option value="normal" {{ request('priority') == 'normal' ? 'selected' : '' }}>Normal</option>
+                            <option value="tinggi" {{ request('priority') == 'tinggi' ? 'selected' : '' }}>Tinggi</option>
+                            <option value="mendesak" {{ request('priority') == 'mendesak' ? 'selected' : '' }}>Mendesak</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 d-flex gap-2">
                         <button type="submit" class="btn btn-primary flex-grow-1" style="background-color: var(--superadmin-color); border-color: var(--superadmin-color);">
                             <i class="bi bi-funnel"></i> Filter
                         </button>
-                        @if(request()->has('search') || request()->has('tipe'))
+                        @if(request()->has('search') || request()->has('tipe') || request()->has('priority'))
                         <a href="{{ route('superadmin.procurement') }}" class="btn btn-secondary">
                             <i class="bi bi-arrow-clockwise"></i> Reset
                         </a>
@@ -877,9 +958,8 @@
             <a href="{{ route('superadmin.procurement', ['status' => 'pending']) }}" class="status-tab {{ request('status') == 'pending' ? 'active' : '' }}">Menunggu Validasi</a>
             <a href="{{ route('superadmin.procurement', ['status' => 'approved']) }}" class="status-tab {{ request('status') == 'approved' ? 'active' : '' }}">Disetujui</a>
             <a href="{{ route('superadmin.procurement', ['status' => 'rejected']) }}" class="status-tab {{ request('status') == 'rejected' ? 'active' : '' }}>Ditolak</a>
-            <a href="{{ route('superadmin.procurement', ['status' => 'completed']) }}" class="status-tab {{ request('status') == 'completed' ? 'active' : '' }}>Selesai</a>
-            <a href="{{ route('superadmin.procurement', ['status' => 'cancelled']) }}" class="status-tab {{ request('status') == 'cancelled' ? 'active' : '' }}>Dibatalkan</a>
-            <a href="{{ route('superadmin.procurement', ['status' => 'partially_approved']) }}" class="status-tab {{ request('status') == 'partially_approved' ? 'active' : '' }}">Disetujui Sebagian</a>
+            <a href="{{ route('superadmin.procurement', ['status' => 'completed']) }}" class="status-tab {{ request('status') == 'completed' ? 'active' : '' }}">Selesai</a>
+            <a href="{{ route('superadmin.procurement', ['status' => 'cancelled']) }}" class="status-tab {{ request('status') == 'cancelled' ? 'active' : '' }}">Dibatalkan</a>
         </div>
         
         <!-- Procurement Table -->
@@ -904,20 +984,27 @@
                         @if(isset($procurements) && $procurements->count() > 0)
                             @foreach($procurements as $index => $procurement)
                             @php
-                                $items = $procurement->items ?? [];
-                                $isMultiItem = $procurement->is_multi_item && count($items) > 0;
-                                $firstItem = count($items) > 0 ? $items->first() : null;
+                                // PERBAIKAN UTAMA: Gunakan method isMultiItem() dari model Procurement
+                                $items = $procurement->items ?? collect();
+                                $itemCount = $items->count();
                                 
-                                // PERBAIKAN: Cek tipe pengadaan yang benar untuk multi-item
-                                $tipePengadaan = $procurement->tipe_pengadaan;
-                                // Jika ini multi-item, tipe harus "multi"
-                                if ($isMultiItem) {
+                                // Menggunakan method isMultiItem() dari model Procurement
+                                // Method ini sudah menangani logika: cek items count > 1 atau is_multi_item = true
+                                $isMultiItem = $procurement->isMultiItem();
+                                
+                                $firstItem = $itemCount > 0 ? $items->first() : null;
+                                
+                                // Tentukan tipe pengadaan yang benar
+                                $tipePengadaan = $procurement->tipe_pengadaan ?? 'baru';
+                                
+                                // Jika ini multi-item, tampilkan sebagai 'multi'
+                                if ($isMultiItem && $itemCount > 1) {
                                     $tipePengadaan = 'multi';
                                 }
                                 
                                 // Hitung statistik item
                                 $itemStats = [
-                                    'total' => $items->count(),
+                                    'total' => $itemCount,
                                     'approved' => $items->where('status', 'approved')->count(),
                                     'completed' => $items->where('status', 'completed')->count(),
                                     'rejected' => $items->where('status', 'rejected')->count(),
@@ -925,19 +1012,27 @@
                                     'pending' => $items->where('status', 'pending')->count(),
                                 ];
                                 
-                                // Hitung total jumlah dan nilai HANYA untuk item yang tidak ditolak/dibatalkan
-                                $approvedItems = $items->filter(function($item) {
-                                    return !in_array($item->status, ['rejected', 'cancelled']);
-                                });
+                                // Hitung total jumlah dan nilai
+                                $totalJumlah = 0;
+                                $totalNilai = 0;
                                 
-                                $totalJumlah = $isMultiItem ? $approvedItems->sum('jumlah') : 
-                                              ($firstItem && !in_array($firstItem->status, ['rejected', 'cancelled']) ? 
-                                               $firstItem->jumlah : 0);
-                                
-                                $totalNilai = $isMultiItem ? $approvedItems->sum(function($item) {
-                                    return ($item->jumlah ?? 0) * ($item->harga_perkiraan ?? 0);
-                                }) : ($firstItem && !in_array($firstItem->status, ['rejected', 'cancelled']) ? 
-                                     (($firstItem->jumlah ?? 0) * ($firstItem->harga_perkiraan ?? 0)) : 0);
+                                if ($isMultiItem) {
+                                    // Untuk multi-item: hitung total dari semua item
+                                    $totalJumlah = $items->sum('jumlah');
+                                    $totalNilai = $items->sum(function($item) {
+                                        return ($item->jumlah ?? 0) * ($item->harga_perkiraan ?? 0);
+                                    });
+                                } else {
+                                    // Untuk single item
+                                    if ($firstItem) {
+                                        $totalJumlah = $firstItem->jumlah ?? 0;
+                                        $totalNilai = ($firstItem->jumlah ?? 0) * ($firstItem->harga_perkiraan ?? 0);
+                                    } else {
+                                        // Fallback untuk data lama (backward compatibility)
+                                        $totalJumlah = $procurement->jumlah ?? 0;
+                                        $totalNilai = ($procurement->jumlah ?? 0) * ($procurement->harga_perkiraan ?? 0);
+                                    }
+                                }
                             @endphp
                             <tr>
                                 <td>{{ ($procurements->currentPage() - 1) * $procurements->perPage() + $index + 1 }}</td>
@@ -945,11 +1040,11 @@
                                     <strong>{{ $procurement->kode_pengadaan ?? 'P-' . str_pad($procurement->id, 6, '0', STR_PAD_LEFT) }}</strong>
                                 </td>
                                 <td>
-                                    @if($isMultiItem)
-                                        <!-- Tampilan Multi Item dengan status -->
+                                    @if($isMultiItem && $itemCount > 1)
+                                        <!-- Tampilan Multi Item -->
                                         <div class="multi-item-container">
                                             <div class="multi-item-header">
-                                                <span class="multi-item-badge">{{ $items->count() }} ITEM</span>
+                                                <span class="multi-item-badge">{{ $itemCount }} ITEM</span>
                                                 <strong>Pengadaan Multi Item</strong>
                                             </div>
                                             <ul class="multi-item-list">
@@ -961,7 +1056,6 @@
                                                     
                                                     switch($item->status) {
                                                         case 'completed':
-                                                            $itemClass = '';
                                                             $statusClass = 'item-status-completed';
                                                             $statusText = 'Selesai';
                                                             break;
@@ -976,12 +1070,11 @@
                                                             $statusText = 'Dibatalkan';
                                                             break;
                                                         case 'approved':
-                                                            $itemClass = '';
                                                             $statusClass = 'item-status-approved';
                                                             $statusText = 'Disetujui';
                                                             break;
                                                         case 'pending':
-                                                            $itemClass = '';
+                                                        default:
                                                             $statusClass = 'item-status-pending';
                                                             $statusText = 'Menunggu';
                                                             break;
@@ -1037,12 +1130,12 @@
                                             @endif
                                             
                                             <div class="total-summary">
-                                                Total Disetujui: <span>{{ $totalJumlah }} unit</span> • 
+                                                Total: <span>{{ $totalJumlah }} unit</span> • 
                                                 Nilai: <span>Rp {{ number_format($totalNilai, 0, ',', '.') }}</span>
                                             </div>
                                         </div>
                                     @elseif($firstItem)
-                                        <!-- Tampilan Single Item dari relasi items -->
+                                        <!-- Tampilan Single Item -->
                                         @php
                                             $itemClass = '';
                                             $statusText = '';
@@ -1070,6 +1163,7 @@
                                                     $statusClass = 'item-status-approved';
                                                     break;
                                                 case 'pending':
+                                                default:
                                                     $statusText = 'Menunggu';
                                                     $statusClass = 'item-status-pending';
                                                     break;
@@ -1090,13 +1184,12 @@
                                             @endif
                                         </div>
                                     @else
-                                        <!-- Fallback jika tidak ada items -->
+                                        <!-- Fallback untuk data lama -->
                                         <strong>{{ $procurement->kode_barang ?? 'N/A' }}</strong><br>
                                         <small>{{ $procurement->nama_barang ?? 'Barang' }}</small>
                                     @endif
                                 </td>
                                 <td>
-                                    <!-- PERBAIKAN: Tampilkan badge yang benar berdasarkan tipe pengadaan -->
                                     @if($tipePengadaan == 'multi')
                                     <span class="badge badge-multi">
                                         Multi Item
@@ -1134,8 +1227,6 @@
                                             Dibatalkan
                                         @elseif($procurement->status == 'rejected')
                                             Ditolak
-                                        @elseif($procurement->status == 'partially_approved')
-                                            Disetujui Sebagian
                                         @else
                                             {{ ucfirst($procurement->status) }}
                                         @endif
@@ -1151,7 +1242,7 @@
                                         
                                         @if($procurement->status == 'pending')
                                             <!-- Untuk single item -->
-                                            @if(!$isMultiItem || count($items) <= 1)
+                                            @if(!$isMultiItem || $itemCount <= 1)
                                             <button type="button" class="btn btn-success btn-sm approve-procurement" 
                                                     data-id="{{ $procurement->id }}" title="Setujui Semua">
                                                 <i class="bi bi-check-circle"></i>
@@ -1168,9 +1259,6 @@
                                             </button>
                                             @endif
                                         @endif
-                                        
-                                        <!-- PERBAIKAN: Hapus tombol "Tandai Selesai" untuk superadmin -->
-                                        <!-- Superadmin hanya bisa melihat detail untuk pengadaan yang sudah disetujui -->
                                     </div>
                                 </td>
                             </tr>
@@ -1181,7 +1269,7 @@
                                     <div class="py-4">
                                         <i class="bi bi-cart-plus display-6 text-muted"></i>
                                         <p class="mt-2">Tidak ada data pengadaan ditemukan</p>
-                                        @if(request()->has('search') || request()->has('status') || request()->has('tipe'))
+                                        @if(request()->has('search') || request()->has('status') || request()->has('tipe') || request()->has('priority'))
                                         <a href="{{ route('superadmin.procurement') }}" class="btn btn-primary btn-sm mt-2" style="background-color: var(--superadmin-color); border-color: var(--superadmin-color);">
                                             Reset Filter
                                         </a>
@@ -1344,7 +1432,6 @@
         </div>
     </div>
     
-    <!-- PERBAIKAN: Hapus modal Complete Procurement karena superadmin tidak bisa menandai selesai -->
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
@@ -1355,7 +1442,6 @@ $(document).ready(function() {
     const customValidationModal = new bootstrap.Modal(document.getElementById('customValidationModal'));
     const approveModal = new bootstrap.Modal(document.getElementById('approveProcurementModal'));
     const rejectModal = new bootstrap.Modal(document.getElementById('rejectProcurementModal'));
-    // PERBAIKAN: Hapus inisialisasi modal complete karena superadmin tidak bisa menandai selesai
     
     // Helper functions
     function getStatusDisplay(status) {
@@ -1364,8 +1450,7 @@ $(document).ready(function() {
             'approved': 'Disetujui',
             'completed': 'Selesai',
             'cancelled': 'Dibatalkan',
-            'rejected': 'Ditolak',
-            'partially_approved': 'Disetujui Sebagian'
+            'rejected': 'Ditolak'
         };
         return statusMap[status] || status.charAt(0).toUpperCase() + status.slice(1);
     }
@@ -1390,19 +1475,6 @@ $(document).ready(function() {
             'cancelled': 'item-status-cancelled'
         };
         return classMap[status] || 'item-status-pending';
-    }
-    
-    function getTipePengadaanDisplay(tipe, isMultiItem) {
-        // PERBAIKAN: Fungsi untuk menampilkan tipe pengadaan yang benar
-        if (isMultiItem) {
-            return 'Multi Item';
-        } else if (tipe === 'baru') {
-            return 'Baru';
-        } else if (tipe === 'restock') {
-            return 'Restock';
-        } else {
-            return tipe.charAt(0).toUpperCase() + tipe.slice(1);
-        }
     }
     
     function formatDate(dateString) {
@@ -1461,7 +1533,7 @@ $(document).ready(function() {
         }
     });
     
-    // View detail procurement
+    // View detail procurement - menggunakan event delegation yang tepat
     $(document).on('click', '.view-procurement', function(e) {
         e.preventDefault();
         e.stopPropagation();
@@ -1508,8 +1580,6 @@ $(document).ready(function() {
                 const kodePengadaan = procurement.kode_pengadaan || 
                                       'P-' + procurement.id.toString().padStart(6, '0');
                 
-                // Items data
-                
                 // Hitung statistik item
                 const itemStats = {
                     approved: items.filter(item => item.status === 'approved').length,
@@ -1532,7 +1602,7 @@ $(document).ready(function() {
                     totalNilai += (jumlah * harga);
                 });
                 
-                // PERBAIKAN: Tentukan tipe pengadaan yang benar
+                // Tentukan tipe pengadaan yang benar
                 const tipePengadaan = isMultiItem ? 'multi' : procurement.tipe_pengadaan;
                 
                 // Build HTML content
@@ -1742,7 +1812,7 @@ $(document).ready(function() {
                                     <div class="col-8">${procurement.user.name || '-'}</div>
                                 </div>
                                 <div class="row mb-2">
-                                    <div class="col-4 fw-bold">Username:</div>
+                                    <div class-4 fw-bold">Username:</div>
                                     <div class="col-8">${procurement.user.username || '-'}</div>
                                 </div>
                                 <div class="row mb-2">
@@ -1869,13 +1939,12 @@ $(document).ready(function() {
         });
     });
     
-    // Custom validation modal - FIXED EVENT HANDLER
+    // Custom validation modal - FIXED: Perbaikan event handler dengan event delegation yang tepat
     $(document).on('click', '.custom-approve-procurement', function(e) {
         e.preventDefault();
         e.stopPropagation();
         
         const procurementId = $(this).data('id');
-        
         console.log('Tombol custom-approve ditekan untuk ID:', procurementId);
         
         // Tampilkan loading state
@@ -2078,32 +2147,32 @@ $(document).ready(function() {
                 // Inisialisasi fungsi updateValidationSummary di window scope
                 window.updateValidationSummary = updateValidationSummary;
                 
-                // Select all items
-                $('#selectAllItems').off('change').on('change', function() {
+                // Select all items - menggunakan event delegation yang lebih baik
+                $(document).off('change', '#selectAllItems').on('change', '#selectAllItems', function() {
                     const isChecked = $(this).is(':checked');
                     $('.item-checkbox').prop('checked', isChecked);
                     updateValidationSummary();
                 });
                 
                 // Select all button
-                $('#selectAllBtn').off('click').on('click', function() {
+                $(document).off('click', '#selectAllBtn').on('click', '#selectAllBtn', function() {
                     $('#selectAllItems').prop('checked', true).trigger('change');
                 });
                 
                 // Deselect all button
-                $('#deselectAllBtn').off('click').on('click', function() {
+                $(document).off('click', '#deselectAllBtn').on('click', '#deselectAllBtn', function() {
                     $('#selectAllItems').prop('checked', false).trigger('change');
                 });
                 
                 // Reject all items button
-                $('#rejectAllItemsBtn').off('click').on('click', function() {
+                $(document).off('click', '#rejectAllItemsBtn').on('click', '#rejectAllItemsBtn', function() {
                     if (confirm('Apakah Anda yakin ingin menolak semua item dalam pengadaan ini?')) {
                         $('#selectAllItems').prop('checked', false).trigger('change');
                         $('#alasan_penolakan_items').focus();
                     }
                 });
                 
-                // Individual checkbox change
+                // Individual checkbox change - menggunakan event delegation
                 $(document).off('change', '.item-checkbox').on('change', '.item-checkbox', function() {
                     updateValidationSummary();
                 });
@@ -2124,8 +2193,8 @@ $(document).ready(function() {
         });
     });
     
-    // Submit custom validation form - FIXED
-    $('#customValidationForm').off('submit').on('submit', function(e) {
+    // Submit custom validation form - FIXED: Perbaikan event handler untuk form submission
+    $('#customValidationForm').on('submit', function(e) {
         e.preventDefault();
         
         const form = $(this);
@@ -2187,7 +2256,7 @@ $(document).ready(function() {
         });
     });
     
-    // Reject all custom button - FIXED
+    // Reject all custom button - FIXED: Perbaikan event handler
     $(document).on('click', '#rejectAllCustomBtn', function(e) {
         e.preventDefault();
         e.stopPropagation();
@@ -2218,8 +2287,8 @@ $(document).ready(function() {
         approveModal.show();
     });
     
-    // Submit approve form (untuk single item) - FIXED
-    $('#approveProcurementForm').off('submit').on('submit', function(e) {
+    // Submit approve form (untuk single item) - FIXED: Perbaikan event handler
+    $('#approveProcurementForm').on('submit', function(e) {
         e.preventDefault();
         
         const procurementId = $('#approve_procurement_id').val();
@@ -2288,8 +2357,8 @@ $(document).ready(function() {
         rejectModal.show();
     });
     
-    // Submit reject form dengan validasi (untuk single item) - FIXED
-    $('#rejectProcurementForm').off('submit').on('submit', function(e) {
+    // Submit reject form dengan validasi (untuk single item) - FIXED: Perbaikan event handler
+    $('#rejectProcurementForm').on('submit', function(e) {
         e.preventDefault();
         
         const procurementId = $('#reject_procurement_id').val();
@@ -2355,7 +2424,15 @@ $(document).ready(function() {
         });
     });
     
-    // PERBAIKAN: Hapus event handler untuk complete procurement karena superadmin tidak bisa menandai selesai
+    // PERBAIKAN: Tambahkan event handler untuk merespons perubahan ukuran layar
+    $(window).on('resize', function() {
+        // Reset table-responsive jika diperlukan
+        if ($(window).width() > 768) {
+            $('.table-responsive').css('border', 'none');
+        } else {
+            $('.table-responsive').css('border', '1px solid #dee2e6');
+        }
+    });
 });
 
 // Print Function

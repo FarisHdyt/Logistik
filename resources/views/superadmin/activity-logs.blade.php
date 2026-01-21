@@ -188,6 +188,7 @@
             font-size: 1.8rem;
             font-weight: 700;
             margin-bottom: 0.5rem;
+            color: #1e293b;
         }
         
         .stat-content p {
@@ -727,18 +728,15 @@
                                     // PASTIKAN ACTION DI-LOWERCASE DAN TRIM
                                     $action = strtolower(trim($log->action ?? 'unknown'));
                                     
-                                    // Debug: tampilkan action sebenarnya
-                                    // {{ $action }}
-                                    
                                     $badgeClass = [
                                         'login' => 'badge-login',
                                         'logout' => 'badge-logout',
                                         'create' => 'badge-create',
                                         'update' => 'badge-update',
                                         'delete' => 'badge-delete',
-                                        'created' => 'badge-create',  // tambahan jika action adalah 'created'
-                                        'updated' => 'badge-update',  // tambahan jika action adalah 'updated'
-                                        'deleted' => 'badge-delete',  // tambahan jika action adalah 'deleted'
+                                        'created' => 'badge-create',
+                                        'updated' => 'badge-update',
+                                        'deleted' => 'badge-delete',
                                     ][$action] ?? 'badge-secondary';
                                     
                                     $badgeStyle = [
@@ -760,7 +758,126 @@
                             <td>
                                 <code>{{ $log->ip_address ?? '-' }}</code>
                                 @if($log->user_agent)
-                                <br><small class="text-muted">{{ Str::limit($log->user_agent, 50) }}</small>
+                                <br>
+                                @php
+                                    // Parsing user agent untuk tampilan yang lebih friendly
+                                    $userAgent = strtolower($log->user_agent);
+                                    $browser = 'Unknown';
+                                    $os = 'Unknown';
+                                    $device = 'Desktop';
+                                    
+                                    // DETEKSI BROWSER DENGAN URUTAN YANG TEPAT
+                                    // 1. Opera harus dicek duluan karena mengandung "OPR" dan "Chrome"
+                                    if (strpos($userAgent, 'opr') !== false || strpos($userAgent, 'opera') !== false) {
+                                        $browser = 'Opera';
+                                    }
+                                    // 2. Edge harus dicek sebelum Chrome karena mengandung "Edg" dan "Chrome"
+                                    elseif (strpos($userAgent, 'edg') !== false) {
+                                        $browser = 'Edge';
+                                    }
+                                    // 3. Firefox
+                                    elseif (strpos($userAgent, 'firefox') !== false) {
+                                        $browser = 'Firefox';
+                                    }
+                                    // 4. Internet Explorer
+                                    elseif (strpos($userAgent, 'msie') !== false || strpos($userAgent, 'trident') !== false) {
+                                        $browser = 'Internet Explorer';
+                                    }
+                                    // 5. Safari (tanpa Chrome)
+                                    elseif (strpos($userAgent, 'safari') !== false && strpos($userAgent, 'chrome') === false) {
+                                        $browser = 'Safari';
+                                    }
+                                    // 6. Chrome (setelah semua browser lain dicek)
+                                    elseif (strpos($userAgent, 'chrome') !== false) {
+                                        $browser = 'Chrome';
+                                    }
+                                    // 7. Browser lainnya
+                                    elseif (strpos($userAgent, 'brave') !== false) {
+                                        $browser = 'Brave';
+                                    }
+                                    elseif (strpos($userAgent, 'vivaldi') !== false) {
+                                        $browser = 'Vivaldi';
+                                    }
+                                    elseif (strpos($userAgent, 'ucbrowser') !== false) {
+                                        $browser = 'UC Browser';
+                                    }
+                                    
+                                    // Deteksi OS dengan urutan yang tepat
+                                    if (strpos($userAgent, 'windows') !== false) {
+                                        $os = 'Windows';
+                                        // Versi Windows
+                                        if (strpos($userAgent, 'windows nt 10') !== false) {
+                                            $os = 'Windows 10/11';
+                                        } elseif (strpos($userAgent, 'windows nt 6.3') !== false) {
+                                            $os = 'Windows 8.1';
+                                        } elseif (strpos($userAgent, 'windows nt 6.2') !== false) {
+                                            $os = 'Windows 8';
+                                        } elseif (strpos($userAgent, 'windows nt 6.1') !== false) {
+                                            $os = 'Windows 7';
+                                        }
+                                    } elseif (strpos($userAgent, 'mac os x') !== false || strpos($userAgent, 'macintosh') !== false) {
+                                        $os = 'macOS';
+                                    } elseif (strpos($userAgent, 'linux') !== false) {
+                                        $os = 'Linux';
+                                    } elseif (strpos($userAgent, 'android') !== false) {
+                                        $os = 'Android';
+                                        $device = 'Mobile';
+                                    } elseif (strpos($userAgent, 'iphone') !== false) {
+                                        $os = 'iOS';
+                                        $device = 'iPhone';
+                                    } elseif (strpos($userAgent, 'ipad') !== false) {
+                                        $os = 'iOS';
+                                        $device = 'iPad';
+                                    } elseif (strpos($userAgent, 'ios') !== false) {
+                                        $os = 'iOS';
+                                    }
+                                    
+                                    // Deteksi perangkat mobile
+                                    if (strpos($userAgent, 'mobile') !== false && strpos($userAgent, 'ipad') === false) {
+                                        $device = 'Mobile';
+                                    }
+                                    
+                                    // Tentukan icon berdasarkan browser
+                                    $browserColors = [
+                                        'Chrome' => ['icon' => 'bi-browser-chrome', 'color' => '#4285F4'],
+                                        'Firefox' => ['icon' => 'bi-browser-firefox', 'color' => '#FF7139'],
+                                        'Safari' => ['icon' => 'bi-browser-safari', 'color' => '#1B73E8'],
+                                        'Edge' => ['icon' => 'bi-browser-edge', 'color' => '#0078D7'],
+                                        'Opera' => ['icon' => 'bi-globe', 'color' => '#FF1B2D'], // Diganti ke bi-globe
+                                        'Internet Explorer' => ['icon' => 'bi-browser-ie', 'color' => '#1EBBEE'],
+                                        'Brave' => ['icon' => 'bi-shield-check', 'color' => '#FB542B'],
+                                        'Vivaldi' => ['icon' => 'bi-gear', 'color' => '#EF3939'], // Diganti ke bi-gear
+                                        'UC Browser' => ['icon' => 'bi-phone', 'color' => '#FF6600'],
+                                        'Unknown' => ['icon' => 'bi-globe', 'color' => '#64748b'],
+                                    ];
+                                    
+                                    if (isset($browserColors[$browser])) {
+                                        $browserIcon = $browserColors[$browser]['icon'];
+                                    }
+                                    
+                                    // Tentukan icon berdasarkan OS
+                                    $osIcon = 'bi-pc';
+                                    $osColors = [
+                                        'Windows' => ['icon' => 'bi-windows', 'color' => '#0078D7'],
+                                        'Windows 10/11' => ['icon' => 'bi-windows', 'color' => '#0078D7'],
+                                        'macOS' => ['icon' => 'bi-apple', 'color' => '#000000'],
+                                        'Linux' => ['icon' => 'bi-ubuntu', 'color' => '#DD4814'],
+                                        'Android' => ['icon' => 'bi-android2', 'color' => '#3DDC84'],
+                                        'iOS' => ['icon' => 'bi-apple', 'color' => '#000000'],
+                                        'Unknown' => ['icon' => 'bi-pc', 'color' => '#64748b'],
+                                    ];
+                                    
+                                    if (isset($osColors[$os])) {
+                                        $osIcon = $osColors[$os]['icon'];
+                                    }
+                                @endphp
+                                <small class="text-muted">
+                                    <i class="{{ $browserIcon }} me-1"></i>{{ $browser }} on 
+                                    <i class="{{ $osIcon }} me-1"></i>{{ $os }}
+                                    @if($device !== 'Desktop')
+                                    <br><i class="bi bi-phone me-1"></i>{{ $device }}
+                                    @endif
+                                </small>
                                 @endif
                             </td>
                             <td>
@@ -946,7 +1063,146 @@
             }, 5000);
         });
         
-        // View log details
+        // Function untuk parsing user agent menjadi format yang user-friendly
+        function parseUserAgent(userAgent) {
+            if (!userAgent) return null;
+            
+            const ua = userAgent.toLowerCase();
+            let browser = 'Unknown';
+            let os = 'Unknown';
+            let device = 'Desktop';
+            
+            // Browser detection dengan urutan yang tepat
+            // Opera harus pertama karena mengandung "OPR" dan "Chrome"
+            if (ua.includes('opr') || ua.includes('opera')) {
+                browser = 'Opera';
+            }
+            // Edge harus sebelum Chrome karena mengandung "Edg" dan "Chrome"
+            else if (ua.includes('edg')) {
+                browser = 'Edge';
+            }
+            // Firefox
+            else if (ua.includes('firefox')) {
+                browser = 'Firefox';
+            }
+            // Internet Explorer
+            else if (ua.includes('msie') || ua.includes('trident')) {
+                browser = 'Internet Explorer';
+            }
+            // Safari (tanpa Chrome)
+            else if (ua.includes('safari') && !ua.includes('chrome')) {
+                browser = 'Safari';
+            }
+            // Chrome (setelah semua browser lain dicek)
+            else if (ua.includes('chrome')) {
+                browser = 'Chrome';
+            }
+            // Browser lainnya
+            else if (ua.includes('brave')) {
+                browser = 'Brave';
+            }
+            else if (ua.includes('vivaldi')) {
+                browser = 'Vivaldi';
+            }
+            else if (ua.includes('ucbrowser')) {
+                browser = 'UC Browser';
+            }
+            
+            // OS detection
+            if (ua.includes('windows')) {
+                os = 'Windows';
+                if (ua.includes('windows nt 10')) {
+                    os = 'Windows 10/11';
+                } else if (ua.includes('windows nt 6.3')) {
+                    os = 'Windows 8.1';
+                } else if (ua.includes('windows nt 6.2')) {
+                    os = 'Windows 8';
+                } else if (ua.includes('windows nt 6.1')) {
+                    os = 'Windows 7';
+                }
+            } else if (ua.includes('mac os x') || ua.includes('macintosh')) {
+                os = 'macOS';
+            } else if (ua.includes('linux')) {
+                os = 'Linux';
+            } else if (ua.includes('android')) {
+                os = 'Android';
+                device = 'Mobile';
+            } else if (ua.includes('iphone')) {
+                os = 'iOS';
+                device = 'iPhone';
+            } else if (ua.includes('ipad')) {
+                os = 'iOS';
+                device = 'iPad';
+            } else if (ua.includes('ios')) {
+                os = 'iOS';
+            }
+            
+            // Device detection
+            if (ua.includes('mobile') && !ua.includes('ipad')) {
+                device = 'Mobile';
+            }
+            
+            // Browser icons and colors - MENGGUNAKAN ICON UMUM UNTUK BROWSER YANG TIDAK PUNYA ICON KHUSUS
+            const browserIcons = {
+                'Chrome': 'bi-browser-chrome',
+                'Firefox': 'bi-browser-firefox',
+                'Safari': 'bi-browser-safari',
+                'Edge': 'bi-browser-edge',
+                'Opera': 'bi-globe', // Diganti dari bi-music-note
+                'Internet Explorer': 'bi-browser-ie',
+                'Brave': 'bi-shield-check',
+                'Vivaldi': 'bi-gear', // Diganti dari bi-palette
+                'UC Browser': 'bi-phone',
+                'Unknown': 'bi-globe'
+            };
+            
+            const browserColors = {
+                'Chrome': '#4285F4',
+                'Firefox': '#FF7139',
+                'Safari': '#1B73E8',
+                'Edge': '#0078D7',
+                'Opera': '#FF1B2D',
+                'Internet Explorer': '#1EBBEE',
+                'Brave': '#FB542B',
+                'Vivaldi': '#EF3939',
+                'UC Browser': '#FF6600',
+                'Unknown': '#64748b'
+            };
+            
+            // OS icons and colors
+            const osIcons = {
+                'Windows': 'bi-windows',
+                'Windows 10/11': 'bi-windows',
+                'macOS': 'bi-apple',
+                'Linux': 'bi-ubuntu',
+                'Android': 'bi-android2',
+                'iOS': 'bi-apple',
+                'Unknown': 'bi-pc'
+            };
+            
+            const osColors = {
+                'Windows': '#0078D7',
+                'Windows 10/11': '#0078D7',
+                'macOS': '#000000',
+                'Linux': '#DD4814',
+                'Android': '#3DDC84',
+                'iOS': '#000000',
+                'Unknown': '#64748b'
+            };
+            
+            return {
+                browser: browser,
+                os: os,
+                device: device,
+                browserIcon: browserIcons[browser] || 'bi-globe',
+                browserColor: browserColors[browser] || '#64748b',
+                osIcon: osIcons[os] || 'bi-pc',
+                osColor: osColors[os] || '#64748b',
+                display: `${browser} on ${os}` + (device !== 'Desktop' ? ` (${device})` : '')
+            };
+        }
+        
+        // View log details - dengan browser/device yang user-friendly
         function viewLogDetails(logId) {
             const contentDiv = document.getElementById('logDetailsContent');
             contentDiv.innerHTML = `
@@ -961,29 +1217,66 @@
             fetch(`/superadmin/activity-logs/${logId}`, {
                 headers: {
                     'Accept': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                 }
             })
                 .then(response => {
                     if (!response.ok) {
-                        throw new Error('Network response was not ok');
+                        throw new Error('Network response was not ok: ' + response.statusText);
                     }
                     return response.json();
                 })
                 .then(data => {
-                    if (data.success) {
+                    if (data.success && data.data) {
                         const log = data.data;
+                        const browserInfo = parseUserAgent(log.user_agent);
+                        
+                        // Format timestamps
+                        const formatDate = (dateString) => {
+                            if (!dateString) return '-';
+                            try {
+                                const date = new Date(dateString);
+                                return date.toLocaleDateString('id-ID', {
+                                    day: '2-digit',
+                                    month: '2-digit',
+                                    year: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                    second: '2-digit'
+                                });
+                            } catch (e) {
+                                return dateString;
+                            }
+                        };
+                        
+                        // Get badge class
+                        const getBadgeClass = (action) => {
+                            const actionLower = (action || '').toLowerCase().trim();
+                            const badgeClasses = {
+                                'login': 'badge-login',
+                                'logout': 'badge-logout',
+                                'create': 'badge-create',
+                                'update': 'badge-update',
+                                'delete': 'badge-delete',
+                                'created': 'badge-create',
+                                'updated': 'badge-update',
+                                'deleted': 'badge-delete'
+                            };
+                            return badgeClasses[actionLower] || 'badge-secondary';
+                        };
+                        
                         contentDiv.innerHTML = `
                             <div class="log-details">
                                 <div class="row mb-3">
                                     <div class="col-md-6">
                                         <h6>Informasi Log</h6>
                                         <div class="mb-2">
-                                            <strong>ID:</strong> ${log.id}
+                                            <strong>ID:</strong> ${log.id || '-'}
                                         </div>
                                         <div class="mb-2">
                                             <strong>Aksi:</strong>
-                                            <span class="badge ${getBadgeClass(log.action)} ms-2">${log.action}</span>
+                                            <span class="badge ${getBadgeClass(log.action)} ms-2">${log.action || '-'}</span>
                                         </div>
                                         <div class="mb-2">
                                             <strong>Deskripsi:</strong><br>
@@ -999,7 +1292,7 @@
                                             <strong>Email:</strong> ${log.user ? log.user.email : '-'}
                                         </div>
                                         <div class="mb-2">
-                                            <strong>Role:</strong> ${log.user ? log.user.role : '-'}
+                                            <strong>Role:</strong> ${log.user ? (log.user.role || '-') : '-'}
                                         </div>
                                     </div>
                                 </div>
@@ -1013,28 +1306,44 @@
                                         </div>
                                         <div class="mb-2">
                                             <strong>Browser/Device:</strong><br>
-                                            <small>${log.user_agent || '-'}</small>
+                                            ${browserInfo ? `
+                                            <div class="mt-1">
+                                                <span class="badge me-1" style="background-color: ${browserInfo.browserColor} !important; color: white !important;">
+                                                    <i class="${browserInfo.browserIcon} me-1"></i>${browserInfo.browser}
+                                                </span>
+                                                <span class="badge me-1" style="background-color: ${browserInfo.osColor} !important; color: white !important;">
+                                                    <i class="${browserInfo.osIcon} me-1"></i>${browserInfo.os}
+                                                </span>
+                                                ${browserInfo.device !== 'Desktop' ? 
+                                                    `<span class="badge bg-warning">
+                                                        <i class="bi bi-phone me-1"></i>${browserInfo.device}
+                                                    </span>` : ''
+                                                }
+                                            </div>
+                                            <div class="mt-2">
+                                                <small class="text-muted">${browserInfo.display}</small>
+                                            </div>
+                                            ` : '<small>Tidak ada data browser</small>'}
+                                            ${log.user_agent ? `
+                                            <div class="mt-2">
+                                                <small class="text-muted">Raw User Agent:</small><br>
+                                                <small><code>${log.user_agent}</code></small>
+                                            </div>
+                                            ` : ''}
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <h6>Waktu</h6>
                                         <div class="mb-2">
                                             <strong>Dibuat:</strong><br>
-                                            ${new Date(log.created_at).toLocaleDateString('id-ID')} ${new Date(log.created_at).toLocaleTimeString('id-ID')}
+                                            ${formatDate(log.created_at)}
                                         </div>
                                         <div class="mb-2">
                                             <strong>Diperbarui:</strong><br>
-                                            ${new Date(log.updated_at).toLocaleDateString('id-ID')} ${new Date(log.updated_at).toLocaleTimeString('id-ID')}
+                                            ${formatDate(log.updated_at)}
                                         </div>
                                     </div>
                                 </div>
-                                
-                                ${log.data ? `
-                                <div class="mb-3">
-                                    <h6>Data Tambahan</h6>
-                                    <pre>${JSON.stringify(log.data, null, 2)}</pre>
-                                </div>
-                                ` : ''}
                             </div>
                         `;
                     } else {
@@ -1051,7 +1360,7 @@
                     contentDiv.innerHTML = `
                         <div class="alert alert-danger">
                             <i class="bi bi-exclamation-triangle me-2"></i>
-                            Terjadi kesalahan saat memuat data
+                            Terjadi kesalahan saat memuat data. Silahkan coba lagi.
                         </div>
                     `;
                 });
@@ -1086,7 +1395,6 @@
             if (action) url += `action=${action}&`;
             if (userId) url += `user_id=${userId}&`;
             
-            // Remove trailing & if exists
             if (url.endsWith('&')) url = url.slice(0, -1);
             if (url === '?') url = '';
             
@@ -1100,7 +1408,6 @@
                 url += `time_filter=${filter}&`;
             }
             
-            // Keep existing filters except time_filter
             const searchParams = new URLSearchParams(window.location.search);
             searchParams.forEach((value, key) => {
                 if (key !== 'time_filter') {
@@ -1136,9 +1443,15 @@
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                }
+                },
+                body: JSON.stringify({})
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.success) {
                     showAlert('Semua log berhasil dihapus', 'success');
@@ -1171,7 +1484,6 @@
             
             alertContainer.appendChild(alert);
             
-            // Auto dismiss after 5 seconds
             setTimeout(() => {
                 if (alert.parentNode) {
                     const bsAlert = new bootstrap.Alert(alert);

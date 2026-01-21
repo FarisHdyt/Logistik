@@ -1043,54 +1043,30 @@
                     <div class="settings-card">
                         <h5><i class="bi bi-server me-2"></i>Informasi Server</h5>
                         
-                        <div class="row">
-                            <div class="col-md-6">
-                                <table class="table table-borderless">
-                                    <tbody>
-                                        <tr>
-                                            <td><strong>OS:</strong></td>
-                                            <td>{{ $serverInfo['os'] ?? '-' }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Web Server:</strong></td>
-                                            <td>{{ $serverInfo['web_server'] ?? '-' }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Memory Usage:</strong></td>
-                                            <td>
-                                                <div class="progress" style="height: 10px;">
-                                                    <div class="progress-bar bg-success" role="progressbar" 
-                                                         style="width: {{ $serverInfo['memory_usage'] ?? 0 }}%">
-                                                    </div>
+                        <div class="table-responsive">
+                            <table class="table table-borderless">
+                                <tbody>
+                                    <tr>
+                                        <td width="30%"><strong>Sistem Operasi:</strong></td>
+                                        <td>{{ $serverInfo['os'] ?? '-' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Web Server:</strong></td>
+                                        <td>{{ $serverInfo['web_server'] ?? '-' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Penggunaan Memori:</strong></td>
+                                        <td>
+                                            <div class="progress" style="height: 10px; width: 200px;">
+                                                <div class="progress-bar bg-success" role="progressbar" 
+                                                     style="width: {{ $serverInfo['memory_usage'] ?? 0 }}%">
                                                 </div>
-                                                <small>{{ $serverInfo['memory_usage'] ?? 0 }} MB</small>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                            
-                            <div class="col-md-6">
-                                <table class="table table-borderless">
-                                    <tbody>
-                                        <tr>
-                                            <td><strong>Disk Usage:</strong></td>
-                                            <td>
-                                                <div class="progress" style="height: 10px;">
-                                                    <div class="progress-bar bg-info" role="progressbar" 
-                                                         style="width: {{ $serverInfo['disk_usage'] ?? 0 }}%">
-                                                    </div>
-                                                </div>
-                                                <small>{{ $serverInfo['disk_usage'] ?? 0 }}%</small>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Uptime:</strong></td>
-                                            <td>{{ $serverInfo['uptime'] ?? '-' }}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
+                                            </div>
+                                            <small>{{ $serverInfo['memory_usage'] ?? 0 }} MB</small>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                     

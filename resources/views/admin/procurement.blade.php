@@ -767,6 +767,7 @@
                             <option value="">Semua Tipe</option>
                             <option value="baru" {{ request('tipe') == 'baru' ? 'selected' : '' }}>Barang Baru</option>
                             <option value="restock" {{ request('tipe') == 'restock' ? 'selected' : '' }}>Restock</option>
+                            <option value="multi" {{ request('tipe') == 'multi' ? 'selected' : '' }}>Multi Item</option>
                         </select>
                     </div>
                     <div class="col-md-4 d-flex gap-2">
